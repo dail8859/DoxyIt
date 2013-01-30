@@ -58,8 +58,8 @@ void commandMenuInit()
     //            ShortcutKey *shortcut,          // optional. Define a shortcut to trigger this command
     //            bool check0nInit                // optional. Make this menu item be checked visually
     //            );
-    setCommand(0, TEXT("Hello Notepad++"), hello, NULL, false);
-    setCommand(1, TEXT("Hello (with dialog)"), helloDlg, NULL, false);
+    setCommand(0, TEXT("First Item"), hello, NULL, false);
+    setCommand(1, TEXT("Second Item"), helloDlg, NULL, false);
 }
 
 //
