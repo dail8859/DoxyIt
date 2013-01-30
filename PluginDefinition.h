@@ -23,16 +23,11 @@
 //
 #include "PluginInterface.h"
 
-//-------------------------------------//
-//-- STEP 1. DEFINE YOUR PLUGIN NAME --//
-//-------------------------------------//
+//
 // Here define your plugin name
 //
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
 
-//-----------------------------------------------//
-//-- STEP 2. DEFINE YOUR PLUGIN COMMAND NUMBER --//
-//-----------------------------------------------//
 //
 // Here define the number of your plugin commands
 //

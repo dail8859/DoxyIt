@@ -17,6 +17,7 @@
 
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
+#include "trex.h"
 
 //
 // The plugin data that Notepad++ needs
@@ -48,17 +49,13 @@ void pluginCleanUp()
 void commandMenuInit()
 {
 
-    //--------------------------------------------//
-    //-- STEP 3. CUSTOMIZE YOUR PLUGIN COMMANDS --//
-    //--------------------------------------------//
-    // with function :
-    // setCommand(int index,                      // zero based number to indicate the order of command
-    //            TCHAR *commandName,             // the command name that you want to see in plugin menu
-    //            PFUNCPLUGINCMD functionPointer, // the symbol of function (function pointer) associated with this command. The body should be defined below. See Step 4.
-    //            ShortcutKey *shortcut,          // optional. Define a shortcut to trigger this command
-    //            bool check0nInit                // optional. Make this menu item be checked visually
-    //            );
-    setCommand(0, TEXT("First Item"), hello, NULL, false);
+	ShortcutKey *sk = new ShortcutKey();
+	sk->_isAlt = TRUE;
+	sk->_isCtrl = TRUE;
+	sk->_isShift = TRUE;
+	sk->_key = 'D';
+
+    setCommand(0, TEXT("DoxyIt"), hello, sk, false);
     setCommand(1, TEXT("Second Item"), helloDlg, NULL, false);
 }
 
@@ -68,6 +65,7 @@ void commandMenuInit()
 void commandMenuCleanUp()
 {
 	// Don't forget to deallocate your shortcut here
+	delete funcItem[0]._pShKey;
 }
 
 

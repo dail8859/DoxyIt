@@ -351,6 +351,10 @@
 				RelativePath=".\PluginDefinition.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\trex.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -379,6 +383,10 @@
 			</File>
 			<File
 				RelativePath=".\Scintilla.h"
+				>
+			</File>
+			<File
+				RelativePath=".\trex.h"
 				>
 			</File>
 		</Filter>
