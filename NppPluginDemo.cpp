@@ -67,6 +67,39 @@ extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF)
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 {
+	NotifyHeader nh = notifyCode->nmhdr;
+	int ch = notifyCode->ch;
+
+	if(nh.code == SCN_CHARADDED && ch == '\n')
+	{
+		wchar_t wbuffer[256];
+		char buffer[256];
+		int which = -1;
+
+		::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
+		if (which == -1) return;
+
+		HWND curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+
+		int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
+		int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0); 
+		int lineLen = (int) ::SendMessage(curScintilla, SCI_GETLINE, curLine - 1, (LPARAM) buffer);
+		buffer[lineLen] = '\0';
+
+		//::SendMessage(curScintilla, SCI_GETCURLINE, 256, (LPARAM) buffer);
+		//mbstowcs(wbuffer, buffer, 256);
+		//::MessageBox(NULL, wbuffer, TEXT("hi"), MB_OK);
+
+		if(buffer[0] == '/' && buffer[1] == '*' && buffer[2] == '*')
+		{
+			::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " *  ");
+			::SendMessage(curScintilla, SCI_INSERTTEXT, -1, (LPARAM) "\r\n */");
+		}	 
+		if(buffer[0] == ' ' && buffer[1] == '*' && buffer[2] == ' ' && buffer[3] == ' ')
+		{
+			::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " *  ");
+		}
+	}
 }
 
 
@@ -76,12 +109,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 // http://sourceforge.net/forum/forum.php?forum_id=482781
 //
 extern "C" __declspec(dllexport) LRESULT messageProc(UINT Message, WPARAM wParam, LPARAM lParam)
-{/*
-	if (Message == WM_MOVE)
-	{
-		::MessageBox(NULL, "move", "", MB_OK);
-	}
-*/
+{
 	return TRUE;
 }
 

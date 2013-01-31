@@ -18,6 +18,9 @@
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
 #include "trex.h"
+/**
+ *  comment block
+ */
 
 //
 // The plugin data that Notepad++ needs
@@ -56,7 +59,7 @@ void commandMenuInit()
 	sk->_key = 'D';
 
     setCommand(0, TEXT("DoxyIt"), hello, sk, false);
-    setCommand(1, TEXT("Second Item"), helloDlg, NULL, false);
+    setCommand(1, TEXT("Active commenting"), activeCommenting, NULL, false);
 }
 
 //
@@ -108,7 +111,8 @@ void hello()
     ::SendMessage(curScintilla, SCI_SETTEXT, 0, (LPARAM)"Hello, Notepad++!");
 }
 
-void helloDlg()
+void activeCommenting()
 {
-    ::MessageBox(NULL, TEXT("Hello, Notepad++!"), TEXT("Notepad++ Plugin Template"), MB_OK);
+	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[1]._cmdID, (LPARAM) true);
+    //::MessageBox(NULL, TEXT("Hello, Notepad++!"), TEXT("Notepad++ Plugin Template"), MB_OK);
 }
