@@ -18,6 +18,14 @@
 #ifndef PLUGINDEFINITION_H
 #define PLUGINDEFINITION_H
 
+#include <iostream>
+#include <sstream>
+#include <stdio.h>
+
+extern std::string doc_start;
+extern std::string doc_line;
+extern std::string doc_end;
+
 //
 // All difinitions of plugin interface
 //

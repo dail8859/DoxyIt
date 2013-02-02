@@ -15,9 +15,6 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include <iostream>
-#include <stdio.h>
-
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
 #include "trex.h"
@@ -36,6 +33,10 @@ bool do_active_commenting;
 TRex *c_tr;
 //TRex *cpp_tr;
 
+std::string doc_start;
+std::string doc_line;
+std::string doc_end;
+
 //
 // Initialize your plugin data here
 // It will be called while plugin loading
@@ -48,6 +49,12 @@ void pluginInit(HANDLE hModule)
 		::MessageBox(NULL, TEXT("Regular expression compilation failed"), TEXT("DoxyIt"), MB_OK);
 	}
 	do_active_commenting = true;
+
+	//doc_start = "/**";
+	doc_start = "/**************************************************************************************//**";
+	doc_line  = " *  ";
+	doc_end   = " ******************************************************************************************/";
+	//doc_end   = " */";
 }
 
 //
@@ -63,7 +70,6 @@ void pluginCleanUp()
 // You should fill your plugins commands here
 void commandMenuInit()
 {
-
 	ShortcutKey *sk = new ShortcutKey();
 	sk->_isAlt = TRUE;
 	sk->_isCtrl = TRUE;
@@ -83,7 +89,6 @@ void commandMenuCleanUp()
 	// Don't forget to deallocate your shortcut here
 	delete funcItem[0]._pShKey;
 }
-
 
 //
 // This function help you to initialize your plugin commands
@@ -122,7 +127,7 @@ void doxyItFunction()
 
 	if(trex_search(c_tr, buffer, &begin, &end))
 	{
-		std::string str;
+		std::ostringstream doc_block;
 		TRexMatch return_match;
 		TRexMatch func_match;
 		TRexMatch params_match;
@@ -131,29 +136,27 @@ void doxyItFunction()
 		trex_getsubexp(c_tr, 2, &func_match);
 		trex_getsubexp(c_tr, 3, &params_match);
 
-		//str += "/**************************************************************************************//**\r\n"
-		str += "/**\r\n";
-		str += " * \\brief [description]\r\n";
-		str += " * \r\n";
+		doc_block << doc_start << "\r\n";
+		doc_block << doc_line << "\\brief [description]\r\n";
+		doc_block << doc_line << "\r\n";
 		
 		// For each param
-		str += " * \\param [in] ";
-		str.append(params_match.begin, params_match.len);
-		str += " [description]\r\n";
+		doc_block << doc_line << "\\param [in] ";
+		doc_block.write(params_match.begin, params_match.len);
+		doc_block << doc_line << " [description]\r\n";
 
 		// Return value
-		str += " * \\return \\em ";
-		str.append(return_match.begin, return_match.len);
-		str += " [description]\r\n";
-		str += " * \r\n";
+		doc_block << doc_line << "\\return \\em ";
+		doc_block.write(return_match.begin, return_match.len); doc_block << "\r\n";
+		doc_block << doc_line << "\r\n";
+
+		doc_block << doc_line << "\\revision 1 [date]\r\n";
+		doc_block << doc_line << "\\history <b>Rev. 1 [date]</b> [description]\r\n";
+		doc_block << doc_line << "\r\n";
+		doc_block << doc_line << "\\details [description]\r\n";
+		doc_block << doc_end;
 		
-		str += " * \\revision 1 [date]\r\n";
-		str += " * \\history <b>Rev. 1 [date]</b> [description]\r\n";
-		str += " * \\details [description]\r\n";
-		str += " */";
-		//str += " ******************************************************************************************/\r\n"
-		
-		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) str.c_str());
+		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_block.str().c_str());
 	}
 	else
 	{
