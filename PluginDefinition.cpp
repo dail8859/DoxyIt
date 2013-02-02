@@ -31,6 +31,7 @@ NppData nppData;
 
 bool do_active_commenting;
 TRex *c_tr;
+TRex *c_params_tr;
 //TRex *cpp_tr;
 
 std::string doc_start;
@@ -43,18 +44,19 @@ std::string doc_end;
 void pluginInit(HANDLE hModule)
 {
 	const TRexChar *error = NULL;
-	c_tr = trex_compile("(\\w+)[*]*\\s+[*]*(\\w+)\\s*\\((.*)\\)", &error);
-	if(!c_tr)
+	c_tr = trex_compile("(\\w+)[*]*\\s+[*]*(\\w+)\\s*(\\(.*\\))", &error);
+	c_params_tr = trex_compile("(\\w+)\\s*[,)]", &error);
+	if(!c_tr || !c_params_tr)
 	{
 		::MessageBox(NULL, TEXT("Regular expression compilation failed"), TEXT("DoxyIt"), MB_OK);
 	}
 	do_active_commenting = true;
 
-	//doc_start = "/**";
-	doc_start = "/**************************************************************************************//**";
+	doc_start = "/**";
+	//doc_start = "/**************************************************************************************//**";
 	doc_line  = " *  ";
-	doc_end   = " ******************************************************************************************/";
-	//doc_end   = " */";
+	//doc_end   = " ******************************************************************************************/";
+	doc_end   = " */";
 }
 
 //
@@ -63,6 +65,7 @@ void pluginInit(HANDLE hModule)
 void pluginCleanUp()
 {
 	trex_free(c_tr);
+	trex_free(c_params_tr);
 }
 
 //
@@ -110,7 +113,8 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 //----------------------------------------------//
 void doxyItFunction()
 {
-	char buffer[256];
+	// NOTE: Look into using SCI_GETRANGEPOINTER
+	char *buffer;
 	int which = -1;
 	HWND curScintilla;
 	const TRexChar *begin,*end;
@@ -122,7 +126,10 @@ void doxyItFunction()
 	
 	int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
 	int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
-	int lineLen = (int) ::SendMessage(curScintilla, SCI_GETLINE, curLine + 1, (LPARAM) buffer);
+	int lineLen = (int) ::SendMessage(curScintilla, SCI_LINELENGTH, curLine + 1, 0);
+
+	buffer = new char[lineLen + 1];
+	::SendMessage(curScintilla, SCI_GETLINE, curLine + 1, (LPARAM) buffer);
 	buffer[lineLen] = '\0';
 
 	if(trex_search(c_tr, buffer, &begin, &end))
@@ -131,6 +138,8 @@ void doxyItFunction()
 		TRexMatch return_match;
 		TRexMatch func_match;
 		TRexMatch params_match;
+		const TRexChar *cur_params;
+		const TRexChar *p_begin, *p_end;
 
 		trex_getsubexp(c_tr, 1, &return_match);
 		trex_getsubexp(c_tr, 2, &func_match);
@@ -141,9 +150,17 @@ void doxyItFunction()
 		doc_block << doc_line << "\r\n";
 		
 		// For each param
-		doc_block << doc_line << "\\param [in] ";
-		doc_block.write(params_match.begin, params_match.len);
-		doc_block << doc_line << " [description]\r\n";
+		cur_params = params_match.begin;
+		while(trex_searchrange(c_params_tr, cur_params, end, &p_begin, &p_end))
+		{
+			TRexMatch param_match;
+			trex_getsubexp(c_params_tr, 1, &param_match);
+
+			doc_block << doc_line << "\\param [in] ";
+			doc_block.write(param_match.begin, param_match.len);
+			doc_block << " [description]\r\n";
+			cur_params = p_end;
+		}
 
 		// Return value
 		doc_block << doc_line << "\\return \\em ";
@@ -162,6 +179,8 @@ void doxyItFunction()
 	{
 		::MessageBox(NULL, TEXT("Cannot parse function definition"), TEXT("Error"), MB_OK);
 	}
+
+	delete[] buffer;
 }
 
 void doxyItFile()

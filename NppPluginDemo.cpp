@@ -70,38 +70,36 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 	NotifyHeader nh = notifyCode->nmhdr;
 	int ch = notifyCode->ch;
 
-	if(nh.code == SCN_CHARADDED && ch == '\n')
+	if(nh.code == SCN_CHARADDED && ch == '\n' && do_active_commenting)
 	{
-		if(do_active_commenting)
+		char *buffer;
+		int which = -1;
+
+		::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
+		if (which == -1) return;
+
+		HWND curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+
+		int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
+		int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
+		int lineLen = (int) ::SendMessage(curScintilla, SCI_LINELENGTH, curLine - 1, 0);
+		
+		buffer = new char[lineLen + 1];
+		::SendMessage(curScintilla, SCI_GETLINE, curLine - 1, (LPARAM) buffer);
+		buffer[lineLen] = '\0';
+		
+		if(strncmp(buffer, doc_start.c_str(), doc_start.length()) == 0)
 		{
-			char *buffer;
-			int which = -1;
-
-			::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
-			if (which == -1) return;
-
-			HWND curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
-
-			int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
-			int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
-			int lineLen = (int) ::SendMessage(curScintilla, SCI_LINELENGTH, curLine - 1, 0);
-			
-			buffer = new char[lineLen + 1];
-			::SendMessage(curScintilla, SCI_GETLINE, curLine - 1, (LPARAM) buffer);
-			buffer[lineLen] = '\0';
-			
-			if(strncmp(buffer, doc_start.c_str(), doc_start.length()) == 0)
-			{
-				::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " * ");
-				::SendMessage(curScintilla, SCI_INSERTTEXT, -1, (LPARAM) "\r\n */");
-			}
-			if(strncmp(buffer, doc_line.c_str(), doc_line.length()) == 0)
-			{
-				::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " * ");
-			}
-
-			delete[] buffer;
+			std::string temp = "\r\n" + doc_end;
+			::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
+			::SendMessage(curScintilla, SCI_INSERTTEXT, -1, (LPARAM) temp.c_str());
 		}
+		if(strncmp(buffer, doc_line.c_str(), doc_line.length()) == 0)
+		{
+			::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
+		}
+
+		delete[] buffer;
 	}
 }
 
