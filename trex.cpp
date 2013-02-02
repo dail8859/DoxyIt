@@ -5,17 +5,17 @@
 #include <setjmp.h>
 #include "trex.h"
 
-#ifdef _UNICODE
-#define scisprint iswprint
-#define scstrlen wcslen
-#define scprintf wprintf
-#define _SC(x) TEXT(x)
-#else
+//#ifdef _UNICODE
+//#define scisprint iswprint
+//#define scstrlen wcslen
+//#define scprintf wprintf
+//#define _SC(x) TEXT(x)
+//#else
 #define scisprint isprint
 #define scstrlen strlen
 #define scprintf printf
 #define _SC(x) (x)
-#endif
+//#endif
 
 #ifdef _DEBUG
 #include <stdio.h>

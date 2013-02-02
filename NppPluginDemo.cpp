@@ -70,11 +70,10 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 	NotifyHeader nh = notifyCode->nmhdr;
 	int ch = notifyCode->ch;
 
-	if(do_active_commenting)
+	if(nh.code == SCN_CHARADDED && ch == '\n')
 	{
-		if(nh.code == SCN_CHARADDED && ch == '\n')
+		if(do_active_commenting)
 		{
-			//wchar_t wbuffer[256];
 			char buffer[256];
 			int which = -1;
 
@@ -87,17 +86,13 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 			int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
 			int lineLen = (int) ::SendMessage(curScintilla, SCI_GETLINE, curLine - 1, (LPARAM) buffer);
 			buffer[lineLen] = '\0';
-
-			//::SendMessage(curScintilla, SCI_GETCURLINE, 256, (LPARAM) buffer);
-			//mbstowcs(wbuffer, buffer, 256);
-			//::MessageBox(NULL, wbuffer, TEXT("hi"), MB_OK);
-
-			if(buffer[0] == '/' && buffer[1] == '*' && buffer[2] == '*')
+			
+			if(strncmp(buffer, "/**", strlen("/**")) == 0)
 			{
 				::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " * ");
 				::SendMessage(curScintilla, SCI_INSERTTEXT, -1, (LPARAM) "\r\n */");
 			}
-			if(buffer[0] == ' ' && buffer[1] == '*' && buffer[2] == ' ')
+			if(strncmp(buffer, " * ", strlen(" * ")) == 0)
 			{
 				::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " * ");
 			}

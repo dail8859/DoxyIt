@@ -29,19 +29,19 @@
 
 #include <windows.h>
 
-#ifdef _UNICODE
-#define TRexChar TCHAR
-#define MAX_CHAR 0xFFFF
-#define _TREXC(c) TEXT##c 
-#define trex_strlen wcslen
-#define trex_printf wprintf
-#else
+//#ifdef _UNICODE
+//#define TRexChar TCHAR
+//#define MAX_CHAR 0xFFFF
+//#define _TREXC(c) TEXT##c 
+//#define trex_strlen wcslen
+//#define trex_printf wprintf
+//#else
 #define TRexChar char
 #define MAX_CHAR 0xFF
 #define _TREXC(c) (c) 
 #define trex_strlen strlen
 #define trex_printf printf
-#endif
+//#endif
 
 
 #define TRex_True 1

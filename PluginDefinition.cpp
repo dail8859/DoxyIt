@@ -15,14 +15,12 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#include <iostream>
 #include <stdio.h>
 
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
 #include "trex.h"
-/**
- *  comment block
- */
 
 //
 // The plugin data that Notepad++ needs
@@ -44,10 +42,10 @@ TRex *c_tr;
 void pluginInit(HANDLE hModule)
 {
 	const TRexChar *error = NULL;
-	c_tr = trex_compile(TEXT("^\\s*(\\w+)\\s+(\\w+)\\s*\\((.*)\\)"), &error);
+	c_tr = trex_compile("(\\w+)[*]*\\s+[*]*(\\w+)\\s*\\((.*)\\)", &error);
 	if(!c_tr)
 	{
-		::MessageBox(NULL, TEXT("Regular expression compilation failed"), TEXT("Error"), MB_OK);
+		::MessageBox(NULL, TEXT("Regular expression compilation failed"), TEXT("DoxyIt"), MB_OK);
 	}
 	do_active_commenting = true;
 }
@@ -108,7 +106,6 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 void doxyItFunction()
 {
 	char buffer[256];
-	wchar_t wbuffer[256];
 	int which = -1;
 	HWND curScintilla;
 	const TRexChar *begin,*end;
@@ -123,38 +120,40 @@ void doxyItFunction()
 	int lineLen = (int) ::SendMessage(curScintilla, SCI_GETLINE, curLine + 1, (LPARAM) buffer);
 	buffer[lineLen] = '\0';
 
-	mbstowcs(wbuffer, buffer, 256);
-
-	if(trex_search(c_tr, wbuffer, &begin, &end))
+	if(trex_search(c_tr, buffer, &begin, &end))
 	{
+		std::string str;
 		TRexMatch return_match;
 		TRexMatch func_match;
 		TRexMatch params_match;
-		wchar_t wdoc_buf[1024];
-		char doc_buf[1024];
-		int offset = 0;
 
 		trex_getsubexp(c_tr, 1, &return_match);
 		trex_getsubexp(c_tr, 2, &func_match);
 		trex_getsubexp(c_tr, 3, &params_match);
 
-		offset += _snwprintf(wdoc_buf + offset, 1024 - offset, TEXT("/**\r\n"));
-		offset += _snwprintf(wdoc_buf + offset, 1024 - offset, TEXT(" * \\brief [description]\r\n"));
-		offset += _snwprintf(wdoc_buf + offset, 1024 - offset, TEXT(" * \r\n"));
-		offset += _snwprintf(wdoc_buf + offset, 1024 - offset, TEXT(" * \\return \\em %.*s\r\n"), return_match.len, return_match.begin);
-		offset += _snwprintf(wdoc_buf + offset, 1024 - offset, TEXT(" * \r\n"));
-		offset += _snwprintf(wdoc_buf + offset, 1024 - offset, TEXT(" * \\param [in] %.*s [description]\r\n"), params_match.len, params_match.begin);
-		offset += _snwprintf(wdoc_buf + offset, 1024 - offset, TEXT(" */"));
+		//str += "/**************************************************************************************//**\r\n"
+		str += "/**\r\n";
+		str += " * \\brief [description]\r\n";
+		str += " * \r\n";
+		
+		// For each param
+		str += " * \\param [in] ";
+		str.append(params_match.begin, params_match.len);
+		str += " [description]\r\n";
 
-		wcstombs(doc_buf, wdoc_buf, 1024);
-		// ::SendMessage(curScintilla, SCI_BEGINUNDOACTION, 0, 0);
-		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_buf);
-		// ::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) "/**\r\n");
-		// ::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " * \\brief Description\r\n");
-		// ::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " * \r\n");
-		// ::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " * \\params \r\n");
-		// ::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " */");
-		// ::SendMessage(curScintilla, SCI_ENDUNDOACTION, 0, 0);
+		// Return value
+		str += " * \\return \\em ";
+		str.append(return_match.begin, return_match.len);
+		str += " [description]\r\n";
+		str += " * \r\n";
+		
+		str += " * \\revision 1 [date]\r\n";
+		str += " * \\history <b>Rev. 1 [date]</b> [description]\r\n";
+		str += " * \\details [description]\r\n";
+		str += " */";
+		//str += " ******************************************************************************************/\r\n"
+		
+		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) str.c_str());
 	}
 	else
 	{
