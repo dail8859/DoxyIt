@@ -1,16 +1,20 @@
 /* see copyright notice in trex.h */
-#include <windows.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <setjmp.h>
 #include "trex.h"
 
-#ifdef UNICODE
+#ifdef _UNICODE
 #define scisprint iswprint
 #define scstrlen wcslen
 #define scprintf wprintf
 #define _SC(x) TEXT(x)
+#else
+#define scisprint isprint
+#define scstrlen strlen
+#define scprintf printf
+#define _SC(x) (x)
 #endif
 
 #ifdef _DEBUG

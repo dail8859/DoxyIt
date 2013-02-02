@@ -21,29 +21,29 @@ extern FuncItem funcItem[nbFunc];
 extern NppData nppData;
 
 
-BOOL APIENTRY DllMain( HANDLE hModule, 
-                       DWORD  reasonForCall, 
-                       LPVOID lpReserved )
+BOOL APIENTRY DllMain( HANDLE hModule,
+					   DWORD  reasonForCall,
+					   LPVOID lpReserved )
 {
-    switch (reasonForCall)
-    {
-      case DLL_PROCESS_ATTACH:
-        pluginInit(hModule);
-        break;
+	switch (reasonForCall)
+	{
+	case DLL_PROCESS_ATTACH:
+		pluginInit(hModule);
+		break;
 
-      case DLL_PROCESS_DETACH:
+	case DLL_PROCESS_DETACH:
 		commandMenuCleanUp();
-        pluginCleanUp();
-        break;
+		pluginCleanUp();
+		break;
 
-      case DLL_THREAD_ATTACH:
-        break;
+	case DLL_THREAD_ATTACH:
+		break;
 
-      case DLL_THREAD_DETACH:
-        break;
-    }
+	case DLL_THREAD_DETACH:
+		break;
+	}
 
-    return TRUE;
+	return TRUE;
 }
 
 
@@ -70,40 +70,43 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 	NotifyHeader nh = notifyCode->nmhdr;
 	int ch = notifyCode->ch;
 
-	if(nh.code == SCN_CHARADDED && ch == '\n')
+	if(do_active_commenting)
 	{
-		wchar_t wbuffer[256];
-		char buffer[256];
-		int which = -1;
-
-		::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
-		if (which == -1) return;
-
-		HWND curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
-
-		int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
-		int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0); 
-		int lineLen = (int) ::SendMessage(curScintilla, SCI_GETLINE, curLine - 1, (LPARAM) buffer);
-		buffer[lineLen] = '\0';
-
-		//::SendMessage(curScintilla, SCI_GETCURLINE, 256, (LPARAM) buffer);
-		//mbstowcs(wbuffer, buffer, 256);
-		//::MessageBox(NULL, wbuffer, TEXT("hi"), MB_OK);
-
-		if(buffer[0] == '/' && buffer[1] == '*' && buffer[2] == '*')
+		if(nh.code == SCN_CHARADDED && ch == '\n')
 		{
-			::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " *  ");
-			::SendMessage(curScintilla, SCI_INSERTTEXT, -1, (LPARAM) "\r\n */");
-		}	 
-		if(buffer[0] == ' ' && buffer[1] == '*' && buffer[2] == ' ' && buffer[3] == ' ')
-		{
-			::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " *  ");
+			//wchar_t wbuffer[256];
+			char buffer[256];
+			int which = -1;
+
+			::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
+			if (which == -1) return;
+
+			HWND curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+
+			int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
+			int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
+			int lineLen = (int) ::SendMessage(curScintilla, SCI_GETLINE, curLine - 1, (LPARAM) buffer);
+			buffer[lineLen] = '\0';
+
+			//::SendMessage(curScintilla, SCI_GETCURLINE, 256, (LPARAM) buffer);
+			//mbstowcs(wbuffer, buffer, 256);
+			//::MessageBox(NULL, wbuffer, TEXT("hi"), MB_OK);
+
+			if(buffer[0] == '/' && buffer[1] == '*' && buffer[2] == '*')
+			{
+				::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " * ");
+				::SendMessage(curScintilla, SCI_INSERTTEXT, -1, (LPARAM) "\r\n */");
+			}
+			if(buffer[0] == ' ' && buffer[1] == '*' && buffer[2] == ' ')
+			{
+				::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) " * ");
+			}
 		}
 	}
 }
 
 
-// Here you can process the Npp Messages 
+// Here you can process the Npp Messages
 // I will make the messages accessible little by little, according to the need of plugin development.
 // Please let me know if you need to access to some messages :
 // http://sourceforge.net/forum/forum.php?forum_id=482781
@@ -116,6 +119,6 @@ extern "C" __declspec(dllexport) LRESULT messageProc(UINT Message, WPARAM wParam
 #ifdef UNICODE
 extern "C" __declspec(dllexport) BOOL isUnicode()
 {
-    return TRUE;
+	return TRUE;
 }
 #endif //UNICODE
