@@ -113,7 +113,6 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 //----------------------------------------------//
 void doxyItFunction()
 {
-	// NOTE: Look into using SCI_GETRANGEPOINTER
 	char *buffer;
 	int which = -1;
 	HWND curScintilla;
@@ -185,10 +184,32 @@ void doxyItFunction()
 
 void doxyItFile()
 {
+	//TCHAR fileName[MAX_PATH];
+	//char fname[MAX_PATH];
+	int which = -1;
+	HWND curScintilla;
+	std::ostringstream doc_block;
+	
+	// Get the current scintilla
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM) &which);
+	if (which == -1) return;
+	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+
+	//::SendMessage(curScintilla, NPPM_GETFILENAME, MAX_PATH, (LPARAM) fname);
+	
+	doc_block << doc_start << "\r\n";
+	doc_block << doc_line << "\\file " << "" << "\r\n";
+	doc_block << doc_line << "\\brief \r\n";
+	doc_block << doc_line << "\r\n";
+	doc_block << doc_line << "\\author \r\n";
+	doc_block << doc_line << "\\version 1.0\r\n";
+	doc_block << doc_end;
+
+	::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_block.str().c_str());
 }
 
 void activeCommenting()
 {
 	do_active_commenting = !do_active_commenting;
-	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[1]._cmdID, (LPARAM) do_active_commenting);
+	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[2]._cmdID, (LPARAM) do_active_commenting);
 }
