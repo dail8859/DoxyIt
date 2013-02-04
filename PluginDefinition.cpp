@@ -15,6 +15,7 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#include <ctime>
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
 #include "trex.h"
@@ -108,9 +109,6 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 	return true;
 }
 
-//----------------------------------------------//
-//-- STEP 4. DEFINE YOUR ASSOCIATED FUNCTIONS --//
-//----------------------------------------------//
 void doxyItFunction()
 {
 	char *buffer;
@@ -134,15 +132,20 @@ void doxyItFunction()
 	if(trex_search(c_tr, buffer, &begin, &end))
 	{
 		std::ostringstream doc_block;
+		char date[32];
 		TRexMatch return_match;
 		TRexMatch func_match;
 		TRexMatch params_match;
 		const TRexChar *cur_params;
 		const TRexChar *p_begin, *p_end;
+		time_t t;
 
 		trex_getsubexp(c_tr, 1, &return_match);
 		trex_getsubexp(c_tr, 2, &func_match);
 		trex_getsubexp(c_tr, 3, &params_match);
+
+		t = time(NULL);
+		strftime(date, 32, "%m/%d/%Y", localtime(&t));
 
 		doc_block << doc_start << "\r\n";
 		doc_block << doc_line << "\\brief [description]\r\n";
@@ -166,8 +169,8 @@ void doxyItFunction()
 		doc_block.write(return_match.begin, return_match.len); doc_block << "\r\n";
 		doc_block << doc_line << "\r\n";
 
-		doc_block << doc_line << "\\revision 1 [date]\r\n";
-		doc_block << doc_line << "\\history <b>Rev. 1 [date]</b> [description]\r\n";
+		doc_block << doc_line << "\\revision 1 " << date << "\r\n";
+		doc_block << doc_line << "\\history <b>Rev. 1 " << date << "</b> [description]\r\n";
 		doc_block << doc_line << "\r\n";
 		doc_block << doc_line << "\\details [description]\r\n";
 		doc_block << doc_end;
