@@ -1,20 +1,3 @@
-//this file is part of notepad++
-//Copyright (C)2003 Don HO <donho@altern.org>
-//
-//This program is free software; you can redistribute it and/or
-//modify it under the terms of the GNU General Public License
-//as published by the Free Software Foundation; either
-//version 2 of the License, or (at your option) any later version.
-//
-//This program is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with this program; if not, write to the Free Software
-//Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
 #include <ctime>
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
@@ -187,21 +170,22 @@ void doxyItFunction()
 
 void doxyItFile()
 {
-	//TCHAR fileName[MAX_PATH];
-	//char fname[MAX_PATH];
+	TCHAR fileName[MAX_PATH];
+	char fname[MAX_PATH];
 	int which = -1;
 	HWND curScintilla;
 	std::ostringstream doc_block;
 	
+	::SendMessage(nppData._nppHandle, NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
+	wcstombs(fname, fileName, sizeof(fname));
+
 	// Get the current scintilla
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM) &which);
 	if (which == -1) return;
 	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 
-	//::SendMessage(curScintilla, NPPM_GETFILENAME, MAX_PATH, (LPARAM) fname);
-	
 	doc_block << doc_start << "\r\n";
-	doc_block << doc_line << "\\file " << "" << "\r\n";
+	doc_block << doc_line << "\\file " << fname << "\r\n";
 	doc_block << doc_line << "\\brief \r\n";
 	doc_block << doc_line << "\r\n";
 	doc_block << doc_line << "\\author \r\n";
