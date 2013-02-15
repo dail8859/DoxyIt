@@ -14,6 +14,8 @@ NppData nppData;
 
 bool do_active_commenting;
 bool do_active_wrapping;
+bool fingertext_found;
+bool fingertext_enabled;
 
 std::string doc_start;
 std::string doc_line;
@@ -91,9 +93,24 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 void doxyItFunction()
 {
 	int lang_type;
-	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM) &lang_type);
-	Parse(lang_type);
 
+	if(fingertext_found)
+	{
+		// Check if FingerText is enabled
+		CommunicationInfo ci;
+		ci.internalMsg = FINGERTEXT_ISENABLED;
+		ci.srcModuleName = NPP_PLUGIN_NAME;
+		ci.info = NULL;
+		::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
+		fingertext_enabled = ci.info;
+	}
+	else
+		fingertext_enabled = false;
+
+	// Get the current language type
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM) &lang_type);
+	
+	Parse(lang_type);
 	// return (return_val, function_name, (parameters))
 }
 
@@ -122,6 +139,23 @@ void doxyItFile()
 	doc_block << doc_end;
 
 	::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_block.str().c_str());
+
+	//CommunicationInfo ci;
+	//ci.internalMsg = 1;
+	//ci.srcModuleName = NPP_PLUGIN_NAME;
+	//ci.info = NULL;
+
+	// Get version
+	//ci.internalMsg = FINGERTEXT_GETVERSION;
+	//ci.srcModuleName = NPP_PLUGIN_NAME;
+	//ci.info = NULL;
+	//::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
+
+	// Activate it
+	//ci.internalMsg = FINGERTEXT_ACTIVATE;
+	//ci.srcModuleName = NPP_PLUGIN_NAME;
+	//ci.info = NULL;
+	//::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
 }
 
 void activeCommenting()

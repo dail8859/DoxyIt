@@ -28,7 +28,7 @@ extern std::string doc_line;
 extern std::string doc_end;
 
 //
-// All difinitions of plugin interface
+// All definitions of plugin interface
 //
 #include "PluginInterface.h"
 
@@ -71,6 +71,10 @@ void commandMenuCleanUp();
 bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk = NULL, bool check0nInit = false);
 
 
+// FingerText Messages
+#define FINGERTEXT_ISENABLED 1
+#define FINGERTEXT_GETVERSION 2
+#define FINGERTEXT_ACTIVATE 3
 
 // --- Menu call backs ---
 void doxyItFunction();
@@ -83,6 +87,8 @@ void doxyItNewLine();
 
 extern bool do_active_commenting;
 extern bool do_active_wrapping;
+extern bool fingertext_found;
+extern bool fingertext_enabled;
 
 extern NppData nppData;
 

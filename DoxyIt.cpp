@@ -105,6 +105,32 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 		}
 		*/
 	}
+	else if(nh.code == NPPN_READY)
+	{
+		CommunicationInfo ci;
+
+		// Check if FingerText is installed
+		ci.internalMsg = FINGERTEXT_GETVERSION;
+		ci.srcModuleName = NPP_PLUGIN_NAME;
+		ci.info = NULL;
+		
+		// NPPM_MSGTOPLUGIN returns true if the dll is found
+		if(::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci))
+		{
+			if((int) ci.info >= 561) fingertext_found = true;
+			else fingertext_found = false;
+			//int version = (int) ci.info;
+			//TCHAR buffer[128];
+			//wsprintf(buffer, TEXT("Version is %d"), version);
+			//::MessageBox(NULL, buffer, TEXT("Version"), MB_OK);
+		}
+		else
+		{
+			::MessageBox(NULL, TEXT("Not found"), TEXT("Oh No"), MB_OK);
+			fingertext_found = false;
+			return;
+		}
+	}
 }
 
 
