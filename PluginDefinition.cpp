@@ -69,7 +69,7 @@ void commandMenuInit()
 	setCommand(0, TEXT("DoxyIt - Function"), doxyItFunction, sk, false);
 	setCommand(1, TEXT("DoxyIt - File"), doxyItFile, NULL, false);
 	setCommand(2, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
-	setCommand(3, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
+	//setCommand(3, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
 }
 
 //
@@ -208,8 +208,10 @@ void activeCommenting()
 	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[2]._cmdID, (LPARAM) do_active_commenting);
 }
 
+/*
 void activeWrapping()
 {
 	do_active_wrapping = !do_active_wrapping;
 	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_wrapping);
 }
+*/

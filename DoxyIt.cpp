@@ -90,6 +90,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 
 			delete[] buffer;
 		}
+		/*
 		else if(do_active_wrapping) // && line starts with doc_line
 		{
 			int lineMax = 40;
@@ -100,43 +101,40 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 
 			if(lineLen > lineMax)
 			{
-				TCHAR ttext[128];
-				char *text = new char[128];
-				TextRange tr;
-				tr.chrg.cpMin = lineStart;
-				tr.chrg.cpMax = lineStart + 127;
-				tr.lpstrText = text;
+				int char_width = ::SendMessage(curScintilla, SCI_TEXTWIDTH, STYLE_DEFAULT, (LPARAM) " ");
+				::SendMessage(curScintilla, SCI_SETTARGETSTART, lineStart, 0);
+				::SendMessage(curScintilla, SCI_SETTARGETEND, lineStart, 0);
+				::SendMessage(curScintilla, SCI_LINESSPLIT, lineMax * char_width, 0);
 
-				::SendMessage(curScintilla, SCI_GETTEXTRANGE, 0, (LPARAM) &tr);
+				// Check the next few lines to insert the doc_line in front of them
+				for(int i = 1; i < 5; ++i)
+				{
+					// Get the length and allocate a buffer
+					int lineLen = ::SendMessage(curScintilla, SCI_LINELENGTH, curLine + i, 0);
+					char *text = new char[lineLen + 1];
 
-				int i = lineMax;
-				while(i > 0 && text[i] == ' ') --i;
-				while(i > 0 && text[i] != ' ') --i;
+					// Get the text
+					::SendMessage(curScintilla, SCI_GETLINE, curLine + i, (LPARAM) text);
+					text[lineLen] = '\0';
 
-				
-				int j = 0;
-				//while(isalpha(text[lineEnd + j])) ++j;
-				
-				
-				//if(strncmp(&text[j], doc_line.c_str(), doc_line.length()) == 0) j += doc_line.length();
-				//else return;
-				//while(j < 128 && text[j] != ' ') ++j;
+					// if it doesn't start with doc_line or doc_start, insert the doc_line
+					// else we are done
+					if(strncmp(text, doc_line.c_str(), doc_line.length()) != 0 && strncmp(text, doc_end.c_str(), doc_end.length()) != 0)
+					{
+						int lineStart = ::SendMessage(curScintilla, SCI_POSITIONFROMLINE, curLine + i, 0);
+						::SendMessage(curScintilla, SCI_INSERTTEXT, lineStart, (LPARAM) doc_line.c_str());
+					}
+					else
+					{
+						delete[] text;
+						break;
+					}
 
-				::SendMessage(curScintilla, SCI_SETSEL, lineEnd, lineEnd + 6);
-				::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) "\0");
-				::SendMessage(curScintilla, SCI_INSERTTEXT, lineStart + i, (LPARAM) "\r\n *  ");
-				::SendMessage(curScintilla, SCI_GOTOPOS, curPos, 0);
-
-
-				//mbstowcs(ttext, &text[i], 256);
-
-				//::MessageBox(NULL, ttext, TEXT("hi"), MB_OK);
-
-				//::SendMessage(curScintilla, SCI_INSERTTEXT, lineStart + i, (LPARAM) "\r\n");
-
-				delete[] text;
+					delete[] text;
+				}
 			}
 		}
+		*/
 	}
 }
 
