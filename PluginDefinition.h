@@ -39,7 +39,7 @@ const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
 //
 // Here define the number of your plugin commands
 //
-const int nbFunc = 3;
+const int nbFunc = 4;
 
 
 //
@@ -76,7 +76,9 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 void doxyItFunction();
 void doxyItFile();
 void activeCommenting();
+void activeWrapping();
 
 extern bool do_active_commenting;
+extern bool do_active_wrapping;
 
 #endif //PLUGINDEFINITION_H
