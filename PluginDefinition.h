@@ -70,13 +70,15 @@ void commandMenuCleanUp();
 bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk = NULL, bool check0nInit = false);
 
 
-//
-// Your plugin command functions
-//
+
+// --- Menu call backs ---
 void doxyItFunction();
 void doxyItFile();
 void activeCommenting();
 //void activeWrapping();
+
+// --- Notification callbacks ---
+void doxyItNewLine();
 
 extern bool do_active_commenting;
 extern bool do_active_wrapping;

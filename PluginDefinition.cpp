@@ -108,7 +108,7 @@ void doxyItFunction()
 
 	// Get the current scintilla
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
-	if (which == -1) return;
+	if(which == -1) return;
 	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 	
 	int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
@@ -215,3 +215,42 @@ void activeWrapping()
 	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_wrapping);
 }
 */
+
+// --- Notification callbacks ---
+
+void doxyItNewLine()
+{
+	char *buffer;
+	int which = -1;
+	HWND curScintilla;
+	int curPos, curLine, lineLen;
+
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
+	if (which == -1) return;
+
+	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+
+	curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
+	curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
+	lineLen = (int) ::SendMessage(curScintilla, SCI_LINELENGTH, curLine - 1, 0);
+		
+	buffer = new char[lineLen + 1];
+	::SendMessage(curScintilla, SCI_GETLINE, curLine - 1, (LPARAM) buffer);
+	buffer[lineLen] = '\0';
+		
+	// Creates a new comment block
+	if(strncmp(buffer, doc_start.c_str(), doc_start.length()) == 0)
+	{
+		std::string temp = "\r\n" + doc_end;
+		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
+		::SendMessage(curScintilla, SCI_INSERTTEXT, -1, (LPARAM) temp.c_str());
+	}
+
+	// Adds a new line of the comment block
+	if(strncmp(buffer, doc_line.c_str(), doc_line.length()) == 0)
+	{
+		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
+	}
+
+	delete[] buffer;
+}
