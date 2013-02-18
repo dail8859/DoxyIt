@@ -21,6 +21,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdio.h>
+#include <vector>
 
 extern std::string doc_start;
 extern std::string doc_line;
@@ -82,5 +83,19 @@ void doxyItNewLine();
 
 extern bool do_active_commenting;
 extern bool do_active_wrapping;
+
+extern NppData nppData;
+
+
+typedef struct FunctionDefinition
+{
+	std::string return_val;
+	std::string function_name;
+	std::vector<std::string> parameters;	
+} FunctionDefinition;
+
+void InitializeParsers();
+void CleanUpParsers();
+void Parse(int lang_type);
 
 #endif //PLUGINDEFINITION_H

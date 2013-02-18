@@ -185,6 +185,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DoxyIt.cpp" />
+    <ClCompile Include="Parsers.cpp" />
     <ClCompile Include="PluginDefinition.cpp" />
     <ClCompile Include="trex.cpp" />
   </ItemGroup>

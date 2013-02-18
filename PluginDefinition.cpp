@@ -1,4 +1,3 @@
-#include <ctime>
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
 #include "trex.h"
@@ -16,10 +15,6 @@ NppData nppData;
 bool do_active_commenting;
 bool do_active_wrapping;
 
-TRex *c_tr;
-TRex *c_params_tr;
-//TRex *cpp_tr;
-
 std::string doc_start;
 std::string doc_line;
 std::string doc_end;
@@ -29,13 +24,8 @@ std::string doc_end;
 // It will be called while plugin loading
 void pluginInit(HANDLE hModule)
 {
-	const TRexChar *error = NULL;
-	c_tr = trex_compile("(\\w+)[*]*\\s+[*]*(\\w+)\\s*(\\(.*\\))", &error);
-	c_params_tr = trex_compile("(\\w+)\\s*[,)]", &error);
-	if(!c_tr || !c_params_tr)
-	{
-		::MessageBox(NULL, TEXT("Regular expression compilation failed"), TEXT("DoxyIt"), MB_OK);
-	}
+	InitializeParsers();
+
 	do_active_commenting = true;
 	do_active_wrapping = true;
 
@@ -51,8 +41,7 @@ void pluginInit(HANDLE hModule)
 //
 void pluginCleanUp()
 {
-	trex_free(c_tr);
-	trex_free(c_params_tr);
+	CleanUpParsers();
 }
 
 //
@@ -101,78 +90,11 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 
 void doxyItFunction()
 {
-	char *buffer;
-	int which = -1;
-	HWND curScintilla;
-	const TRexChar *begin,*end;
+	int lang_type;
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM) &lang_type);
+	Parse(lang_type);
 
-	// Get the current scintilla
-	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
-	if(which == -1) return;
-	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
-	
-	int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
-	int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
-	int lineLen = (int) ::SendMessage(curScintilla, SCI_LINELENGTH, curLine + 1, 0);
-
-	buffer = new char[lineLen + 1];
-	::SendMessage(curScintilla, SCI_GETLINE, curLine + 1, (LPARAM) buffer);
-	buffer[lineLen] = '\0';
-
-	if(trex_search(c_tr, buffer, &begin, &end))
-	{
-		std::ostringstream doc_block;
-		char date[32];
-		TRexMatch return_match;
-		TRexMatch func_match;
-		TRexMatch params_match;
-		const TRexChar *cur_params;
-		const TRexChar *p_begin, *p_end;
-		time_t t;
-
-		trex_getsubexp(c_tr, 1, &return_match);
-		trex_getsubexp(c_tr, 2, &func_match);
-		trex_getsubexp(c_tr, 3, &params_match);
-
-		t = time(NULL);
-		strftime(date, 32, "%m/%d/%Y", localtime(&t));
-
-		doc_block << doc_start << "\r\n";
-		doc_block << doc_line << "\\brief [description]\r\n";
-		doc_block << doc_line << "\r\n";
-		
-		// For each param
-		cur_params = params_match.begin;
-		while(trex_searchrange(c_params_tr, cur_params, end, &p_begin, &p_end))
-		{
-			TRexMatch param_match;
-			trex_getsubexp(c_params_tr, 1, &param_match);
-
-			doc_block << doc_line << "\\param [in] ";
-			doc_block.write(param_match.begin, param_match.len);
-			doc_block << " [description]\r\n";
-			cur_params = p_end;
-		}
-
-		// Return value
-		doc_block << doc_line << "\\return \\em ";
-		doc_block.write(return_match.begin, return_match.len); doc_block << "\r\n";
-		doc_block << doc_line << "\r\n";
-
-		doc_block << doc_line << "\\revision 1 " << date << "\r\n";
-		doc_block << doc_line << "\\history <b>Rev. 1 " << date << "</b> [description]\r\n";
-		doc_block << doc_line << "\r\n";
-		doc_block << doc_line << "\\details [description]\r\n";
-		doc_block << doc_end;
-		
-		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_block.str().c_str());
-	}
-	else
-	{
-		::MessageBox(NULL, TEXT("Cannot parse function definition"), TEXT("Error"), MB_OK);
-	}
-
-	delete[] buffer;
+	// return (return_val, function_name, (parameters))
 }
 
 void doxyItFile()
