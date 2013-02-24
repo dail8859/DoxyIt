@@ -2,6 +2,8 @@
 #include "PluginDefinition.h"
 #include "trex.h"
 
+char *getLine(HWND curScintilla, int lineNum);
+
 typedef struct Parser
 {
 	int lang_type;
@@ -31,13 +33,12 @@ void Callback_C(Parser *p)
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
 	if(which == -1) return;
 	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+
 	int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
 	int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
-	int lineLen = (int) ::SendMessage(curScintilla, SCI_LINELENGTH, curLine + 1, 0);
 
-	buffer = new char[lineLen + 1];
-	::SendMessage(curScintilla, SCI_GETLINE, curLine + 1, (LPARAM) buffer);
-	buffer[lineLen] = '\0';
+	buffer = getLine(curScintilla, curLine + 1);
+	
 	if(trex_search(p->tr_function, buffer, &begin, &end))
 	{
 		std::ostringstream doc_block;
@@ -133,4 +134,18 @@ void CleanUpParsers(void)
 		trex_free(parsers[i].tr_parameters);
 	}
 
+}
+
+// --- ---
+
+char *getLine(HWND curScintilla, int lineNum)
+{
+	char *buffer;
+	int lineLen = (int) ::SendMessage(curScintilla, SCI_LINELENGTH, lineNum, 0);
+
+	buffer = new char[lineLen + 1];
+	::SendMessage(curScintilla, SCI_GETLINE, lineNum, (LPARAM) buffer);
+	buffer[lineLen] = '\0';
+
+	return buffer;
 }
