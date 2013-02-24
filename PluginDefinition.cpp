@@ -88,24 +88,31 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 }
 
 
+
+bool checkFingerText()
+{
+	if(fingertext_found)
+	{
+		CommunicationInfo ci;
+		ci.internalMsg = FINGERTEXT_ISENABLED;
+		ci.srcModuleName = NPP_PLUGIN_NAME;
+		ci.info = NULL;
+		::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
+		return ci.info;
+	}
+	else
+		return false;
+}
+
+
 // --- Menu call backs ---
 
 void doxyItFunction()
 {
 	int lang_type;
 
-	if(fingertext_found)
-	{
-		// Check if FingerText is enabled
-		CommunicationInfo ci;
-		ci.internalMsg = FINGERTEXT_ISENABLED;
-		ci.srcModuleName = NPP_PLUGIN_NAME;
-		ci.info = NULL;
-		::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
-		fingertext_enabled = ci.info;
-	}
-	else
-		fingertext_enabled = false;
+	// Check if it is enabled
+	fingertext_enabled = checkFingerText();
 
 	// Get the current language type
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM) &lang_type);
@@ -129,6 +136,9 @@ void doxyItFile()
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM) &which);
 	if (which == -1) return;
 	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+
+	// Check if it is enabled
+	fingertext_enabled = checkFingerText();
 
 	doc_block << doc_start << "\r\n";
 	doc_block << doc_line << "\\file " << fname << "\r\n";

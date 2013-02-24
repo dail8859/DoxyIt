@@ -3,6 +3,7 @@
 #include "trex.h"
 
 char *getLine(HWND curScintilla, int lineNum);
+char *getEolStr(HWND curScintilla);
 
 typedef struct Parser
 {
@@ -29,6 +30,8 @@ void Callback_C(Parser *p)
 	int which = -1;
 	HWND curScintilla;
 	const TRexChar *begin,*end;
+	char *eol;
+
 	// Get the current scintilla
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
 	if(which == -1) return;
@@ -37,6 +40,7 @@ void Callback_C(Parser *p)
 	int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
 	int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
 
+	eol = getEolStr(curScintilla);
 	buffer = getLine(curScintilla, curLine + 1);
 	
 	if(trex_search(p->tr_function, buffer, &begin, &end))
@@ -57,9 +61,9 @@ void Callback_C(Parser *p)
 		t = time(NULL);
 		strftime(date, 32, "%m/%d/%Y", localtime(&t));
 
-		doc_block << doc_start << "\r\n";
-		doc_block << doc_line << "\\brief [description]\r\n";
-		doc_block << doc_line << "\r\n";
+		doc_block << doc_start << eol;
+		doc_block << doc_line << "\\brief [description]" << eol;
+		doc_block << doc_line << eol;
 		
 		// For each param
 		cur_params = params_match.begin;
@@ -70,19 +74,19 @@ void Callback_C(Parser *p)
 
 			doc_block << doc_line << "\\param [in] ";
 			doc_block.write(param_match.begin, param_match.len);
-			doc_block << " [description]\r\n";
+			doc_block << " [description]" << eol;
 			cur_params = p_end;
 		}
 
 		// Return value
 		doc_block << doc_line << "\\return \\em ";
-		doc_block.write(return_match.begin, return_match.len); doc_block << "\r\n";
-		doc_block << doc_line << "\r\n";
+		doc_block.write(return_match.begin, return_match.len); doc_block << eol;
+		doc_block << doc_line << eol;
 
-		doc_block << doc_line << "\\revision 1 " << date << "\r\n";
-		doc_block << doc_line << "\\history <b>Rev. 1 " << date << "</b> [description]\r\n";
-		doc_block << doc_line << "\r\n";
-		doc_block << doc_line << "\\details [description]\r\n";
+		doc_block << doc_line << "\\revision 1 " << date << eol;
+		doc_block << doc_line << "\\history <b>Rev. 1 " << date << "</b> [description]" << eol;
+		doc_block << doc_line << eol;
+		doc_block << doc_line << "\\details [description]" << eol;
 		doc_block << doc_end;
 		
 		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_block.str().c_str());
@@ -148,4 +152,12 @@ char *getLine(HWND curScintilla, int lineNum)
 	buffer[lineLen] = '\0';
 
 	return buffer;
+}
+
+char *getEolStr(HWND curScintilla)
+{
+	int eolmode = ::SendMessage(curScintilla, SCI_GETEOLMODE, 0, 0);
+	static char *eol[3] = {"\r\n","\r","\n"};
+
+	return eol[eolmode];
 }
