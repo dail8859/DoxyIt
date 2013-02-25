@@ -1,4 +1,3 @@
-#include <ctime>
 #include "PluginDefinition.h"
 #include "trex.h"
 
@@ -9,7 +8,7 @@ typedef struct Parser
 {
 	int lang_type;
 	bool (*initializer)(Parser *p);
-	void (*callback)(Parser *p);
+	std::string (*callback)(Parser *p);
 	TRex *tr_function;
 	TRex *tr_parameters;
 } Parser;
@@ -24,17 +23,18 @@ bool Initialize_C(Parser *p)
 	return true;
 }
 
-void Callback_C(Parser *p)
+std::string Callback_C(Parser *p)
 {
 	char *buffer;
 	int which = -1;
 	HWND curScintilla;
 	const TRexChar *begin,*end;
 	char *eol;
+	std::ostringstream doc_block;
 
 	// Get the current scintilla
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
-	if(which == -1) return;
+	if(which == -1) return "";
 	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 
 	int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
@@ -45,24 +45,18 @@ void Callback_C(Parser *p)
 	
 	if(trex_search(p->tr_function, buffer, &begin, &end))
 	{
-		std::ostringstream doc_block;
-		char date[32];
 		TRexMatch return_match;
 		TRexMatch func_match;
 		TRexMatch params_match;
 		const TRexChar *cur_params;
 		const TRexChar *p_begin, *p_end;
-		time_t t;
 
 		trex_getsubexp(p->tr_function, 1, &return_match);
 		trex_getsubexp(p->tr_function, 2, &func_match);
 		trex_getsubexp(p->tr_function, 3, &params_match);
 
-		t = time(NULL);
-		strftime(date, 32, "%m/%d/%Y", localtime(&t));
-
 		doc_block << doc_start << eol;
-		doc_block << doc_line << "\\brief [description]" << eol;
+		doc_block << doc_line << "\\brief $[![description]!]" << eol;
 		doc_block << doc_line << eol;
 		
 		// For each param
@@ -74,7 +68,7 @@ void Callback_C(Parser *p)
 
 			doc_block << doc_line << "\\param [in] ";
 			doc_block.write(param_match.begin, param_match.len);
-			doc_block << " [description]" << eol;
+			doc_block << " $[![description]!]" << eol;
 			cur_params = p_end;
 		}
 
@@ -83,13 +77,11 @@ void Callback_C(Parser *p)
 		doc_block.write(return_match.begin, return_match.len); doc_block << eol;
 		doc_block << doc_line << eol;
 
-		doc_block << doc_line << "\\revision 1 " << date << eol;
-		doc_block << doc_line << "\\history <b>Rev. 1 " << date << "</b> [description]" << eol;
+		doc_block << doc_line << "\\revision 1 $[![(key)DATE:MM/dd/yyyy]!]" << eol;
+		doc_block << doc_line << "\\history <b>Rev. 1 $[![(key)DATE:MM/dd/yyyy]!]</b> $[![description]!]" << eol;
 		doc_block << doc_line << eol;
-		doc_block << doc_line << "\\details [description]" << eol;
+		doc_block << doc_line << "\\details $[![description]!]" << eol;
 		doc_block << doc_end;
-		
-		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_block.str().c_str());
 	}
 	else
 	{
@@ -97,6 +89,8 @@ void Callback_C(Parser *p)
 	}
 
 	delete[] buffer;
+
+	return doc_block.str();
 }
 
 
@@ -108,17 +102,19 @@ static Parser parsers[] =
 	//REGISTER_TYPE(PYTHON),
 };
 
-void Parse(int lang_type)
+std::string Parse(int lang_type)
 {
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
 	{
 		if(parsers[i].lang_type == lang_type)
 		{
-			(*parsers[i].callback)(&parsers[i]);
+			return (*parsers[i].callback)(&parsers[i]);
 			break;
 		}
 	}
+
+	return "";
 }
 
 void InitializeParsers(void)
@@ -157,7 +153,7 @@ char *getLine(HWND curScintilla, int lineNum)
 char *getEolStr(HWND curScintilla)
 {
 	int eolmode = ::SendMessage(curScintilla, SCI_GETEOLMODE, 0, 0);
-	static char *eol[3] = {"\r\n","\r","\n"};
+	static char *eol[] = {"\r\n","\r","\n"};
 
 	return eol[eolmode];
 }

@@ -102,6 +102,6 @@ typedef struct FunctionDefinition
 
 void InitializeParsers();
 void CleanUpParsers();
-void Parse(int lang_type);
+std::string Parse(int lang_type);
 
 #endif //PLUGINDEFINITION_H
