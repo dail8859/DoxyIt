@@ -1,8 +1,11 @@
 #include "PluginDefinition.h"
 #include "trex.h"
 
+int findNext(HWND curScintilla, char* text, bool regExp);
+char *getRange(HWND curScintilla, int start, int end);
 char *getLine(HWND curScintilla, int lineNum);
 char *getEolStr(HWND curScintilla);
+
 
 typedef struct Parser
 {
@@ -39,10 +42,12 @@ std::string Callback_C(Parser *p)
 
 	int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
 	int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
+	int found = findNext(curScintilla, ")", false);
+	if(found == -1) return "";
 
+	buffer = getRange(curScintilla, curPos, found + 1);
 	eol = getEolStr(curScintilla);
-	buffer = getLine(curScintilla, curLine + 1);
-	
+
 	if(trex_search(p->tr_function, buffer, &begin, &end))
 	{
 		TRexMatch return_match;
@@ -137,6 +142,35 @@ void CleanUpParsers(void)
 }
 
 // --- ---
+
+int findNext(HWND curScintilla, char* text, bool regExp)
+{
+	int curPos = ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
+	int flags = (regExp ? SCI_SETSEARCHFLAGS : 0);
+
+	TextToFind ttf;
+	ttf.chrg.cpMin = curPos;
+	ttf.chrg.cpMax = curPos + 200;
+	ttf.lpstrText = text;
+	
+	return ::SendMessage(curScintilla, SCI_FINDTEXT, flags, (LPARAM) &ttf);
+	//return ttf.chrgText.cpMin;
+}
+
+char *getRange(HWND curScintilla, int start, int end)
+{
+	if (end > start)
+    {
+        TextRange tr;
+        tr.chrg.cpMin = start;
+        tr.chrg.cpMax = end;
+        tr.lpstrText  = new char[end - start + 1];
+
+        ::SendMessage(curScintilla, SCI_GETTEXTRANGE, 0, (LPARAM) &tr);
+		return tr.lpstrText;
+    }
+	return NULL;
+}
 
 char *getLine(HWND curScintilla, int lineNum)
 {
