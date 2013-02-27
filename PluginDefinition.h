@@ -23,51 +23,28 @@
 #include <stdio.h>
 #include <vector>
 
-extern std::string doc_start;
-extern std::string doc_line;
-extern std::string doc_end;
-
 //
 // All definitions of plugin interface
 //
 #include "PluginInterface.h"
 
-//
-// Here define your plugin name
-//
-const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
+extern std::string doc_start;
+extern std::string doc_line;
+extern std::string doc_end;
 
-//
-// Here define the number of your plugin commands
-//
+//extern HWND curScintilla;
+#define SCI_UNUSED 0
+
+const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
 const int nbFunc = 3;
 
+LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam);
+bool updateScintilla();
 
-//
-// Initialization of your plugin data
-// It will be called while plugin loading
-//
 void pluginInit(HANDLE hModule);
-
-//
-// Cleaning of your plugin
-// It will be called while plugin unloading
-//
 void pluginCleanUp();
-
-//
-//Initialization of your plugin commands
-//
 void commandMenuInit();
-
-//
-//Clean up your plugin commands allocation (if any)
-//
 void commandMenuCleanUp();
-
-//
-// Function which sets your command
-//
 bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk = NULL, bool check0nInit = false);
 
 

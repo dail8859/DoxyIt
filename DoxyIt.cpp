@@ -57,6 +57,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 	{
 		if(ch == '\n' && do_active_commenting)
 		{
+			if(!updateScintilla()) return;
 			doxyItNewLine();
 		}
 		/*
@@ -119,10 +120,6 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 		{
 			if((int) ci.info >= 561) fingertext_found = true;
 			else fingertext_found = false;
-			//int version = (int) ci.info;
-			//TCHAR buffer[128];
-			//wsprintf(buffer, TEXT("Version is %d"), version);
-			//::MessageBox(NULL, buffer, TEXT("Version"), MB_OK);
 		}
 		else
 		{

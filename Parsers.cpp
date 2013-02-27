@@ -1,10 +1,10 @@
 #include "PluginDefinition.h"
 #include "trex.h"
 
-int findNext(HWND curScintilla, char* text, bool regExp);
-char *getRange(HWND curScintilla, int start, int end);
-char *getLine(HWND curScintilla, int lineNum);
-char *getEolStr(HWND curScintilla);
+int findNext(char* text, bool regExp);
+char *getRange(int start, int end);
+char *getLine(int lineNum);
+char *getEolStr();
 
 
 typedef struct Parser
@@ -29,24 +29,17 @@ bool Initialize_C(Parser *p)
 std::string Callback_C(Parser *p)
 {
 	char *buffer;
-	int which = -1;
-	HWND curScintilla;
 	const TRexChar *begin,*end;
 	char *eol;
 	std::ostringstream doc_block;
 
-	// Get the current scintilla
-	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
-	if(which == -1) return "";
-	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
-
-	int curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
-	int curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
-	int found = findNext(curScintilla, ")", false);
+	int curPos = (int) SendScintilla(SCI_GETCURRENTPOS, 0, 0);
+	int curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos, 0);
+	int found = findNext(")", false);
 	if(found == -1) return "";
 
-	buffer = getRange(curScintilla, curPos, found + 1);
-	eol = getEolStr(curScintilla);
+	buffer = getRange(curPos, found + 1);
+	eol = getEolStr();
 
 	if(trex_search(p->tr_function, buffer, &begin, &end))
 	{
@@ -143,9 +136,9 @@ void CleanUpParsers(void)
 
 // --- ---
 
-int findNext(HWND curScintilla, char* text, bool regExp)
+int findNext(char* text, bool regExp)
 {
-	int curPos = ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
+	int curPos = SendScintilla(SCI_GETCURRENTPOS, 0, 0);
 	int flags = (regExp ? SCI_SETSEARCHFLAGS : 0);
 
 	TextToFind ttf;
@@ -153,11 +146,11 @@ int findNext(HWND curScintilla, char* text, bool regExp)
 	ttf.chrg.cpMax = curPos + 200;
 	ttf.lpstrText = text;
 	
-	return ::SendMessage(curScintilla, SCI_FINDTEXT, flags, (LPARAM) &ttf);
+	return SendScintilla(SCI_FINDTEXT, flags, (LPARAM) &ttf);
 	//return ttf.chrgText.cpMin;
 }
 
-char *getRange(HWND curScintilla, int start, int end)
+char *getRange(int start, int end)
 {
 	if (end > start)
     {
@@ -166,28 +159,27 @@ char *getRange(HWND curScintilla, int start, int end)
         tr.chrg.cpMax = end;
         tr.lpstrText  = new char[end - start + 1];
 
-        ::SendMessage(curScintilla, SCI_GETTEXTRANGE, 0, (LPARAM) &tr);
+        SendScintilla(SCI_GETTEXTRANGE, 0, (LPARAM) &tr);
 		return tr.lpstrText;
     }
 	return NULL;
 }
 
-char *getLine(HWND curScintilla, int lineNum)
+char *getLine(int lineNum)
 {
 	char *buffer;
-	int lineLen = (int) ::SendMessage(curScintilla, SCI_LINELENGTH, lineNum, 0);
+	int lineLen = (int) SendScintilla(SCI_LINELENGTH, lineNum, 0);
 
 	buffer = new char[lineLen + 1];
-	::SendMessage(curScintilla, SCI_GETLINE, lineNum, (LPARAM) buffer);
+	SendScintilla(SCI_GETLINE, lineNum, (LPARAM) buffer);
 	buffer[lineLen] = '\0';
 
 	return buffer;
 }
 
-char *getEolStr(HWND curScintilla)
+char *getEolStr()
 {
-	int eolmode = ::SendMessage(curScintilla, SCI_GETEOLMODE, 0, 0);
+	int eolmode = SendScintilla(SCI_GETEOLMODE, 0, 0);
 	static char *eol[] = {"\r\n","\r","\n"};
-
 	return eol[eolmode];
 }

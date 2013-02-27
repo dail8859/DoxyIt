@@ -21,6 +21,23 @@ std::string doc_start;
 std::string doc_line;
 std::string doc_end;
 
+HWND curScintilla;
+#define SCI_UNUSED 0
+
+LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	return ::SendMessage(curScintilla, Msg, wParam, lParam); 
+}
+
+bool updateScintilla()
+{
+	int which = -1;
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
+	if(which == -1) return false;
+	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+	return true;
+}
+
 //
 // Initialize your plugin data here
 // It will be called while plugin loading
@@ -111,11 +128,8 @@ void doxyItFunction()
 {
 
 	int lang_type;
-	int which = -1;
-	HWND curScintilla;
-	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM) &which);
-	if (which == -1) return;
-	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+
+	if(!updateScintilla()) return;
 
 	// Check if it is enabled
 	fingertext_enabled = checkFingerText();
@@ -125,7 +139,7 @@ void doxyItFunction()
 	
 	std::string doc_block = Parse(lang_type);
 
-	::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_block.c_str());
+	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
 
 	// Activate it
 	if(fingertext_enabled)
@@ -144,17 +158,12 @@ void doxyItFile()
 {
 	TCHAR fileName[MAX_PATH];
 	char fname[MAX_PATH];
-	int which = -1;
-	HWND curScintilla;
 	std::ostringstream doc_block;
 	
 	::SendMessage(nppData._nppHandle, NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
 	wcstombs(fname, fileName, sizeof(fname));
 
-	// Get the current scintilla
-	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM) &which);
-	if (which == -1) return;
-	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+	if(!updateScintilla()) return;
 
 	// Check if it is enabled
 	fingertext_enabled = checkFingerText();
@@ -167,7 +176,7 @@ void doxyItFile()
 	doc_block << doc_line << "\\version 1.0\r\n";
 	doc_block << doc_end;
 
-	::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_block.str().c_str());
+	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
 }
 
 void activeCommenting()
@@ -189,35 +198,30 @@ void activeWrapping()
 void doxyItNewLine()
 {
 	char *buffer;
-	int which = -1;
-	HWND curScintilla;
 	int curPos, curLine, lineLen;
 
-	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
-	if (which == -1) return;
+	if(!updateScintilla()) return;
 
-	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
-
-	curPos = (int) ::SendMessage(curScintilla, SCI_GETCURRENTPOS, 0, 0);
-	curLine = (int) ::SendMessage(curScintilla, SCI_LINEFROMPOSITION, curPos, 0);
-	lineLen = (int) ::SendMessage(curScintilla, SCI_LINELENGTH, curLine - 1, 0);
+	curPos = (int) SendScintilla(SCI_GETCURRENTPOS, SCI_UNUSED, SCI_UNUSED);
+	curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos, SCI_UNUSED);
+	lineLen = (int) SendScintilla(SCI_LINELENGTH, curLine - 1, SCI_UNUSED);
 		
 	buffer = new char[lineLen + 1];
-	::SendMessage(curScintilla, SCI_GETLINE, curLine - 1, (LPARAM) buffer);
+	SendScintilla(SCI_GETLINE, curLine - 1, (LPARAM) buffer);
 	buffer[lineLen] = '\0';
 		
 	// Creates a new comment block
 	if(strncmp(buffer, doc_start.c_str(), doc_start.length()) == 0)
 	{
 		std::string temp = "\r\n" + doc_end;
-		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
-		::SendMessage(curScintilla, SCI_INSERTTEXT, -1, (LPARAM) temp.c_str());
+		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
+		SendScintilla(SCI_INSERTTEXT, -1, (LPARAM) temp.c_str());
 	}
 
 	// Adds a new line of the comment block
 	if(strncmp(buffer, doc_line.c_str(), doc_line.length()) == 0)
 	{
-		::SendMessage(curScintilla, SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_line.c_str());
 	}
 
 	delete[] buffer;
