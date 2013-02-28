@@ -1,10 +1,6 @@
 #include "PluginDefinition.h"
 #include "trex.h"
-
-int findNext(char* text, bool regExp);
-char *getRange(int start, int end);
-char *getLine(int lineNum);
-char *getEolStr();
+#include "Utils.h"
 
 
 typedef struct Parser
@@ -132,54 +128,4 @@ void CleanUpParsers(void)
 		trex_free(parsers[i].tr_parameters);
 	}
 
-}
-
-// --- ---
-
-int findNext(char* text, bool regExp)
-{
-	int curPos = SendScintilla(SCI_GETCURRENTPOS, 0, 0);
-	int flags = (regExp ? SCI_SETSEARCHFLAGS : 0);
-
-	TextToFind ttf;
-	ttf.chrg.cpMin = curPos;
-	ttf.chrg.cpMax = curPos + 200;
-	ttf.lpstrText = text;
-	
-	return SendScintilla(SCI_FINDTEXT, flags, (LPARAM) &ttf);
-	//return ttf.chrgText.cpMin;
-}
-
-char *getRange(int start, int end)
-{
-	if (end > start)
-    {
-        TextRange tr;
-        tr.chrg.cpMin = start;
-        tr.chrg.cpMax = end;
-        tr.lpstrText  = new char[end - start + 1];
-
-        SendScintilla(SCI_GETTEXTRANGE, 0, (LPARAM) &tr);
-		return tr.lpstrText;
-    }
-	return NULL;
-}
-
-char *getLine(int lineNum)
-{
-	char *buffer;
-	int lineLen = (int) SendScintilla(SCI_LINELENGTH, lineNum, 0);
-
-	buffer = new char[lineLen + 1];
-	SendScintilla(SCI_GETLINE, lineNum, (LPARAM) buffer);
-	buffer[lineLen] = '\0';
-
-	return buffer;
-}
-
-char *getEolStr()
-{
-	int eolmode = SendScintilla(SCI_GETEOLMODE, 0, 0);
-	static char *eol[] = {"\r\n","\r","\n"};
-	return eol[eolmode];
 }
