@@ -1,6 +1,7 @@
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
 #include "trex.h"
+#include "Utils.h"
 
 //
 // The plugin data that Notepad++ needs
@@ -23,6 +24,7 @@ std::string doc_end;
 
 HWND curScintilla;
 #define SCI_UNUSED 0
+
 
 LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
 {
@@ -126,31 +128,62 @@ bool checkFingerText()
 
 void doxyItFunction()
 {
-
+	std::string doc_block;
 	int lang_type;
+	int startPos, endPos;
+	int startLine, endLine;
+	int indentStart, indentEnd;
+	char *indent = NULL;
 
 	if(!updateScintilla()) return;
 
 	// Check if it is enabled
 	fingertext_enabled = checkFingerText();
 
-	// Get the current language type
+	// Get the current language type and parse it
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM) &lang_type);
+	doc_block = Parse(lang_type);
+	if(doc_block.length() == 0) return;
 	
-	std::string doc_block = Parse(lang_type);
+	// Keep track of where we started
+	startPos = SendScintilla(SCI_GETCURRENTPOS, 0, 0);
+	startLine = SendScintilla(SCI_LINEFROMPOSITION, startPos, 0);
+
+	// Get the whitespace of the next line so we can insert it infront of 
+	// all the lines of the document block that is going to be inserted
+	indentStart = SendScintilla(SCI_POSITIONFROMLINE, startLine + 1, 0);
+	indentEnd = SendScintilla(SCI_GETLINEINDENTPOSITION, startLine + 1, 0);
+	if(indentStart != indentEnd) indent = getRange(indentStart, indentEnd);
+	
+
+	SendScintilla(SCI_BEGINUNDOACTION, 0, 0);
 
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
+	
+	// get the end of the document block
+	endPos = SendScintilla(SCI_GETCURRENTPOS, 0, 0);
+	endLine = SendScintilla(SCI_LINEFROMPOSITION, endPos, 0);
 
-	// Activate it
+	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
+	
+	SendScintilla(SCI_ENDUNDOACTION, 0, 0);
+
+
+	// Activate FingerText
 	if(fingertext_enabled)
 	{
 		CommunicationInfo ci;
 		ci.internalMsg = FINGERTEXT_ACTIVATE;
 		ci.srcModuleName = NPP_PLUGIN_NAME;
 		ci.info = NULL;
+
+		// Reset to where we started
+		SendScintilla(SCI_SETCURRENTPOS, startPos, 0);
+
 		::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
 	}
 
+	if(indent) delete[] indent;
 	// return (return_val, function_name, (parameters))
 }
 
