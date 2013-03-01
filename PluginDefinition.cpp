@@ -132,7 +132,6 @@ void doxyItFunction()
 	int lang_type;
 	int startPos, endPos;
 	int startLine, endLine;
-	int indentStart, indentEnd;
 	char *indent = NULL;
 
 	if(!updateScintilla()) return;
@@ -151,10 +150,7 @@ void doxyItFunction()
 
 	// Get the whitespace of the next line so we can insert it infront of 
 	// all the lines of the document block that is going to be inserted
-	indentStart = SendScintilla(SCI_POSITIONFROMLINE, startLine + 1, 0);
-	indentEnd = SendScintilla(SCI_GETLINEINDENTPOSITION, startLine + 1, 0);
-	if(indentStart != indentEnd) indent = getRange(indentStart, indentEnd);
-	
+	indent = getLineIndentStr(startLine + 1);
 
 	SendScintilla(SCI_BEGINUNDOACTION, 0, 0);
 
@@ -230,32 +226,63 @@ void activeWrapping()
 
 void doxyItNewLine()
 {
-	char *buffer;
+	char *previousLine;
 	int curPos, curLine, lineLen;
+	char *found = NULL;
 
 	if(!updateScintilla()) return;
 
 	curPos = (int) SendScintilla(SCI_GETCURRENTPOS, SCI_UNUSED, SCI_UNUSED);
 	curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos, SCI_UNUSED);
 	lineLen = (int) SendScintilla(SCI_LINELENGTH, curLine - 1, SCI_UNUSED);
-		
-	buffer = new char[lineLen + 1];
-	SendScintilla(SCI_GETLINE, curLine - 1, (LPARAM) buffer);
-	buffer[lineLen] = '\0';
-		
-	// Creates a new comment block
-	if(strncmp(buffer, doc_start.c_str(), doc_start.length()) == 0)
+	
+	// Get the previous line
+	previousLine = new char[lineLen + 1];
+	SendScintilla(SCI_GETLINE, curLine - 1, (LPARAM) previousLine);
+	previousLine[lineLen] = '\0';
+
+	// NOTE: we cannot use getLineIndentStr() because doc_start or doc_line may start with whitespace
+	// which we don't want counted towards the indentation string.
+	
+	// search for doc_start or doc_line in the previous line to see if we should complete a document
+	// block or if we should add a single document line
+	if(found = strstr(previousLine, doc_start.c_str()))
 	{
-		std::string temp = "\r\n" + doc_end;
+		// This is a little bit hack-ish...we will put a null character
+		// at the beginning of where we found the string. So previousLine is now
+		// the string we use for keeping the same indentation
+		*found = '\0';
+
+		SendScintilla(SCI_BEGINUNDOACTION, 0, 0);
+
+		// Clear the current line of any indentation that was automatically added
+		clearLine(curLine);
+
+		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) previousLine);
 		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
-		SendScintilla(SCI_INSERTTEXT, -1, (LPARAM) temp.c_str());
-	}
+		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) getEolStr());
+		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) previousLine);
+		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) doc_end.c_str());
 
-	// Adds a new line of the comment block
-	if(strncmp(buffer, doc_line.c_str(), doc_line.length()) == 0)
+		SendScintilla(SCI_ENDUNDOACTION, 0, 0);
+
+		// Go up and to the end of the previous line
+		SendScintilla(SCI_LINEUP, 0, 0);
+		SendScintilla(SCI_LINEEND, 0, 0);
+	}
+	else if(found = strstr(previousLine, doc_line.c_str()))
 	{
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_line.c_str());
+		*found = '\0';
+
+		SendScintilla(SCI_BEGINUNDOACTION, 0, 0);
+
+		clearLine(curLine);
+
+		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) previousLine);
+		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
+
+		SendScintilla(SCI_ENDUNDOACTION, 0, 0);
 	}
 
-	delete[] buffer;
+	delete[] previousLine;
 }

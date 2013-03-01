@@ -50,15 +50,26 @@ extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF)
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 {
+	static bool fire_newline = false;
 	NotifyHeader nh = notifyCode->nmhdr;
 	int ch = notifyCode->ch;
-
-	if(nh.code == SCN_CHARADDED)
+	
+	if(nh.code == SCN_UPDATEUI)
 	{
-		if(ch == '\n' && do_active_commenting)
+		// Now is when we can check to see if we do the commenting
+		if(fire_newline)
 		{
+			fire_newline = false;
 			if(!updateScintilla()) return;
 			doxyItNewLine();
+		}
+	}
+	else if(nh.code == SCN_CHARADDED)
+	{
+		// Set a flag so that all line endings can trigger the commenting
+		if((ch == '\r' || ch == '\n') && do_active_commenting)
+		{
+			fire_newline = true;
 		}
 		/*
 		else if(do_active_wrapping) // && line starts with doc_line

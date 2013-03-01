@@ -1,6 +1,23 @@
 #include "PluginDefinition.h"
 #include "Utils.h"
 
+void clearLine(int line)
+{
+	int lineStart = SendScintilla(SCI_POSITIONFROMLINE, line, 0);
+	int lineEnd = SendScintilla(SCI_GETLINEENDPOSITION, line, 0);
+	SendScintilla(SCI_SETSEL, lineStart, lineEnd);
+	SendScintilla(SCI_REPLACESEL, 0, (LPARAM) "");
+}
+
+char *getLineIndentStr(int line)
+{
+	int indentStart = SendScintilla(SCI_POSITIONFROMLINE, line, 0);
+	int indentEnd = SendScintilla(SCI_GETLINEINDENTPOSITION, line, 0);
+	
+	if(indentStart != indentEnd) return getRange(indentStart, indentEnd);
+	else return NULL;
+}
+
 void insertBeforeLines(char *str, int start, int end, bool force)
 {
 	for(int i = start; i < end; ++i)
