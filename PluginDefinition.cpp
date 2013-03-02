@@ -22,21 +22,28 @@ std::string doc_start;
 std::string doc_line;
 std::string doc_end;
 
-HWND curScintilla;
-#define SCI_UNUSED 0
-
+SciFnDirect pSciMsg;  // For direct scintilla call
+sptr_t pSciWndData;   // For direct scintilla call
 
 LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-	return ::SendMessage(curScintilla, Msg, wParam, lParam); 
+	return pSciMsg(pSciWndData, Msg, wParam, lParam);
 }
 
 bool updateScintilla()
 {
+	HWND curScintilla;
+
+	// Get the current scintilla
 	int which = -1;
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
 	if(which == -1) return false;
 	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+
+	// Get the function and pointer to it for more effecient calls
+	pSciMsg = (SciFnDirect)SendMessage(curScintilla,SCI_GETDIRECTFUNCTION, 0, 0);
+    pSciWndData = (sptr_t)SendMessage(curScintilla,SCI_GETDIRECTPOINTER, 0, 0);
+
 	return true;
 }
 

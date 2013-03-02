@@ -32,7 +32,6 @@ extern std::string doc_start;
 extern std::string doc_line;
 extern std::string doc_end;
 
-//extern HWND curScintilla;
 #define SCI_UNUSED 0
 
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
