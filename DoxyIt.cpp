@@ -66,95 +66,95 @@ extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF)
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 {
-	static bool fire_newline = false;
+	static bool do_newline = false;
 	NotifyHeader nh = notifyCode->nmhdr;
 	int ch = notifyCode->ch;
 	
-	if(nh.code == SCN_UPDATEUI)
+	switch(nh.code)
 	{
-		// Now is when we can check to see if we do the commenting
-		if(fire_newline)
-		{
-			fire_newline = false;
-			if(!updateScintilla()) return;
-			doxyItNewLine();
-		}
-	}
-	else if(nh.code == SCN_CHARADDED)
-	{
-		// Set a flag so that all line endings can trigger the commenting
-		if((ch == '\r' || ch == '\n') && do_active_commenting)
-		{
-			fire_newline = true;
-		}
-		/*
-		else if(do_active_wrapping) // && line starts with doc_line
-		{
-			int lineMax = 40;
-			// Get the line length without counting line endings
-			int lineStart = ::SendMessage(curScintilla, SCI_POSITIONFROMLINE, curLine, 0);
-			int lineEnd = ::SendMessage(curScintilla, SCI_GETLINEENDPOSITION, curLine, 0);
-			int lineLen = lineEnd - lineStart;
-
-			if(lineLen > lineMax)
+		case SCN_UPDATEUI:
+			// Now is when we can check to see if we do the commenting
+			if(do_newline)
 			{
-				int char_width = ::SendMessage(curScintilla, SCI_TEXTWIDTH, STYLE_DEFAULT, (LPARAM) " ");
-				::SendMessage(curScintilla, SCI_SETTARGETSTART, lineStart, 0);
-				::SendMessage(curScintilla, SCI_SETTARGETEND, lineStart, 0);
-				::SendMessage(curScintilla, SCI_LINESSPLIT, lineMax * char_width, 0);
+				do_newline = false;
+				if(!updateScintilla()) return;
+				doxyItNewLine();
+			}
+			break;
+		case SCN_CHARADDED:
+			// Set a flag so that all line endings can trigger the commenting
+			if((ch == '\r' || ch == '\n') && do_active_commenting)
+			{
+				do_newline = true;
+			}
+			break;
+		case NPPN_READY:
+			CommunicationInfo ci;
 
-				// Check the next few lines to insert the doc_line in front of them
-				for(int i = 1; i < 5; ++i)
+			// Check if FingerText is installed
+			ci.internalMsg = FINGERTEXT_GETVERSION;
+			ci.srcModuleName = NPP_PLUGIN_NAME;
+			ci.info = NULL;
+		
+			// NPPM_MSGTOPLUGIN returns true if the dll is found
+			if(::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci))
+			{
+				if((int) ci.info >= 561) fingertext_found = true;
+				else fingertext_found = false;
+			}
+			else
+			{
+				::MessageBox(NULL, TEXT("Not found"), TEXT("Oh No"), MB_OK);
+				fingertext_found = false;
+				return;
+			}
+			break;
+	}
+	/*
+	else if(do_active_wrapping) // && line starts with doc_line
+	{
+		int lineMax = 40;
+		// Get the line length without counting line endings
+		int lineStart = ::SendMessage(curScintilla, SCI_POSITIONFROMLINE, curLine, 0);
+		int lineEnd = ::SendMessage(curScintilla, SCI_GETLINEENDPOSITION, curLine, 0);
+		int lineLen = lineEnd - lineStart;
+
+		if(lineLen > lineMax)
+		{
+			int char_width = ::SendMessage(curScintilla, SCI_TEXTWIDTH, STYLE_DEFAULT, (LPARAM) " ");
+			::SendMessage(curScintilla, SCI_SETTARGETSTART, lineStart, 0);
+			::SendMessage(curScintilla, SCI_SETTARGETEND, lineStart, 0);
+			::SendMessage(curScintilla, SCI_LINESSPLIT, lineMax * char_width, 0);
+
+			// Check the next few lines to insert the doc_line in front of them
+			for(int i = 1; i < 5; ++i)
+			{
+				// Get the length and allocate a buffer
+				int lineLen = ::SendMessage(curScintilla, SCI_LINELENGTH, curLine + i, 0);
+				char *text = new char[lineLen + 1];
+
+				// Get the text
+				::SendMessage(curScintilla, SCI_GETLINE, curLine + i, (LPARAM) text);
+				text[lineLen] = '\0';
+
+				// if it doesn't start with doc_line or doc_start, insert the doc_line
+				// else we are done
+				if(strncmp(text, doc_line.c_str(), doc_line.length()) != 0 && strncmp(text, doc_end.c_str(), doc_end.length()) != 0)
 				{
-					// Get the length and allocate a buffer
-					int lineLen = ::SendMessage(curScintilla, SCI_LINELENGTH, curLine + i, 0);
-					char *text = new char[lineLen + 1];
-
-					// Get the text
-					::SendMessage(curScintilla, SCI_GETLINE, curLine + i, (LPARAM) text);
-					text[lineLen] = '\0';
-
-					// if it doesn't start with doc_line or doc_start, insert the doc_line
-					// else we are done
-					if(strncmp(text, doc_line.c_str(), doc_line.length()) != 0 && strncmp(text, doc_end.c_str(), doc_end.length()) != 0)
-					{
-						int lineStart = ::SendMessage(curScintilla, SCI_POSITIONFROMLINE, curLine + i, 0);
-						::SendMessage(curScintilla, SCI_INSERTTEXT, lineStart, (LPARAM) doc_line.c_str());
-					}
-					else
-					{
-						delete[] text;
-						break;
-					}
-
-					delete[] text;
+					int lineStart = ::SendMessage(curScintilla, SCI_POSITIONFROMLINE, curLine + i, 0);
+					::SendMessage(curScintilla, SCI_INSERTTEXT, lineStart, (LPARAM) doc_line.c_str());
 				}
+				else
+				{
+					delete[] text;
+					break;
+				}
+
+				delete[] text;
 			}
 		}
-		*/
 	}
-	else if(nh.code == NPPN_READY)
-	{
-		CommunicationInfo ci;
-
-		// Check if FingerText is installed
-		ci.internalMsg = FINGERTEXT_GETVERSION;
-		ci.srcModuleName = NPP_PLUGIN_NAME;
-		ci.info = NULL;
-		
-		// NPPM_MSGTOPLUGIN returns true if the dll is found
-		if(::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci))
-		{
-			if((int) ci.info >= 561) fingertext_found = true;
-			else fingertext_found = false;
-		}
-		else
-		{
-			::MessageBox(NULL, TEXT("Not found"), TEXT("Oh No"), MB_OK);
-			fingertext_found = false;
-			return;
-		}
-	}
+	*/
 }
 
 
