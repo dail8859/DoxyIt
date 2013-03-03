@@ -104,8 +104,8 @@ void commandMenuInit()
 	sk->_key = 'D';
 
 	setCommand(0, TEXT("DoxyIt - Function"), doxyItFunction, sk, false);
-	setCommand(1, TEXT("DoxyIt - File"), doxyItFile, NULL, false);
-	setCommand(2, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
+	//setCommand(1, TEXT("DoxyIt - File"), doxyItFile, NULL, false);
+	setCommand(1, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
 	//setCommand(3, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
 }
 
@@ -241,7 +241,7 @@ void doxyItFile()
 void activeCommenting()
 {
 	do_active_commenting = !do_active_commenting;
-	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[2]._cmdID, (LPARAM) do_active_commenting);
+	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[1]._cmdID, (LPARAM) do_active_commenting);
 }
 
 /*

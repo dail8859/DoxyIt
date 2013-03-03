@@ -36,7 +36,7 @@ extern char command_prefix;
 #define SCI_UNUSED 0
 
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
-const int nbFunc = 3;
+const int nbFunc = 2;
 
 LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam);
 bool updateScintilla();
