@@ -66,7 +66,7 @@ std::string Callback_C(Parser *p)
 		trex_getsubexp(p->tr_function, 3, &params_match);
 
 		doc_block << doc_start << eol;
-		doc_block << doc_line << "\\brief $[![description]!]" << eol;
+		doc_block << doc_line << command_prefix << "brief $[![[Brief]]!]" << eol;
 		doc_block << doc_line << eol;
 		
 		// For each param
@@ -76,21 +76,24 @@ std::string Callback_C(Parser *p)
 			TRexMatch param_match;
 			trex_getsubexp(p->tr_parameters, 1, &param_match);
 
-			doc_block << doc_line << "\\param [in] ";
+			doc_block << doc_line << command_prefix << "param [in] ";
 			doc_block.write(param_match.begin, param_match.len);
-			doc_block << " $[![description]!]" << eol;
+			doc_block << " $[![[Param ";
+			doc_block.write(param_match.begin, param_match.len);
+			doc_block << " Description]]!]" << eol;
 			cur_params = p_end;
 		}
 
 		// Return value
-		doc_block << doc_line << "\\return \\em ";
-		doc_block.write(return_match.begin, return_match.len); doc_block << eol;
+		doc_block << doc_line << command_prefix << "return " << command_prefix << "em ";
+		doc_block.write(return_match.begin, return_match.len); 
+		doc_block << " $[![[Return Description]]!]" << eol;
 		doc_block << doc_line << eol;
 
-		doc_block << doc_line << "\\revision 1 $[![(key)DATE:MM/dd/yyyy]!]" << eol;
-		doc_block << doc_line << "\\history <b>Rev. 1 $[![(key)DATE:MM/dd/yyyy]!]</b> $[![description]!]" << eol;
-		doc_block << doc_line << eol;
-		doc_block << doc_line << "\\details $[![description]!]" << eol;
+		//doc_block << doc_line << command_prefix << "revision 1 $[![(key)DATE:MM/dd/yyyy]!]" << eol;
+		//doc_block << doc_line << command_prefix << "history <b>Rev. 1 $[![(key)DATE:MM/dd/yyyy]!]</b> $[![description]!]" << eol;
+		//doc_block << doc_line << eol;
+		doc_block << doc_line << command_prefix << "details $[![[Details]]!]" << eol;
 		doc_block << doc_end;
 	}
 	else

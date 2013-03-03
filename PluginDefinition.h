@@ -31,6 +31,7 @@
 extern std::string doc_start;
 extern std::string doc_line;
 extern std::string doc_end;
+extern char command_prefix;
 
 #define SCI_UNUSED 0
 

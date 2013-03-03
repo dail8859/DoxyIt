@@ -37,6 +37,7 @@ bool fingertext_enabled;
 std::string doc_start;
 std::string doc_line;
 std::string doc_end;
+char command_prefix;
 
 SciFnDirect pSciMsg;  // For direct scintilla call
 sptr_t pSciWndData;   // For direct scintilla call
@@ -57,8 +58,8 @@ bool updateScintilla()
 	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 
 	// Get the function and pointer to it for more effecient calls
-	pSciMsg = (SciFnDirect)SendMessage(curScintilla,SCI_GETDIRECTFUNCTION, 0, 0);
-    pSciWndData = (sptr_t)SendMessage(curScintilla,SCI_GETDIRECTPOINTER, 0, 0);
+	pSciMsg = (SciFnDirect) SendMessage(curScintilla,SCI_GETDIRECTFUNCTION, 0, 0);
+	pSciWndData = (sptr_t) SendMessage(curScintilla,SCI_GETDIRECTPOINTER, 0, 0);
 
 	return true;
 }
@@ -78,6 +79,9 @@ void pluginInit(HANDLE hModule)
 	doc_line  = " *  ";
 	//doc_end   = " ******************************************************************************************/";
 	doc_end   = " */";
+
+	//command_prefix = '\\';
+	command_prefix = '@';
 }
 
 //
@@ -211,21 +215,24 @@ void doxyItFile()
 	TCHAR fileName[MAX_PATH];
 	char fname[MAX_PATH];
 	std::ostringstream doc_block;
+	char *eol;
 	
 	::SendMessage(nppData._nppHandle, NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
 	wcstombs(fname, fileName, sizeof(fname));
 
 	if(!updateScintilla()) return;
 
+	eol = getEolStr();
+
 	// Check if it is enabled
 	fingertext_enabled = checkFingerText();
 
-	doc_block << doc_start << "\r\n";
-	doc_block << doc_line << "\\file " << fname << "\r\n";
-	doc_block << doc_line << "\\brief \r\n";
-	doc_block << doc_line << "\r\n";
-	doc_block << doc_line << "\\author \r\n";
-	doc_block << doc_line << "\\version 1.0\r\n";
+	doc_block << doc_start << eol;
+	doc_block << doc_line << command_prefix << "file " << fname << eol;
+	doc_block << doc_line << command_prefix << "brief " << eol;
+	doc_block << doc_line << eol;
+	doc_block << doc_line << command_prefix << "author " << eol;
+	doc_block << doc_line << command_prefix << "version 1.0" << eol;
 	doc_block << doc_end;
 
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
