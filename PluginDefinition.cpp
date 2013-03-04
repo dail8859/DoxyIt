@@ -144,7 +144,7 @@ bool checkFingerText()
 		ci.srcModuleName = NPP_PLUGIN_NAME;
 		ci.info = NULL;
 		::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
-		return ci.info;
+		return ci.info != NULL;
 	}
 	else
 		return false;

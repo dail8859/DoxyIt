@@ -104,7 +104,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 			}
 			else
 			{
-				::MessageBox(NULL, TEXT("Not found"), TEXT("Oh No"), MB_OK);
+				::MessageBox(NULL, TEXT("FingerText not found."), NPP_PLUGIN_NAME, MB_OK);
 				fingertext_found = false;
 				return;
 			}

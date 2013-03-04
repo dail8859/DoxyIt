@@ -100,7 +100,7 @@ std::string Callback_C(void)
 	}
 	else
 	{
-		::MessageBox(NULL, TEXT("Cannot parse function definition"), TEXT("Error"), MB_OK|MB_ICONERROR);
+		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 	}
 
 	delete[] buffer;

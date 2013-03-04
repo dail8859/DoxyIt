@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
     </Filter>
+    <Filter Include="Source Files\Parsers">
+      <UniqueIdentifier>{f8b5d458-ad04-4abd-aa76-b28effad87ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DoxyIt.cpp">
@@ -24,17 +27,17 @@
     <ClCompile Include="trex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Parsers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C_Parser.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Parsers</Filter>
     </ClCompile>
     <ClCompile Include="CPP_Parser.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Parsers</Filter>
+    </ClCompile>
+    <ClCompile Include="Parsers.cpp">
+      <Filter>Source Files\Parsers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
