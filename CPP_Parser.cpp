@@ -14,39 +14,19 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. 
 
-#ifndef PARSERS_H
-#define PARSERS_H
+#include "Parsers.h"
 
-#include "PluginDefinition.h"
-#include "Utils.h"
-#include "trex.h"
-
-
-// C Parser
-bool Initialize_C(void);
-void CleanUp_C(void);
-std::string Callback_C(void);
-
-// CPP Parser. This is just a wrapper for the C implementation
-bool Initialize_CPP(void);
-void CleanUp_CPP(void);
-std::string Callback_CPP(void);
-
-
-typedef struct Parser
+bool Initialize_CPP(void)
 {
-	int lang_type;
-	bool (*initializer)(void);
-	void (*cleanup)(void);
-	std::string (*callback)(void);
-} Parser;
+	return true;
+}
 
-#define REGISTER_PARSER(lang) {L_##lang, Initialize_##lang, CleanUp_##lang, Callback_##lang}
-static Parser parsers[] = 
+void CleanUp_CPP(void)
 {
-	REGISTER_PARSER(C),
-	REGISTER_PARSER(CPP)
-	//REGISTER_TYPE(PYTHON),
-};
+}
 
-#endif
+// Just use this as a wrapper around the C implementation
+std::string Callback_CPP(void)
+{
+	return Callback_C();
+}

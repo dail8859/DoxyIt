@@ -187,6 +187,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CPP_Parser.cpp" />
     <ClCompile Include="C_Parser.cpp" />
     <ClCompile Include="DoxyIt.cpp" />
     <ClCompile Include="Parsers.cpp" />
