@@ -187,6 +187,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="C_Parser.cpp" />
     <ClCompile Include="DoxyIt.cpp" />
     <ClCompile Include="Parsers.cpp" />
     <ClCompile Include="PluginDefinition.cpp" />
@@ -196,6 +197,7 @@
   <ItemGroup>
     <ClInclude Include="menuCmdID.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
+    <ClInclude Include="Parsers.h" />
     <ClInclude Include="PluginDefinition.h" />
     <ClInclude Include="PluginInterface.h" />
     <ClInclude Include="DockingFeature\resource.h" />

@@ -14,35 +14,34 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. 
 
-#include "Parsers.h"
+#ifndef PARSERS_H
+#define PARSERS_H
+
+#include "PluginDefinition.h"
+#include "Utils.h"
+#include "trex.h"
 
 
-std::string Parse(int lang_type)
+// C Parser
+bool Initialize_C(void);
+void CleanUp_C(void);
+std::string Callback_C(void);
+
+
+typedef struct Parser
 {
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-	{
-		if(parsers[i].lang_type == lang_type)
-		{
-			return (*parsers[i].callback)();
-			break;
-		}
-	}
+	int lang_type;
+	bool (*initializer)(void);
+	void (*cleanup)(void);
+	std::string (*callback)(void);
+} Parser;
 
-	return "";
-}
-
-void InitializeParsers(void)
+#define REGISTER_PARSER(lang) {L_##lang, Initialize_##lang, CleanUp_##lang, Callback_##lang}
+static Parser parsers[] = 
 {
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-		if((*parsers[i].initializer)() == false)
-			::MessageBox(NULL, TEXT("Doxyit initialization failed"), TEXT("Doxyit"), MB_OK|MB_ICONERROR);
-}
+	REGISTER_PARSER(C)
+	//REGISTER_TYPE(CPP),
+	//REGISTER_TYPE(PYTHON),
+};
 
-void CleanUpParsers(void)
-{
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-		(*parsers[i].cleanup)();
-}
+#endif
