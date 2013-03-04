@@ -73,11 +73,16 @@ std::string Callback_C(void)
 			TRexMatch param_match;
 			trex_getsubexp(tr_parameters, 1, &param_match);
 
-			doc_block << doc_line << command_prefix << "param [in] ";
-			doc_block.write(param_match.begin, param_match.len);
-			doc_block << " $[![[Param ";
-			doc_block.write(param_match.begin, param_match.len);
-			doc_block << " Description]]!]" << eol;
+			// handle "func(void)" by skipping it
+			if(strncmp(param_match.begin, "void", 4) != 0)
+			{
+				doc_block << doc_line << command_prefix << "param [in] ";
+				doc_block.write(param_match.begin, param_match.len);
+				doc_block << " $[![[Param ";
+				doc_block.write(param_match.begin, param_match.len);
+				doc_block << " Description]]!]" << eol;
+			}
+			
 			cur_params = p_end;
 		}
 
