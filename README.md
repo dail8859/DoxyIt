@@ -13,7 +13,7 @@ Placing the cursor on the line directly above the function definition and pressi
 /**
  *  @brief [Brief]
  *  
- *  @param [in] my_struct [Param my_strcut Description]
+ *  @param [in] my_struct [Param my_struct Description]
  *  @param [in] pointer [Param pointer Description]
  *  @return @em int [Return Description]
  *  
@@ -51,4 +51,10 @@ Todo
 
 Development
 -----------
-The code has been developed using MSVC 2010 Express. Building with the "unicode release" will generate the DLL which can be used by Notepad++. For convenience, MSVC copies the built DLL into the Notepad++ plugin directory. 
+The code has been developed using MSVC 2010 Express. Building the "unicode release" will generate the DLL which can be used by Notepad++. For convenience, MSVC copies the built DLL into the Notepad++ plugin directory. 
+
+License
+-------
+This code is released under the [GNU General Public License version 2](http://www.gnu.org/licenses/gpl-2.0.txt).
+
+The [T-Rex Regular Expression library](http://tiny-rex.sourceforge.net/) used in this project has been released under the [zlib/libpng License](http://opensource.org/licenses/zlib-license.php). (C) 2003-2006 Alberto Demichelis
