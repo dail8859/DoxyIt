@@ -42,8 +42,8 @@ std::string Callback_C(void)
 	char *eol;
 	std::ostringstream doc_block;
 
-	int curPos = (int) SendScintilla(SCI_GETCURRENTPOS, 0, 0);
-	int curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos, 0);
+	int curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
+	int curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos);
 	int found = findNext(")", false);
 	if(found == -1) return "";
 

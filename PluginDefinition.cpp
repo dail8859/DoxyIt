@@ -172,24 +172,24 @@ void doxyItFunction()
 	if(doc_block.length() == 0) return;
 	
 	// Keep track of where we started
-	startPos = SendScintilla(SCI_GETCURRENTPOS, 0, 0);
-	startLine = SendScintilla(SCI_LINEFROMPOSITION, startPos, 0);
+	startPos = SendScintilla(SCI_GETCURRENTPOS);
+	startLine = SendScintilla(SCI_LINEFROMPOSITION, startPos);
 
 	// Get the whitespace of the next line so we can insert it infront of 
 	// all the lines of the document block that is going to be inserted
 	indent = getLineIndentStr(startLine + 1);
 
-	SendScintilla(SCI_BEGINUNDOACTION, 0, 0);
+	SendScintilla(SCI_BEGINUNDOACTION);
 
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
 	
 	// get the end of the document block
-	endPos = SendScintilla(SCI_GETCURRENTPOS, 0, 0);
-	endLine = SendScintilla(SCI_LINEFROMPOSITION, endPos, 0);
+	endPos = SendScintilla(SCI_GETCURRENTPOS);
+	endLine = SendScintilla(SCI_LINEFROMPOSITION, endPos);
 
 	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
 	
-	SendScintilla(SCI_ENDUNDOACTION, 0, 0);
+	SendScintilla(SCI_ENDUNDOACTION);
 
 
 	// Activate FingerText
@@ -201,7 +201,7 @@ void doxyItFunction()
 		ci.info = NULL;
 
 		// Reset to where we started
-		SendScintilla(SCI_SETCURRENTPOS, startPos, 0);
+		SendScintilla(SCI_SETCURRENTPOS, startPos);
 
 		::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
 	}
@@ -262,9 +262,9 @@ void doxyItNewLine()
 
 	if(!updateScintilla()) return;
 
-	curPos = (int) SendScintilla(SCI_GETCURRENTPOS, SCI_UNUSED, SCI_UNUSED);
-	curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos, SCI_UNUSED);
-	lineLen = (int) SendScintilla(SCI_LINELENGTH, curLine - 1, SCI_UNUSED);
+	curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
+	curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos);
+	lineLen = (int) SendScintilla(SCI_LINELENGTH, curLine - 1);
 	
 	// Get the previous line
 	previousLine = new char[lineLen + 1];
@@ -283,35 +283,35 @@ void doxyItNewLine()
 		// the string we use for keeping the same indentation
 		*found = '\0';
 
-		SendScintilla(SCI_BEGINUNDOACTION, 0, 0);
+		SendScintilla(SCI_BEGINUNDOACTION);
 
 		// Clear the current line of any indentation that was automatically added
 		clearLine(curLine);
 
-		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) previousLine);
-		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
-		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) getEolStr());
-		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) previousLine);
-		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) doc_end.c_str());
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) previousLine);
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_line.c_str());
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) getEolStr());
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) previousLine);
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_end.c_str());
 
-		SendScintilla(SCI_ENDUNDOACTION, 0, 0);
+		SendScintilla(SCI_ENDUNDOACTION);
 
 		// Go up and to the end of the previous line
-		SendScintilla(SCI_LINEUP, 0, 0);
-		SendScintilla(SCI_LINEEND, 0, 0);
+		SendScintilla(SCI_LINEUP);
+		SendScintilla(SCI_LINEEND);
 	}
 	else if(found = strstr(previousLine, doc_line.c_str()))
 	{
 		*found = '\0';
 
-		SendScintilla(SCI_BEGINUNDOACTION, 0, 0);
+		SendScintilla(SCI_BEGINUNDOACTION);
 
 		clearLine(curLine);
 
-		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) previousLine);
-		SendScintilla(SCI_REPLACESEL, 0, (LPARAM) doc_line.c_str());
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) previousLine);
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_line.c_str());
 
-		SendScintilla(SCI_ENDUNDOACTION, 0, 0);
+		SendScintilla(SCI_ENDUNDOACTION);
 	}
 
 	delete[] previousLine;

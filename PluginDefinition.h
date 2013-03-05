@@ -38,7 +38,7 @@ extern char command_prefix;
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
 const int nbFunc = 2;
 
-LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam);
+LRESULT SendScintilla(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
 bool updateScintilla();
 
 void pluginInit(HANDLE hModule);
