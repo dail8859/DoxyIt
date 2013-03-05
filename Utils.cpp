@@ -17,6 +17,26 @@
 #include "PluginDefinition.h"
 #include "Utils.h"
 
+// If finger text is enabled, it wrappes the string with $[![...]!], else it just returns the string
+std::string FT(const char *p)
+{
+	std::string s;
+	
+	if(fingertext_enabled)
+	{
+		s += "$[![";
+		s += p;
+		s += "]!]";
+	}
+	else
+	{
+		s += p;
+	}
+
+	return s;
+}
+
+// Clears the line
 void clearLine(int line)
 {
 	int lineStart = SendScintilla(SCI_POSITIONFROMLINE, line);
@@ -25,6 +45,7 @@ void clearLine(int line)
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) "");
 }
 
+// Get the whitespace of the line, the returned value must be free'd
 char *getLineIndentStr(int line)
 {
 	int indentStart = SendScintilla(SCI_POSITIONFROMLINE, line);
@@ -34,6 +55,8 @@ char *getLineIndentStr(int line)
 	else return NULL;
 }
 
+// Insert str in front of each line between start and end
+// If the line already starts with the string it is skipped unless force = true
 void insertBeforeLines(char *str, int start, int end, bool force)
 {
 	for(int i = start; i < end; ++i)
@@ -55,6 +78,7 @@ void insertBeforeLines(char *str, int start, int end, bool force)
 	}
 }
 
+// Find the next instance of text
 int findNext(char* text, bool regExp)
 {
 	int curPos = SendScintilla(SCI_GETCURRENTPOS);
@@ -69,6 +93,7 @@ int findNext(char* text, bool regExp)
 	//return ttf.chrgText.cpMin;
 }
 
+// Get a range of text from start to end, returned string must be free'd
 char *getRange(int start, int end)
 {
 	if (end > start)
@@ -84,6 +109,7 @@ char *getRange(int start, int end)
 	return NULL;
 }
 
+// Get a line
 char *getLine(int lineNum)
 {
 	char *buffer;
@@ -96,6 +122,7 @@ char *getLine(int lineNum)
 	return buffer;
 }
 
+// Get the end of line string for the current eol mode
 char *getEolStr()
 {
 	int eolmode = SendScintilla(SCI_GETEOLMODE);

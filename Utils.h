@@ -17,6 +17,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+std::string FT(const char *p);
 void clearLine(int line);
 char *getLineIndentStr(int line);
 void insertBeforeLines(char *str, int start, int end, bool force=false);
