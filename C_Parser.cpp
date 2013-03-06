@@ -35,7 +35,7 @@ void CleanUp_C(void)
 	trex_free(tr_parameters);
 }
 
-std::string Callback_C(const Parser *p)
+std::string Parse_C(const Parser *p)
 {
 	char *buffer;
 	const TRexChar *begin,*end;

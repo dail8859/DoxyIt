@@ -17,15 +17,15 @@
 #include "Parsers.h"
 
 #define REGISTER_PARSER(lang, doc_start, doc_line, doc_end, command_prefix) {L_##lang, TEXT(#lang), "", "", "", "", \
-	TEXT(##doc_start), TEXT(##doc_line), TEXT(##doc_end), TEXT(##command_prefix), Initialize_##lang, CleanUp_##lang, Callback_##lang}
+	TEXT(##doc_start), TEXT(##doc_line), TEXT(##doc_end), TEXT(##command_prefix), Initialize_##lang, CleanUp_##lang, Parse_##lang}
 Parser parsers[] = 
 {
-	REGISTER_PARSER(C,   "/**", " *  ", " */", "\\"),
-	REGISTER_PARSER(CPP, "/**", " *  ", " */", "\\")
+	REGISTER_PARSER(C,      "/**", " *  ", " */", "\\"),
+	REGISTER_PARSER(CPP,    "/**", " *  ", " */", "\\"),
+	REGISTER_PARSER(JAVA,   "/**", " *  ", " */", "@"),
+	REGISTER_PARSER(PYTHON, "## ", "#  ", "#  ", "@")
 	//REGISTER_PARSER(CS),
-	//REGISTER_PARSER(JAVA),
 	//REGISTER_PARSER(PHP),
-	//REGISTER_PARSER(PYTHON)
 };
 
 const Parser *getCurrentParser(void)

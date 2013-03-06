@@ -16,18 +16,17 @@
 
 #include "Parsers.h"
 
-bool Initialize_CPP(void)
+bool Initialize_JAVA(void)
 {
 	return true;
 }
 
-void CleanUp_CPP(void)
+void CleanUp_JAVA(void)
 {
 }
 
 // Just use this as a wrapper around the C implementation
-std::string Parse_CPP(const Parser *p)
+std::string Parse_JAVA(const Parser *p)
 {
-	// Use the cpp parser
-	return Parse_C(p);
+	return "";
 }

@@ -190,8 +190,10 @@
     <ClCompile Include="CPP_Parser.cpp" />
     <ClCompile Include="C_Parser.cpp" />
     <ClCompile Include="DoxyIt.cpp" />
+    <ClCompile Include="Java_Parser.cpp" />
     <ClCompile Include="Parsers.cpp" />
     <ClCompile Include="PluginDefinition.cpp" />
+    <ClCompile Include="Python_Parser.cpp" />
     <ClCompile Include="trex.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>

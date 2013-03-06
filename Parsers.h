@@ -43,18 +43,18 @@ typedef struct Parser
 	std::string (*callback)(const Parser *pc);
 } Parser;
 
-extern Parser parsers[2];
+extern Parser parsers[4];
 
 
-// C Parser
-bool Initialize_C(void);
-void CleanUp_C(void);
-std::string Callback_C(const Parser *p);
+#define DEFINE_PARSER(lang) \
+	bool Initialize_##lang(void); \
+	void CleanUp_##lang(void); \
+	std::string Parse_##lang(const Parser *p); \
 
-// CPP Parser. This is just a wrapper for the C implementation
-bool Initialize_CPP(void);
-void CleanUp_CPP(void);
-std::string Callback_CPP(const Parser *p);
+DEFINE_PARSER(C);
+DEFINE_PARSER(CPP);
+DEFINE_PARSER(JAVA);
+DEFINE_PARSER(PYTHON);
 
 
 const Parser *getCurrentParser(void);
