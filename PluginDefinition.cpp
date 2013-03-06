@@ -254,24 +254,22 @@ void activeWrapping()
 
 // --- Notification callbacks ---
 
-// TODO: rewrite this function!
 void doxyItNewLine()
 {
-	char *previousLine;
-	int curPos, curLine, lineLen;
-	char *found = NULL;
+	std::ostringstream doc_block;
+	std::string indentation;
 	std::string short_doc_start = doc_start.substr(0, 3);
+	char *previousLine, *eol, *found = NULL;
+	int curPos, curLine;
 
 	if(!updateScintilla()) return;
 
+	eol = getEolStr();
+
 	curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
 	curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos);
-	lineLen = (int) SendScintilla(SCI_LINELENGTH, curLine - 1);
-	
-	// Get the previous line
-	previousLine = new char[lineLen + 1];
-	SendScintilla(SCI_GETLINE, curLine - 1, (LPARAM) previousLine);
-	previousLine[lineLen] = '\0';
+
+	previousLine = getLine(curLine - 1);
 
 	// NOTE: we cannot use getLineIndentStr() because doc_start or doc_line may start with whitespace
 	// which we don't want counted towards the indentation string.
@@ -281,31 +279,23 @@ void doxyItNewLine()
 	
 	// short_doc_start is the first 3 characters of the doc_start. If doc_start is relatively long
 	// we do not want the user typing the entire line, just the first 3 should suffice.
-	if(found = strstr(previousLine, short_doc_start.c_str()))
+	if((found = strstr(previousLine, short_doc_start.c_str()))
+		&& strstr(previousLine, doc_end.c_str()) == 0)
 	{
-		// This is a little bit hack-ish...we will put a null character
-		// at the beginning of where we found the string. So previousLine is now
-		// the string we use for keeping the same indentation
-		*found = '\0';
+		indentation.append(previousLine, found - previousLine);
 
-		// Count the characters in common
-		unsigned int i = 1;
+		// Count the characters in common so we can add the rest
+		unsigned int i = 0;
 		while(i < doc_start.length() && found[i] == doc_start.at(i)) ++i;
-
+		
+		doc_block << &doc_start.c_str()[i] << eol;
+		doc_block << indentation.c_str() << doc_line.c_str() << eol;
+		doc_block << indentation.c_str() << doc_end.c_str();
+		
 		SendScintilla(SCI_BEGINUNDOACTION);
-
-		// Clear the current line of any indentation that was automatically added
-		clearLine(curLine);
-
+		clearLine(curLine); // Clear any automatic indentation
 		SendScintilla(SCI_DELETEBACK);
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) &doc_start.c_str()[i]);
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) getEolStr());
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) previousLine);
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_line.c_str());
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) getEolStr());
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) previousLine);
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_end.c_str());
-
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
 		SendScintilla(SCI_ENDUNDOACTION);
 
 		// Go up and to the end of the previous line
@@ -314,15 +304,13 @@ void doxyItNewLine()
 	}
 	else if(found = strstr(previousLine, doc_line.c_str()))
 	{
-		*found = '\0';
+		indentation.append(previousLine, found - previousLine);
+
+		doc_block << indentation.c_str() <<  doc_line.c_str();
 
 		SendScintilla(SCI_BEGINUNDOACTION);
-
-		clearLine(curLine);
-
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) previousLine);
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_line.c_str());
-
+		clearLine(curLine); // Clear any automatic indentation
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
 		SendScintilla(SCI_ENDUNDOACTION);
 	}
 
