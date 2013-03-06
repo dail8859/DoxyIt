@@ -254,11 +254,13 @@ void activeWrapping()
 
 // --- Notification callbacks ---
 
+// TODO: rewrite this function!
 void doxyItNewLine()
 {
 	char *previousLine;
 	int curPos, curLine, lineLen;
 	char *found = NULL;
+	std::string short_doc_start = doc_start.substr(0, 3);
 
 	if(!updateScintilla()) return;
 
@@ -276,18 +278,28 @@ void doxyItNewLine()
 	
 	// search for doc_start or doc_line in the previous line to see if we should complete a document
 	// block or if we should add a single document line
-	if(found = strstr(previousLine, doc_start.c_str()))
+	
+	// short_doc_start is the first 3 characters of the doc_start. If doc_start is relatively long
+	// we do not want the user typing the entire line, just the first 3 should suffice.
+	if(found = strstr(previousLine, short_doc_start.c_str()))
 	{
 		// This is a little bit hack-ish...we will put a null character
 		// at the beginning of where we found the string. So previousLine is now
 		// the string we use for keeping the same indentation
 		*found = '\0';
 
+		// Count the characters in common
+		unsigned int i = 1;
+		while(i < doc_start.length() && found[i] == doc_start.at(i)) ++i;
+
 		SendScintilla(SCI_BEGINUNDOACTION);
 
 		// Clear the current line of any indentation that was automatically added
 		clearLine(curLine);
 
+		SendScintilla(SCI_DELETEBACK);
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) &doc_start.c_str()[i]);
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) getEolStr());
 		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) previousLine);
 		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_line.c_str());
 		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) getEolStr());
