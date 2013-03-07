@@ -26,7 +26,8 @@ void CleanUp_CPP(void)
 }
 
 // Just use this as a wrapper around the C implementation
-std::string Callback_CPP(void)
+std::string Callback_CPP(const Parser *p)
 {
-	return Callback_C();
+	// Use the cpp parser
+	return Callback_C(p);
 }

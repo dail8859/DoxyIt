@@ -28,11 +28,6 @@
 //
 #include "PluginInterface.h"
 
-extern std::string doc_start;
-extern std::string doc_line;
-extern std::string doc_end;
-extern char command_prefix;
-
 #define SCI_UNUSED 0
 
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
@@ -76,9 +71,5 @@ typedef struct FunctionDefinition
 	std::string function_name;
 	std::vector<std::string> parameters;	
 } FunctionDefinition;
-
-void InitializeParsers();
-void CleanUpParsers();
-std::string Parse(int lang_type);
 
 #endif //PLUGINDEFINITION_H

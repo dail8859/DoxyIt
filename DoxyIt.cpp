@@ -14,7 +14,10 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. 
 
+#include <Shlwapi.h>
+#include <tchar.h>
 #include "PluginDefinition.h"
+#include "Parsers.h"
 
 extern FuncItem funcItem[nbFunc];
 extern NppData nppData;
@@ -45,11 +48,118 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 	return TRUE;
 }
 
+// Save default values
+void configInit(TCHAR *iniPath)
+{	
+	::WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), TEXT("true"), iniPath);
+	::WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("initial_startup"), TEXT("true"), iniPath);
+		
+	int len = sizeof(parsers) / sizeof(parsers[0]);
+	for(int i = 0; i < len; ++i)
+	{
+		Parser *p = &parsers[i];
+		std::wstring ws;
+
+		// Wrap the default values in quotes
+		ws = TEXT("\"") + p->default_doc_start + TEXT("\"");
+		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
+
+		ws = TEXT("\"") + p->default_doc_line + TEXT("\"");
+		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), ws.c_str(), iniPath);
+
+		ws = TEXT("\"") + p->default_doc_end + TEXT("\"");
+		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), ws.c_str(), iniPath);
+
+		::WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), p->default_command_prefix.c_str(), iniPath);
+	}
+}
+
+void configSave()
+{
+	TCHAR iniPath[MAX_PATH];
+	int len = sizeof(parsers) / sizeof(parsers[0]);
+	
+	::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM) iniPath);
+	::_tcscat_s(iniPath, TEXT("\\"));
+	::_tcscat_s(iniPath, NPP_PLUGIN_NAME);
+	::_tcscat_s(iniPath, TEXT(".ini"));
+
+	// [DoxyIt]
+
+	for(int i = 0; i < len; ++i)
+	{
+		Parser *p = &parsers[i];
+		std::wstring ws;
+		
+		// Wrap the values in quotes
+		ws.assign(p->doc_start.begin(), p->doc_start.end());
+		ws = TEXT("\"") + ws + TEXT("\"");
+		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
+
+		ws.assign(p->doc_line.begin(), p->doc_line.end());
+		ws = TEXT("\"") + ws + TEXT("\"");
+		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), ws.c_str(), iniPath);
+		
+		ws.assign(p->doc_end.begin(), p->doc_end.end());
+		ws = TEXT("\"") + ws + TEXT("\"");
+		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), ws.c_str(), iniPath);
+		
+		ws.assign(p->command_prefix.begin(), p->command_prefix.end());
+		::WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
+	}
+}
+
+void configLoad()
+{
+	TCHAR iniPath[MAX_PATH];
+	int len = sizeof(parsers) / sizeof(parsers[0]);
+
+	::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM) iniPath);
+	::_tcscat_s(iniPath, TEXT("\\"));
+	::_tcscat_s(iniPath, NPP_PLUGIN_NAME);
+	::_tcscat_s(iniPath, TEXT(".ini"));
+
+	// Creates a default ini if it doesnt exist
+	if(!PathFileExists(iniPath)) configInit(iniPath);
+
+	// [DoxyIt]
+
+	for(int i = 0; i < len; ++i)
+	{
+		Parser *p = &parsers[i];
+		TCHAR tbuffer[MAX_PATH];
+		char buffer[MAX_PATH];
+
+		// NOTE: We cant use the default value because GetPrivateProfileString strips the whitespace,
+		// also, wrapping it in quotes doesn't seem to work either. So...use "!!!" as the default text
+		// and if we find that the value wasnt found and we have "!!!" then use the default value in the
+		// parser, else, use what we pulled from the file.
+		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
+		wcstombs(buffer, tbuffer, MAX_PATH);
+		if(strncmp(buffer, "!!!", 3) == 0) p->doc_start.assign(p->default_doc_start.begin(), p->default_doc_start.end());
+		else p->doc_start.assign(buffer);
+
+		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
+		wcstombs(buffer, tbuffer, MAX_PATH);
+		if(strncmp(buffer, "!!!", 3) == 0) p->doc_line.assign(p->default_doc_line.begin(), p->default_doc_line.end());
+		else p->doc_line.assign(buffer);
+
+		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), p->default_doc_end.c_str(), tbuffer, MAX_PATH, iniPath);
+		wcstombs(buffer, tbuffer, MAX_PATH);
+		if(strncmp(buffer, "!!!", 3) == 0) p->doc_end.assign(p->default_doc_end.begin(), p->default_doc_end.end());
+		else p->doc_end.assign(buffer);
+
+		GetPrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), p->default_command_prefix.c_str(), tbuffer, MAX_PATH, iniPath);
+		wcstombs(buffer, tbuffer, MAX_PATH);
+		p->command_prefix = buffer[0]; // should only ever be 1 character
+	}
+}
 
 extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData)
 {
 	nppData = notpadPlusData;
 	commandMenuInit();
+	configLoad();
 }
 
 extern "C" __declspec(dllexport) const TCHAR * getName()
@@ -90,7 +200,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 			break;
 		case NPPN_READY:
 			CommunicationInfo ci;
-
+			
 			// Check if FingerText is installed
 			ci.internalMsg = FINGERTEXT_GETVERSION;
 			ci.srcModuleName = NPP_PLUGIN_NAME;
@@ -108,6 +218,9 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 				fingertext_found = false;
 				return;
 			}
+			break;
+		case NPPN_SHUTDOWN:
+			configSave();
 			break;
 	}
 	/*

@@ -35,7 +35,7 @@ void CleanUp_C(void)
 	trex_free(tr_parameters);
 }
 
-std::string Callback_C(void)
+std::string Callback_C(const Parser *p)
 {
 	char *buffer;
 	const TRexChar *begin,*end;
@@ -62,9 +62,9 @@ std::string Callback_C(void)
 		trex_getsubexp(tr_function, 2, &func_match);
 		trex_getsubexp(tr_function, 3, &params_match);
 
-		doc_block << doc_start << eol;
-		doc_block << doc_line << command_prefix << "brief " << FT("[Brief]") << eol;
-		doc_block << doc_line << eol;
+		doc_block << p->doc_start << eol;
+		doc_block << p->doc_line << p->command_prefix << "brief " << FT("[Brief]") << eol;
+		doc_block << p->doc_line << eol;
 		
 		// For each param
 		cur_params = params_match.begin;
@@ -81,7 +81,7 @@ std::string Callback_C(void)
 				desc.append(param_match.begin, param_match.len);
 				desc += " Description]";
 
-				doc_block << doc_line << command_prefix << "param [in] ";
+				doc_block << p->doc_line << p->command_prefix << "param [in] ";
 				doc_block.write(param_match.begin, param_match.len);
 				doc_block << " " << FT(desc.c_str()) << eol;
 			}
@@ -90,16 +90,16 @@ std::string Callback_C(void)
 		}
 
 		// Return value
-		doc_block << doc_line << command_prefix << "return " << command_prefix << "em ";
+		doc_block << p->doc_line << p->command_prefix << "return " << p->command_prefix << "em ";
 		doc_block.write(return_match.begin, return_match.len); 
 		doc_block << " " << FT("[Return Description]") << eol;
-		doc_block << doc_line << eol;
+		doc_block << p->doc_line << eol;
 
 		//doc_block << doc_line << command_prefix << "revision 1 $[![(key)DATE:MM/dd/yyyy]!]" << eol;
 		//doc_block << doc_line << command_prefix << "history <b>Rev. 1 $[![(key)DATE:MM/dd/yyyy]!]</b> $[![description]!]" << eol;
 		//doc_block << doc_line << eol;
-		doc_block << doc_line << command_prefix << "details " << FT("[Details]") << eol;
-		doc_block << doc_end;
+		doc_block << p->doc_line << p->command_prefix << "details " << FT("[Details]") << eol;
+		doc_block << p->doc_end;
 	}
 	else
 	{

@@ -18,6 +18,7 @@
 #include "menuCmdID.h"
 #include "trex.h"
 #include "Utils.h"
+#include "Parsers.h"
 
 //
 // The plugin data that Notepad++ needs
@@ -33,11 +34,6 @@ bool do_active_commenting;
 bool do_active_wrapping;
 bool fingertext_found;
 bool fingertext_enabled;
-
-std::string doc_start;
-std::string doc_line;
-std::string doc_end;
-char command_prefix;
 
 SciFnDirect pSciMsg;  // For direct scintilla call
 sptr_t pSciWndData;   // For direct scintilla call
@@ -73,15 +69,6 @@ void pluginInit(HANDLE hModule)
 
 	do_active_commenting = true;
 	do_active_wrapping = true;
-
-	doc_start = "/**";
-	//doc_start = "/**************************************************************************************//**";
-	doc_line  = " *  ";
-	//doc_end   = " ******************************************************************************************/";
-	doc_end   = " */";
-
-	//command_prefix = '\\';
-	command_prefix = '@';
 }
 
 //
@@ -212,6 +199,7 @@ void doxyItFunction()
 
 void doxyItFile()
 {
+	/*
 	TCHAR fileName[MAX_PATH];
 	char fname[MAX_PATH];
 	std::ostringstream doc_block;
@@ -236,6 +224,7 @@ void doxyItFile()
 	doc_block << doc_end;
 
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
+	*/
 }
 
 void activeCommenting()
@@ -256,14 +245,17 @@ void activeWrapping()
 
 void doxyItNewLine()
 {
+	const Parser *p;
 	std::ostringstream doc_block;
 	std::string indentation;
-	std::string short_doc_start = doc_start.substr(0, 3);
+	std::string short_doc_start;
 	char *previousLine, *eol, *found = NULL;
 	int curPos, curLine;
 
 	if(!updateScintilla()) return;
 
+	if(!(p = getCurrentParser())) return;
+	short_doc_start = p->doc_start.substr(0, 3);
 	eol = getEolStr();
 
 	curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
@@ -280,17 +272,17 @@ void doxyItNewLine()
 	// short_doc_start is the first 3 characters of the doc_start. If doc_start is relatively long
 	// we do not want the user typing the entire line, just the first 3 should suffice.
 	if((found = strstr(previousLine, short_doc_start.c_str()))
-		&& strstr(previousLine, doc_end.c_str()) == 0)
+		&& strstr(previousLine, p->doc_end.c_str()) == 0)
 	{
 		indentation.append(previousLine, found - previousLine);
 
 		// Count the characters in common so we can add the rest
 		unsigned int i = 0;
-		while(i < doc_start.length() && found[i] == doc_start.at(i)) ++i;
+		while(i < p->doc_start.length() && found[i] == p->doc_start.at(i)) ++i;
 		
-		doc_block << &doc_start.c_str()[i] << eol;
-		doc_block << indentation.c_str() << doc_line.c_str() << eol;
-		doc_block << indentation.c_str() << doc_end.c_str();
+		doc_block << &p->doc_start.c_str()[i] << eol;
+		doc_block << indentation.c_str() << p->doc_line.c_str() << eol;
+		doc_block << indentation.c_str() << p->doc_end.c_str();
 		
 		SendScintilla(SCI_BEGINUNDOACTION);
 		clearLine(curLine); // Clear any automatic indentation
@@ -302,11 +294,11 @@ void doxyItNewLine()
 		SendScintilla(SCI_LINEUP);
 		SendScintilla(SCI_LINEEND);
 	}
-	else if(found = strstr(previousLine, doc_line.c_str()))
+	else if(found = strstr(previousLine, p->doc_line.c_str()))
 	{
 		indentation.append(previousLine, found - previousLine);
 
-		doc_block << indentation.c_str() <<  doc_line.c_str();
+		doc_block << indentation.c_str() <<  p->doc_line.c_str();
 
 		SendScintilla(SCI_BEGINUNDOACTION);
 		clearLine(curLine); // Clear any automatic indentation

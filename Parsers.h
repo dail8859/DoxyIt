@@ -22,34 +22,44 @@
 #include "trex.h"
 
 
+typedef struct Parser
+{
+	int lang_type;
+	std::wstring lang;
+	std::string doc_start;
+	std::string doc_line;
+	std::string doc_end;
+	std::string command_prefix;
+
+	// Store default values. For convenience, these are wstring to load and save easier
+	const std::wstring default_doc_start;
+	const std::wstring default_doc_line;
+	const std::wstring default_doc_end;
+	const std::wstring default_command_prefix;
+
+	// Registered functions
+	bool (*initializer)(void);
+	void (*cleanup)(void);
+	std::string (*callback)(const Parser *pc);
+} Parser;
+
+extern Parser parsers[2];
+
+
 // C Parser
 bool Initialize_C(void);
 void CleanUp_C(void);
-std::string Callback_C(void);
+std::string Callback_C(const Parser *p);
 
 // CPP Parser. This is just a wrapper for the C implementation
 bool Initialize_CPP(void);
 void CleanUp_CPP(void);
-std::string Callback_CPP(void);
+std::string Callback_CPP(const Parser *p);
 
 
-typedef struct Parser
-{
-	int lang_type;
-	bool (*initializer)(void);
-	void (*cleanup)(void);
-	std::string (*callback)(void);
-} Parser;
-
-#define REGISTER_PARSER(lang) {L_##lang, Initialize_##lang, CleanUp_##lang, Callback_##lang}
-static Parser parsers[] = 
-{
-	REGISTER_PARSER(C),
-	REGISTER_PARSER(CPP)
-	//REGISTER_PARSER(CS),
-	//REGISTER_PARSER(JAVA),
-	//REGISTER_PARSER(PHP),
-	//REGISTER_PARSER(PYTHON)
-};
+const Parser *getCurrentParser(void);
+void InitializeParsers();
+void CleanUpParsers();
+std::string Parse(int lang_type);
 
 #endif

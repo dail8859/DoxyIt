@@ -16,6 +16,30 @@
 
 #include "Parsers.h"
 
+#define REGISTER_PARSER(lang, doc_start, doc_line, doc_end, command_prefix) {L_##lang, TEXT(#lang), "", "", "", "", \
+	TEXT(#doc_start), TEXT(#doc_line), TEXT(#doc_end), TEXT(#command_prefix), Initialize_##lang, CleanUp_##lang, Callback_##lang}
+Parser parsers[] = 
+{
+	REGISTER_PARSER(C,   "/**", " *  ", " */", "\\"),
+	REGISTER_PARSER(CPP, "/**", " *  ", " */", "\\")
+	//REGISTER_PARSER(CS),
+	//REGISTER_PARSER(JAVA),
+	//REGISTER_PARSER(PHP),
+	//REGISTER_PARSER(PYTHON)
+};
+
+const Parser *getCurrentParser(void)
+{
+	int lang_type;
+	int len = sizeof(parsers) / sizeof(parsers[0]);
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM) &lang_type);
+
+	for(int i = 0; i < len; ++i)
+		if(parsers[i].lang_type == lang_type)
+			return &parsers[i];
+
+	return NULL;
+}
 
 std::string Parse(int lang_type)
 {
@@ -24,7 +48,7 @@ std::string Parse(int lang_type)
 	{
 		if(parsers[i].lang_type == lang_type)
 		{
-			return (*parsers[i].callback)();
+			return (*parsers[i].callback)(&parsers[i]);
 			break;
 		}
 	}
