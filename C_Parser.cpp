@@ -22,7 +22,7 @@ static TRex *tr_parameters;
 bool Initialize_C(void)
 {
 	const TRexChar *error = NULL;
-	tr_function = trex_compile("([\\w:]+)[*]*\\s+[*]*(\\w+)\\s*(\\(.*\\))", &error);
+	tr_function = trex_compile("([\\w:]+)[*&]*\\s+[*&]*(\\w+)\\s*(\\([^)]*\\))", &error);
 	tr_parameters = trex_compile("(\\w+|\\.\\.\\.)(\\s*=\\s*\\w+)?\\s*[,)]", &error);
 	
 	if(!tr_function || !tr_parameters) return false;
