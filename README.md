@@ -44,10 +44,10 @@ Todo
     - PHP(?)
     - C#(?)
 - Configuration of:
-    - Strings for comment start, line, and end
+    - ~~Strings for comment start, line, and end~~
     - Comment block contents
-    - Per language settings
-    - Doxygen command prefixes (i.e. '\' or '@')
+    - ~~Per language settings~~
+    - ~~Doxygen command prefixes (i.e. '\' or '@')~~
 
 Development
 -----------
