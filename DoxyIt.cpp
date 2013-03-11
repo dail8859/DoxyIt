@@ -48,32 +48,6 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 	return TRUE;
 }
 
-// Save default values
-void configInit(TCHAR *iniPath)
-{	
-	::WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), TEXT("true"), iniPath);
-	::WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("initial_startup"), TEXT("true"), iniPath);
-		
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-	{
-		Parser *p = &parsers[i];
-		std::wstring ws;
-
-		// Wrap the default values in quotes
-		ws = TEXT("\"") + p->default_doc_start + TEXT("\"");
-		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
-
-		ws = TEXT("\"") + p->default_doc_line + TEXT("\"");
-		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), ws.c_str(), iniPath);
-
-		ws = TEXT("\"") + p->default_doc_end + TEXT("\"");
-		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), ws.c_str(), iniPath);
-
-		::WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), p->default_command_prefix.c_str(), iniPath);
-	}
-}
-
 void configSave()
 {
 	TCHAR iniPath[MAX_PATH];
@@ -85,13 +59,14 @@ void configSave()
 	::_tcscat_s(iniPath, TEXT(".ini"));
 
 	// [DoxyIt]
+	::WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), do_active_commenting ? TEXT("true") : TEXT("false"), iniPath);
 
 	for(int i = 0; i < len; ++i)
 	{
 		Parser *p = &parsers[i];
 		std::wstring ws;
-		
-		// Wrap the values in quotes
+
+		// Wrap everything in quotes to perserve whitespace
 		ws.assign(p->doc_start.begin(), p->doc_start.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
 		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
@@ -99,12 +74,13 @@ void configSave()
 		ws.assign(p->doc_line.begin(), p->doc_line.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
 		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), ws.c_str(), iniPath);
-		
+
 		ws.assign(p->doc_end.begin(), p->doc_end.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
 		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), ws.c_str(), iniPath);
-		
+
 		ws.assign(p->command_prefix.begin(), p->command_prefix.end());
+		ws = TEXT("\"") + ws + TEXT("\"");
 		::WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
 	}
 }
@@ -113,22 +89,22 @@ void configLoad()
 {
 	TCHAR iniPath[MAX_PATH];
 	int len = sizeof(parsers) / sizeof(parsers[0]);
+	TCHAR tbuffer[MAX_PATH];
+	char buffer[MAX_PATH];
 
 	::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM) iniPath);
 	::_tcscat_s(iniPath, TEXT("\\"));
 	::_tcscat_s(iniPath, NPP_PLUGIN_NAME);
 	::_tcscat_s(iniPath, TEXT(".ini"));
 
-	// Creates a default ini if it doesnt exist
-	if(!PathFileExists(iniPath)) configInit(iniPath);
-
 	// [DoxyIt]
+	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
+	wcstombs(buffer, tbuffer, MAX_PATH);
+	do_active_commenting = strcmp(buffer, "true") == 0;
 
 	for(int i = 0; i < len; ++i)
 	{
 		Parser *p = &parsers[i];
-		TCHAR tbuffer[MAX_PATH];
-		char buffer[MAX_PATH];
 
 		// NOTE: We cant use the default value because GetPrivateProfileString strips the whitespace,
 		// also, wrapping it in quotes doesn't seem to work either. So...use "!!!" as the default text
@@ -144,15 +120,19 @@ void configLoad()
 		if(strncmp(buffer, "!!!", 3) == 0) p->doc_line.assign(p->default_doc_line.begin(), p->default_doc_line.end());
 		else p->doc_line.assign(buffer);
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), p->default_doc_end.c_str(), tbuffer, MAX_PATH, iniPath);
+		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
 		if(strncmp(buffer, "!!!", 3) == 0) p->doc_end.assign(p->default_doc_end.begin(), p->default_doc_end.end());
 		else p->doc_end.assign(buffer);
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), p->default_command_prefix.c_str(), tbuffer, MAX_PATH, iniPath);
+		GetPrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		p->command_prefix = buffer[0]; // should only ever be 1 character
+		if(strncmp(buffer, "!!!", 3) == 0) p->command_prefix.assign(p->default_command_prefix.begin(), p->default_command_prefix.end());
+		else p->command_prefix.assign(buffer);
 	}
+
+	// Write out the file if it doesnt exist yet
+	if(!PathFileExists(iniPath)) configSave();
 }
 
 extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData)
