@@ -16,19 +16,33 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include "Parsers.h"
+#ifndef SETTINGSDIALOG_H
+#define SETTINGSDIALOG_H
 
-bool Initialize_JAVA(void)
-{
-	return true;
-}
+#include "PluginInterface.h"
+#include "resource.h"
+#include "StaticDialog.h"
 
-void CleanUp_JAVA(void)
+class SettingsDialog : public StaticDialog
 {
-}
+public:
+	SettingsDialog() : StaticDialog() {};
 
-// Just use this as a wrapper around the C implementation
-std::string Parse_JAVA(const Parser *p)
-{
-	return "";
-}
+	void init(HINSTANCE hInst, NppData nppData)
+	{
+		_nppData = nppData;
+		Window::init(hInst, nppData._nppHandle);
+	};
+
+	void SettingsDialog::doDialog();
+	virtual void destroy() {};
+
+protected :
+	virtual BOOL CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
+
+private:
+	NppData			_nppData;
+	HWND			_HSource;
+};
+
+#endif

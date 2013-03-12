@@ -16,19 +16,46 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include "Parsers.h"
+#include "SettingsDialog.h"
 
-bool Initialize_JAVA(void)
+void SettingsDialog::doDialog()
 {
-	return true;
+	if (!isCreated())
+	{
+		create(IDD_PLUGINGOLINE_DEMO, true);
+	}
+	goToCenter();
 }
 
-void CleanUp_JAVA(void)
+BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-}
+	switch (message) 
+	{
+        case WM_INITDIALOG:
+        {
+            return true;
+        }
 
-// Just use this as a wrapper around the C implementation
-std::string Parse_JAVA(const Parser *p)
-{
-	return "";
+		case WM_COMMAND: 
+		{
+       
+
+			switch (wParam)
+			{
+				case IDOK:
+                    display(false);
+                    return true;
+				case IDCANCEL:
+                    display(false);
+                
+					return true;
+				default:
+                    return false;
+			}
+		}
+        
+        default:
+            //return false;
+            return StaticDialog::dlgProc(_HSource, message, wParam, lParam);
+	}
 }

@@ -189,15 +189,19 @@
   <ItemGroup>
     <ClCompile Include="CPP_Parser.cpp" />
     <ClCompile Include="C_Parser.cpp" />
+    <ClCompile Include="DockingFeature\StaticDialog.cpp" />
     <ClCompile Include="DoxyIt.cpp" />
     <ClCompile Include="Java_Parser.cpp" />
     <ClCompile Include="Parsers.cpp" />
     <ClCompile Include="PluginDefinition.cpp" />
     <ClCompile Include="Python_Parser.cpp" />
+    <ClCompile Include="SettingsDialog.cpp" />
     <ClCompile Include="trex.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DockingFeature\StaticDialog.h" />
+    <ClInclude Include="DockingFeature\Window.h" />
     <ClInclude Include="menuCmdID.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
     <ClInclude Include="Parsers.h" />
@@ -205,8 +209,12 @@
     <ClInclude Include="PluginInterface.h" />
     <ClInclude Include="DockingFeature\resource.h" />
     <ClInclude Include="Scintilla.h" />
+    <ClInclude Include="SettingsDialog.h" />
     <ClInclude Include="trex.h" />
     <ClInclude Include="Utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DockingFeature\resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

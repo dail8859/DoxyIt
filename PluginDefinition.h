@@ -18,58 +18,35 @@
 #ifndef PLUGINDEFINITION_H
 #define PLUGINDEFINITION_H
 
-#include <iostream>
 #include <sstream>
-#include <stdio.h>
-#include <vector>
-
-//
-// All definitions of plugin interface
-//
+#include <Shlwapi.h>
+#include <tchar.h>
 #include "PluginInterface.h"
 
 #define SCI_UNUSED 0
-
-const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
-const int nbFunc = 2;
-
-LRESULT SendScintilla(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
-bool updateScintilla();
-
-void pluginInit(HANDLE hModule);
-void pluginCleanUp();
-void commandMenuInit();
-void commandMenuCleanUp();
-bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk = NULL, bool check0nInit = false);
-
 
 // FingerText Messages
 #define FINGERTEXT_ISENABLED 1
 #define FINGERTEXT_GETVERSION 2
 #define FINGERTEXT_ACTIVATE 3
 
-// --- Menu call backs ---
+const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
+const int nbFunc = 4;
+
+// --- Helper function ---
+LRESULT SendScintilla(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
+
+// Calls from DoxyIt.cpp
+void pluginInit(HANDLE hModule);						// Called from DllMain, DLL_PROCESS_ATTACH
+void pluginCleanUp();									// Called from DllMain, DLL_PROCESS_DETACH
+void setNppInfo(NppData notepadPlusData);				// Called from setInfo()
+void handleNotification(SCNotification *notifyCode);	// Called from beNotified()
+
+// --- Menu callbacks ---
 void doxyItFunction();
 void doxyItFile();
 void activeCommenting();
 //void activeWrapping();
-
-// --- Notification callbacks ---
-void doxyItNewLine();
-
-extern bool do_active_commenting;
-extern bool do_active_wrapping;
-extern bool fingertext_found;
-extern bool fingertext_enabled;
-
-extern NppData nppData;
-
-
-typedef struct FunctionDefinition
-{
-	std::string return_val;
-	std::string function_name;
-	std::vector<std::string> parameters;	
-} FunctionDefinition;
+void showSettings();
 
 #endif //PLUGINDEFINITION_H
