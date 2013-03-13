@@ -41,8 +41,8 @@ protected :
 	virtual BOOL CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-	NppData			_nppData;
-	HWND			_HSource;
+	NppData _nppData;
+	HWND _HSource;
 };
 
 #endif

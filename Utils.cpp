@@ -54,7 +54,7 @@ char *getLineIndentStr(int line)
 {
 	int indentStart = SendScintilla(SCI_POSITIONFROMLINE, line);
 	int indentEnd = SendScintilla(SCI_GETLINEINDENTPOSITION, line);
-	
+
 	if(indentStart != indentEnd) return getRange(indentStart, indentEnd);
 	else return NULL;
 }
@@ -92,7 +92,7 @@ int findNext(char* text, bool regExp)
 	ttf.chrg.cpMin = curPos;
 	ttf.chrg.cpMax = curPos + 200;
 	ttf.lpstrText = text;
-	
+
 	return SendScintilla(SCI_FINDTEXT, flags, (LPARAM) &ttf);
 	//return ttf.chrgText.cpMin;
 }

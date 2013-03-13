@@ -72,7 +72,7 @@ void configSave()
 {
 	TCHAR iniPath[MAX_PATH];
 	int len = sizeof(parsers) / sizeof(parsers[0]);
-	
+
 	::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM) iniPath);
 	::_tcscat_s(iniPath, TEXT("\\"));
 	::_tcscat_s(iniPath, NPP_PLUGIN_NAME);
@@ -253,7 +253,7 @@ void doxyItFunction()
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM) &lang_type);
 	doc_block = Parse(lang_type);
 	if(doc_block.length() == 0) return;
-	
+
 	// Keep track of where we started
 	startPos = SendScintilla(SCI_GETCURRENTPOS);
 	startLine = SendScintilla(SCI_LINEFROMPOSITION, startPos);
@@ -265,15 +265,14 @@ void doxyItFunction()
 	SendScintilla(SCI_BEGINUNDOACTION);
 
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
-	
+
 	// get the end of the document block
 	endPos = SendScintilla(SCI_GETCURRENTPOS);
 	endLine = SendScintilla(SCI_LINEFROMPOSITION, endPos);
 
 	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
-	
-	SendScintilla(SCI_ENDUNDOACTION);
 
+	SendScintilla(SCI_ENDUNDOACTION);
 
 	// Activate FingerText
 	if(fingertext_enabled)
@@ -300,7 +299,7 @@ void doxyItFile()
 	char fname[MAX_PATH];
 	std::ostringstream doc_block;
 	char *eol;
-	
+
 	::SendMessage(nppData._nppHandle, NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
 	wcstombs(fname, fileName, sizeof(fname));
 
@@ -367,10 +366,10 @@ void doxyItNewLine()
 
 	// NOTE: we cannot use getLineIndentStr() because doc_start or doc_line may start with whitespace
 	// which we don't want counted towards the indentation string.
-	
+
 	// search for doc_start or doc_line in the previous line to see if we should complete a document
 	// block or if we should add a single document line
-	
+
 	// short_doc_start is the first 3 characters of the doc_start. If doc_start is relatively long
 	// we do not want the user typing the entire line, just the first 3 should suffice.
 	if((found = strstr(previousLine, short_doc_start.c_str()))
@@ -381,11 +380,11 @@ void doxyItNewLine()
 		// Count the characters in common so we can add the rest
 		unsigned int i = 0;
 		while(i < p->doc_start.length() && found[i] == p->doc_start.at(i)) ++i;
-		
+
 		doc_block << &p->doc_start.c_str()[i] << eol;
 		doc_block << indentation.c_str() << p->doc_line.c_str() << eol;
 		doc_block << indentation.c_str() << p->doc_end.c_str();
-		
+
 		SendScintilla(SCI_BEGINUNDOACTION);
 		clearLine(curLine); // Clear any automatic indentation
 		SendScintilla(SCI_DELETEBACK);
@@ -416,11 +415,10 @@ void handleNotification(SCNotification *notifyCode)
 	static bool do_newline = false;
 	NotifyHeader nh = notifyCode->nmhdr;
 	int ch = notifyCode->ch;
-	
+
 	switch(nh.code)
 	{
-		case SCN_UPDATEUI:
-			// Now is when we can check to see if we do the commenting
+		case SCN_UPDATEUI: // Now is when we can check to see if we do the commenting
 			if(do_newline)
 			{
 				do_newline = false;
@@ -430,19 +428,16 @@ void handleNotification(SCNotification *notifyCode)
 			break;
 		case SCN_CHARADDED:
 			// Set a flag so that all line endings can trigger the commenting
-			if((ch == '\r' || ch == '\n') && do_active_commenting)
-			{
-				do_newline = true;
-			}
+			if((ch == '\r' || ch == '\n') && do_active_commenting) do_newline = true;
 			break;
 		case NPPN_READY:
 			CommunicationInfo ci;
-			
+
 			// Check if FingerText is installed
 			ci.internalMsg = FINGERTEXT_GETVERSION;
 			ci.srcModuleName = NPP_PLUGIN_NAME;
 			ci.info = NULL;
-		
+
 			// NPPM_MSGTOPLUGIN returns true if the dll is found
 			if(::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci))
 			{

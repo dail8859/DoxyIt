@@ -26,7 +26,7 @@ bool Initialize_C(void)
 	const TRexChar *error = NULL;
 	tr_function = trex_compile("([\\w:]+)[*&]*\\s+[*&]*(\\w+)\\s*(\\([^)]*\\))", &error);
 	tr_parameters = trex_compile("(\\w+|\\.\\.\\.)(\\s*=\\s*\\w+)?\\s*[,)]", &error);
-	
+
 	if(!tr_function || !tr_parameters) return false;
 	return true;
 }
@@ -67,7 +67,7 @@ std::string Parse_C(const Parser *p)
 		doc_block << p->doc_start << eol;
 		doc_block << p->doc_line << p->command_prefix << "brief " << FT("[Brief]") << eol;
 		doc_block << p->doc_line << eol;
-		
+
 		// For each param
 		cur_params = params_match.begin;
 		while(trex_searchrange(tr_parameters, cur_params, end, &p_begin, &p_end))
@@ -87,7 +87,6 @@ std::string Parse_C(const Parser *p)
 				doc_block.write(param_match.begin, param_match.len);
 				doc_block << " " << FT(desc.c_str()) << eol;
 			}
-			
 			cur_params = p_end;
 		}
 

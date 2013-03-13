@@ -31,31 +31,21 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 {
 	switch (message) 
 	{
-        case WM_INITDIALOG:
-        {
-            return true;
-        }
-
+		case WM_INITDIALOG:
+			return true;
 		case WM_COMMAND: 
-		{
-       
-
 			switch (wParam)
 			{
 				case IDOK:
-                    display(false);
-                    return true;
+					display(false);
+					return true;
 				case IDCANCEL:
-                    display(false);
-                
+					display(false);
 					return true;
 				default:
-                    return false;
+					return false;
 			}
-		}
-        
-        default:
-            //return false;
-            return StaticDialog::dlgProc(_HSource, message, wParam, lParam);
+		default:
+			return StaticDialog::dlgProc(_HSource, message, wParam, lParam);
 	}
 }
