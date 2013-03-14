@@ -16,6 +16,7 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#include <fstream>
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
 #include "trex.h"
@@ -160,12 +161,13 @@ void configLoad()
 void pluginInit(HANDLE hModule)
 {
 	InitializeParsers();
+
+	_hModule = hModule;
 }
 
 void pluginCleanUp()
 {
 	commandMenuCleanUp();
-	configSave();
 	CleanUpParsers();
 }
 
@@ -195,7 +197,7 @@ void commandMenuInit()
 	//setCommand(1, TEXT("DoxyIt - File"), doxyItFile, NULL, false);
 	setCommand(1, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
 	setCommand(2, TEXT(""), NULL);
-	setCommand(3, TEXT("Settings"), activeCommenting);
+	setCommand(3, TEXT("Settings"), showSettings);
 	//setCommand(3, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
 }
 
@@ -450,6 +452,9 @@ void handleNotification(SCNotification *notifyCode)
 				fingertext_found = false;
 				return;
 			}
+			break;
+		case NPPN_SHUTDOWN:
+			configSave();
 			break;
 	}
 	/*

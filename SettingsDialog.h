@@ -19,14 +19,23 @@
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
 
-#include "PluginInterface.h"
+#include <map>
 #include "resource.h"
+#include "PluginInterface.h"
 #include "StaticDialog.h"
+
+typedef struct ParserDefintion
+{
+	std::wstring doc_start;
+	std::wstring doc_line;
+	std::wstring doc_end;
+	std::wstring command_prefix;
+} ParserDefinition;
 
 class SettingsDialog : public StaticDialog
 {
 public:
-	SettingsDialog() : StaticDialog() {};
+	SettingsDialog() : StaticDialog() { last_selection = 0;};
 
 	void init(HINSTANCE hInst, NppData nppData)
 	{
@@ -34,13 +43,22 @@ public:
 		Window::init(hInst, nppData._nppHandle);
 	};
 
-	void SettingsDialog::doDialog();
-	virtual void destroy() {};
+	void initParserDefinitions();
+	void savePreviousParserDefinition();
+	void loadParserDefinition();
+	void saveSettings();
+
+	void doDialog();
+	virtual void destroy() {DeleteObject(mono);};
 
 protected :
 	virtual BOOL CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
+	std::map<std::wstring, ParserDefinition> parserDefinitions;
+	HFONT mono;
+	int last_selection;
+
 	NppData _nppData;
 	HWND _HSource;
 };
