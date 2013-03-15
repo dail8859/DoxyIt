@@ -44,9 +44,10 @@ public:
 	};
 
 	void initParserDefinitions();
-	void savePreviousParserDefinition();
+	void saveParserDefinition(int index);
 	void loadParserDefinition();
 	void saveSettings();
+	void updatePreview();
 
 	void doDialog();
 	virtual void destroy() {DeleteObject(mono);};

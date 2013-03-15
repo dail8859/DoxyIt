@@ -42,7 +42,7 @@ typedef struct Parser
 	// Registered functions
 	bool (*initializer)(void);
 	void (*cleanup)(void);
-	std::string (*callback)(const Parser *pc);
+	std::string (*callback)(const Parser *pc, const char *text);
 } Parser;
 
 extern Parser parsers[4];
@@ -51,7 +51,7 @@ extern Parser parsers[4];
 #define DEFINE_PARSER(lang) \
 	bool Initialize_##lang(void); \
 	void CleanUp_##lang(void); \
-	std::string Parse_##lang(const Parser *p); \
+	std::string Parse_##lang(const Parser *p, const char *text);
 
 DEFINE_PARSER(C);
 DEFINE_PARSER(CPP);

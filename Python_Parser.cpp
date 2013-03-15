@@ -27,8 +27,7 @@ void CleanUp_PYTHON(void)
 {
 }
 
-// Just use this as a wrapper around the C implementation
-std::string Parse_PYTHON(const Parser *p)
+std::string Parse_PYTHON(const Parser *p, const char *text)
 {
 	return "";
 }

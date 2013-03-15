@@ -27,8 +27,7 @@ void CleanUp_JAVA(void)
 {
 }
 
-// Just use this as a wrapper around the C implementation
-std::string Parse_JAVA(const Parser *p)
+std::string Parse_JAVA(const Parser *p, const char *text)
 {
 	return "";
 }

@@ -37,19 +37,29 @@ void CleanUp_C(void)
 	trex_free(tr_parameters);
 }
 
-std::string Parse_C(const Parser *p)
+// If text == NULL, then get the text from scintilla to parse,
+// else, use text to search in
+std::string Parse_C(const Parser *p, const char *text)
 {
-	char *buffer;
+	char *buffer = NULL;
 	const TRexChar *begin,*end;
 	char *eol;
 	std::ostringstream doc_block;
 
-	int curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
-	int curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos);
-	int found = findNext(")", false);
-	if(found == -1) return "";
-
-	buffer = getRange(curPos, found + 1);
+	if(text == NULL)
+	{
+		int curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
+		int curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos);
+		int found = findNext(")", false);
+		if(found == -1) return "";
+		buffer = getRange(curPos, found + 1);
+	}
+	else
+	{
+		buffer = new char[strlen(text) + 1];
+		strcpy(buffer, text);
+	}
+	
 	eol = getEolStr();
 
 	if(trex_search(tr_function, buffer, &begin, &end))
@@ -107,7 +117,7 @@ std::string Parse_C(const Parser *p)
 		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 	}
 
-	delete[] buffer;
+	if(buffer) delete[] buffer;
 
 	return doc_block.str();
 }

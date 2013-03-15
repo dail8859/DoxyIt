@@ -340,6 +340,7 @@ void activeWrapping()
 
 void showSettings()
 {
+	updateScintilla();
 	sd.doDialog();
 }
 

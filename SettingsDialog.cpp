@@ -18,6 +18,7 @@
 #include <windowsx.h>
 #include "SettingsDialog.h"
 #include "Parsers.h"
+#include "PluginDefinition.h"
 
 void SettingsDialog::doDialog()
 {
@@ -50,15 +51,14 @@ void SettingsDialog::initParserDefinitions()
 	}
 }
 
-
-void SettingsDialog::savePreviousParserDefinition()
+void SettingsDialog::saveParserDefinition(int index)
 {
 	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 	wchar_t prev_name[32];
 	wchar_t text[256];
 
 	// Save the text from the edit controls for the previous selection
-	ComboBox_GetLBText(cmb, last_selection, prev_name);
+	ComboBox_GetLBText(cmb, index, prev_name);
 	ParserDefinition *prev_pd = &parserDefinitions[prev_name];
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_START), text, 256);
 	prev_pd->doc_start.assign(text);
@@ -82,15 +82,12 @@ void SettingsDialog::loadParserDefinition()
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), pd.doc_line.c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), pd.doc_end.c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), pd.command_prefix.c_str());
-
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), TEXT("TODO"));
-	
 }
 
 void SettingsDialog::saveSettings()
 {
 	last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
-	savePreviousParserDefinition();
+	saveParserDefinition(last_selection);
 
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
@@ -105,7 +102,39 @@ void SettingsDialog::saveSettings()
 	}
 }
 
-// http://msdn.microsoft.com/en-us/library/ff485897%28v=vs.85%29.aspx
+// HACK: This probably isn't a good way of doing it, but this will work for now
+void SettingsDialog::updatePreview()
+{
+	Parser p = {0, TEXT(""), "", "", "", "", TEXT(""), TEXT(""), TEXT(""), TEXT(""), NULL, NULL, NULL};
+	ParserDefinition *pd;
+	wchar_t name[32];
+	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
+
+	ComboBox_GetText(cmb, name, 32);
+
+	pd = &parserDefinitions[name];
+	
+	int len = sizeof(parsers) / sizeof(parsers[0]);
+	for(int i = 0; i < len; ++i)
+	{
+		if(parsers[i].lang == name)
+		{
+			p.doc_start.assign(pd->doc_start.begin(), pd->doc_start.end());
+			p.doc_line.assign(pd->doc_line.begin(), pd->doc_line.end());
+			p.doc_end.assign(pd->doc_end.begin(), pd->doc_end.end());
+			p.command_prefix.assign(pd->command_prefix.begin(), pd->command_prefix.end());
+			
+			std::string block = parsers[i].callback(&p, "int foo(Struct my_struct, char *pointer)");
+			block += "\r\nint foo(Struct my_struct, char *pointer)";
+			std::wstring wblock(block.begin(), block.end());
+			
+			Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), wblock.c_str());
+			break;
+		}
+	}
+}
+
+
 BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message) 
@@ -119,7 +148,8 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 				ComboBox_AddString(cmb, parsers[i].lang.c_str());
 			ComboBox_SetCurSel(cmb, last_selection);
 
-			mono = CreateFont(0,10,0,0,0,0,0,0,0,0,0,0,0,TEXT("Courier New"));
+			// I have no idea what these values do, but these work
+			mono = CreateFont(16,8,0,0,0,0,0,0,0,0,0,0,0,TEXT("Courier New"));
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_START), mono, false);
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_LINE), mono, false);
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_END), mono, false);
@@ -132,12 +162,14 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			switch(HIWORD(wParam))
 			{
 				case CBN_SELCHANGE:
-				{
-					savePreviousParserDefinition();
+					saveParserDefinition(last_selection);
 					loadParserDefinition();
 					last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
 					return true;
-				}
+				case EN_CHANGE:
+					saveParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
+					updatePreview();
+					return true;
 			}
 			switch(wParam)
 			{

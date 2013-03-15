@@ -50,7 +50,7 @@ std::string Parse(int lang_type)
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
 		if(parsers[i].lang_type == lang_type)
-			return (*parsers[i].callback)(&parsers[i]);
+			return (*parsers[i].callback)(&parsers[i], NULL);
 
 	return "";
 }
