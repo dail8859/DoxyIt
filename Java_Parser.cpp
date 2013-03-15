@@ -29,5 +29,5 @@ void CleanUp_JAVA(void)
 
 std::string Parse_JAVA(const Parser *p, const char *text)
 {
-	return "";
+	return "todo";
 }

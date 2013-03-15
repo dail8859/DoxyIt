@@ -105,7 +105,7 @@ void SettingsDialog::saveSettings()
 // HACK: This probably isn't a good way of doing it, but this will work for now
 void SettingsDialog::updatePreview()
 {
-	Parser p = {0, TEXT(""), "", "", "", "", TEXT(""), TEXT(""), TEXT(""), TEXT(""), NULL, NULL, NULL};
+	Parser p = {0, TEXT(""), "", "", "", "", "", TEXT(""), TEXT(""), TEXT(""), TEXT(""), NULL, NULL, NULL};
 	ParserDefinition *pd;
 	wchar_t name[32];
 	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
@@ -124,8 +124,11 @@ void SettingsDialog::updatePreview()
 			p.doc_end.assign(pd->doc_end.begin(), pd->doc_end.end());
 			p.command_prefix.assign(pd->command_prefix.begin(), pd->command_prefix.end());
 			
-			std::string block = parsers[i].callback(&p, "int foo(Struct my_struct, char *pointer)");
-			block += "\r\nint foo(Struct my_struct, char *pointer)";
+			//std::string block = parsers[i].callback(&p, "int foo(Struct my_struct, char *pointer)");
+			//block += "\r\nint foo(Struct my_struct, char *pointer)";
+			std::string block = parsers[i].callback(&p, parsers[i].example.c_str());
+			block += "\r\n" + parsers[i].example;
+			
 			std::wstring wblock(block.begin(), block.end());
 			
 			Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), wblock.c_str());

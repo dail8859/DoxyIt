@@ -32,6 +32,7 @@ typedef struct Parser
 	std::string doc_line;
 	std::string doc_end;
 	std::string command_prefix;
+	const std::string example;
 
 	// Store default values. For convenience, these are wstring to load and save easier
 	const std::wstring default_doc_start;

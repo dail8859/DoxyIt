@@ -29,5 +29,5 @@ void CleanUp_PYTHON(void)
 
 std::string Parse_PYTHON(const Parser *p, const char *text)
 {
-	return "";
+	return "todo";
 }
