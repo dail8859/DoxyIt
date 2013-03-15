@@ -23,15 +23,23 @@
 #include "Utils.h"
 #include "trex.h"
 
+// These are the settable fields in the parser
+// This makes it easier when changing settings in the dialog box
+typedef struct ParserDefinition
+{
+	std::string doc_start;
+	std::string doc_line;
+	std::string doc_end;
+	std::string command_prefix;
+} ParserDefinition;
 
 typedef struct Parser
 {
 	int lang_type;
 	std::wstring lang;
-	std::string doc_start;
-	std::string doc_line;
-	std::string doc_end;
-	std::string command_prefix;
+
+	ParserDefinition pd;
+
 	const std::string example;
 
 	// Store default values. For convenience, these are wstring to load and save easier
@@ -43,7 +51,7 @@ typedef struct Parser
 	// Registered functions
 	bool (*initializer)(void);
 	void (*cleanup)(void);
-	std::string (*callback)(const Parser *pc, const char *text);
+	std::string (*callback)(const ParserDefinition *pd, const char *text);
 } Parser;
 
 extern Parser parsers[4];
@@ -52,7 +60,7 @@ extern Parser parsers[4];
 #define DEFINE_PARSER(lang) \
 	bool Initialize_##lang(void); \
 	void CleanUp_##lang(void); \
-	std::string Parse_##lang(const Parser *p, const char *text);
+	std::string Parse_##lang(const ParserDefinition *pd, const char *text);
 
 DEFINE_PARSER(C);
 DEFINE_PARSER(CPP);

@@ -20,17 +20,11 @@
 #define SETTINGSDIALOG_H
 
 #include <map>
-#include "resource.h"
+#include "Parsers.h"
 #include "PluginInterface.h"
 #include "StaticDialog.h"
+#include "resource.h"
 
-typedef struct ParserDefintion
-{
-	std::wstring doc_start;
-	std::wstring doc_line;
-	std::wstring doc_end;
-	std::wstring command_prefix;
-} ParserDefinition;
 
 class SettingsDialog : public StaticDialog
 {

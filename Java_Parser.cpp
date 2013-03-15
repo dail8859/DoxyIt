@@ -27,7 +27,7 @@ void CleanUp_JAVA(void)
 {
 }
 
-std::string Parse_JAVA(const Parser *p, const char *text)
+std::string Parse_JAVA(const ParserDefinition *pd, const char *text)
 {
 	return "todo";
 }

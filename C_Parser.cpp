@@ -39,7 +39,7 @@ void CleanUp_C(void)
 
 // If text == NULL, then get the text from scintilla to parse,
 // else, use text to search in
-std::string Parse_C(const Parser *p, const char *text)
+std::string Parse_C(const ParserDefinition *pd, const char *text)
 {
 	char *buffer = NULL;
 	const TRexChar *begin,*end;
@@ -74,9 +74,9 @@ std::string Parse_C(const Parser *p, const char *text)
 		trex_getsubexp(tr_function, 2, &func_match);
 		trex_getsubexp(tr_function, 3, &params_match);
 
-		doc_block << p->doc_start << eol;
-		doc_block << p->doc_line << p->command_prefix << "brief " << FT("[Brief]") << eol;
-		doc_block << p->doc_line << eol;
+		doc_block << pd->doc_start << eol;
+		doc_block << pd->doc_line << pd->command_prefix << "brief " << FT("[Brief]") << eol;
+		doc_block << pd->doc_line << eol;
 
 		// For each param
 		cur_params = params_match.begin;
@@ -93,7 +93,7 @@ std::string Parse_C(const Parser *p, const char *text)
 				desc.append(param_match.begin, param_match.len);
 				desc += " Description]";
 
-				doc_block << p->doc_line << p->command_prefix << "param [in] ";
+				doc_block << pd->doc_line << pd->command_prefix << "param [in] ";
 				doc_block.write(param_match.begin, param_match.len);
 				doc_block << " " << FT(desc.c_str()) << eol;
 			}
@@ -101,16 +101,16 @@ std::string Parse_C(const Parser *p, const char *text)
 		}
 
 		// Return value
-		doc_block << p->doc_line << p->command_prefix << "return " << p->command_prefix << "em ";
+		doc_block << pd->doc_line << pd->command_prefix << "return " << pd->command_prefix << "em ";
 		doc_block.write(return_match.begin, return_match.len); 
 		doc_block << " " << FT("[Return Description]") << eol;
-		doc_block << p->doc_line << eol;
+		doc_block << pd->doc_line << eol;
 
 		//doc_block << doc_line << command_prefix << "revision 1 $[![(key)DATE:MM/dd/yyyy]!]" << eol;
 		//doc_block << doc_line << command_prefix << "history <b>Rev. 1 $[![(key)DATE:MM/dd/yyyy]!]</b> $[![description]!]" << eol;
 		//doc_block << doc_line << eol;
-		doc_block << p->doc_line << p->command_prefix << "details " << FT("[Details]") << eol;
-		doc_block << p->doc_end;
+		doc_block << pd->doc_line << pd->command_prefix << "details " << FT("[Details]") << eol;
+		doc_block << pd->doc_end;
 	}
 	else
 	{

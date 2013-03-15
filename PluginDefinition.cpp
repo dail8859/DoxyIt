@@ -84,23 +84,24 @@ void configSave()
 
 	for(int i = 0; i < len; ++i)
 	{
-		Parser *p = &parsers[i];
+		const Parser *p = &parsers[i];
+		const ParserDefinition *pd = &p->pd;
 		std::wstring ws;
 
 		// Wrap everything in quotes to perserve whitespace
-		ws.assign(p->doc_start.begin(), p->doc_start.end());
+		ws.assign(pd->doc_start.begin(), pd->doc_start.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
 		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
 
-		ws.assign(p->doc_line.begin(), p->doc_line.end());
+		ws.assign(pd->doc_line.begin(), pd->doc_line.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
 		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), ws.c_str(), iniPath);
 
-		ws.assign(p->doc_end.begin(), p->doc_end.end());
+		ws.assign(pd->doc_end.begin(), pd->doc_end.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
 		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), ws.c_str(), iniPath);
 
-		ws.assign(p->command_prefix.begin(), p->command_prefix.end());
+		ws.assign(pd->command_prefix.begin(), pd->command_prefix.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
 		::WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
 	}
@@ -133,23 +134,23 @@ void configLoad()
 		// parser, else, use what we pulled from the file.
 		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->doc_start.assign(p->default_doc_start.begin(), p->default_doc_start.end());
-		else p->doc_start.assign(buffer);
+		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_start.assign(p->default_doc_start.begin(), p->default_doc_start.end());
+		else p->pd.doc_start.assign(buffer);
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->doc_line.assign(p->default_doc_line.begin(), p->default_doc_line.end());
-		else p->doc_line.assign(buffer);
+		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_line.assign(p->default_doc_line.begin(), p->default_doc_line.end());
+		else p->pd.doc_line.assign(buffer);
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->doc_end.assign(p->default_doc_end.begin(), p->default_doc_end.end());
-		else p->doc_end.assign(buffer);
+		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_end.assign(p->default_doc_end.begin(), p->default_doc_end.end());
+		else p->pd.doc_end.assign(buffer);
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->command_prefix.assign(p->default_command_prefix.begin(), p->default_command_prefix.end());
-		else p->command_prefix.assign(buffer);
+		if(strncmp(buffer, "!!!", 3) == 0) p->pd.command_prefix.assign(p->default_command_prefix.begin(), p->default_command_prefix.end());
+		else p->pd.command_prefix.assign(buffer);
 	}
 
 	// Write out the file if it doesnt exist yet
@@ -359,7 +360,7 @@ void doxyItNewLine()
 	if(!updateScintilla()) return;
 
 	if(!(p = getCurrentParser())) return;
-	short_doc_start = p->doc_start.substr(0, 3);
+	short_doc_start = p->pd.doc_start.substr(0, 3);
 	eol = getEolStr();
 
 	curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
@@ -376,17 +377,17 @@ void doxyItNewLine()
 	// short_doc_start is the first 3 characters of the doc_start. If doc_start is relatively long
 	// we do not want the user typing the entire line, just the first 3 should suffice.
 	if((found = strstr(previousLine, short_doc_start.c_str()))
-		&& strstr(previousLine, p->doc_end.c_str()) == 0)
+		&& strstr(previousLine, p->pd.doc_end.c_str()) == 0)
 	{
 		indentation.append(previousLine, found - previousLine);
 
 		// Count the characters in common so we can add the rest
 		unsigned int i = 0;
-		while(i < p->doc_start.length() && found[i] == p->doc_start.at(i)) ++i;
+		while(i < p->pd.doc_start.length() && found[i] == p->pd.doc_start.at(i)) ++i;
 
-		doc_block << &p->doc_start.c_str()[i] << eol;
-		doc_block << indentation.c_str() << p->doc_line.c_str() << eol;
-		doc_block << indentation.c_str() << p->doc_end.c_str();
+		doc_block << &p->pd.doc_start.c_str()[i] << eol;
+		doc_block << indentation.c_str() << p->pd.doc_line.c_str() << eol;
+		doc_block << indentation.c_str() << p->pd.doc_end.c_str();
 
 		SendScintilla(SCI_BEGINUNDOACTION);
 		clearLine(curLine); // Clear any automatic indentation
@@ -398,11 +399,11 @@ void doxyItNewLine()
 		SendScintilla(SCI_LINEUP);
 		SendScintilla(SCI_LINEEND);
 	}
-	else if(found = strstr(previousLine, p->doc_line.c_str()))
+	else if(found = strstr(previousLine, p->pd.doc_line.c_str()))
 	{
 		indentation.append(previousLine, found - previousLine);
 
-		doc_block << indentation.c_str() <<  p->doc_line.c_str();
+		doc_block << indentation.c_str() <<  p->pd.doc_line.c_str();
 
 		SendScintilla(SCI_BEGINUNDOACTION);
 		clearLine(curLine); // Clear any automatic indentation

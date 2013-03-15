@@ -28,8 +28,8 @@ void CleanUp_CPP(void)
 }
 
 // Just use this as a wrapper around the C implementation
-std::string Parse_CPP(const Parser *p, const char *text)
+std::string Parse_CPP(const ParserDefinition *pd, const char *text)
 {
 	// Use the cpp parser
-	return Parse_C(p, text);
+	return Parse_C(pd, text);
 }

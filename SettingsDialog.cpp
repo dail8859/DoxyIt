@@ -20,6 +20,20 @@
 #include "Parsers.h"
 #include "PluginDefinition.h"
 
+// TODO: move these!
+std::wstring toWideString(std::string s)
+{
+	std::wstring wide(s.begin(), s.end());
+	return wide;
+}
+
+std::string toString(const wchar_t *w)
+{
+	std::wstring wide(w);
+	std::string s(wide.begin(), wide.end());
+	return s;
+}
+
 void SettingsDialog::doDialog()
 {
 	if (!isCreated())
@@ -42,10 +56,11 @@ void SettingsDialog::initParserDefinitions()
 		ParserDefinition pd;
 		Parser *p = &parsers[i];
 
-		pd.doc_start.assign(p->doc_start.begin(), p->doc_start.end());
-		pd.doc_line.assign(p->doc_line.begin(), p->doc_line.end());
-		pd.doc_end.assign(p->doc_end.begin(), p->doc_end.end());
-		pd.command_prefix.assign(p->command_prefix.begin(), p->command_prefix.end());
+		// TODO: Figure out if we can do "pd = p->pd;"
+		pd.doc_start = p->pd.doc_start;
+		pd.doc_line = p->pd.doc_line;
+		pd.doc_end = p->pd.doc_end;
+		pd.command_prefix = p->pd.command_prefix;
 
 		parserDefinitions[p->lang] = pd;
 	}
@@ -61,13 +76,13 @@ void SettingsDialog::saveParserDefinition(int index)
 	ComboBox_GetLBText(cmb, index, prev_name);
 	ParserDefinition *prev_pd = &parserDefinitions[prev_name];
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_START), text, 256);
-	prev_pd->doc_start.assign(text);
+	prev_pd->doc_start = toString(text);
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), text, 256);
-	prev_pd->doc_line.assign(text);
+	prev_pd->doc_line = toString(text);
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_END), text, 256);
-	prev_pd->doc_end.assign(text);
+	prev_pd->doc_end = toString(text);
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), text, 256);
-	prev_pd->command_prefix.assign(text);
+	prev_pd->command_prefix = toString(text);
 }
 
 void SettingsDialog::loadParserDefinition()
@@ -78,10 +93,10 @@ void SettingsDialog::loadParserDefinition()
 	// Load the edit controls with the new parsers settings
 	ComboBox_GetText(cmb, name, 32);
 	ParserDefinition pd = parserDefinitions[name];
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_START), pd.doc_start.c_str());
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), pd.doc_line.c_str());
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), pd.doc_end.c_str());
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), pd.command_prefix.c_str());
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_START), toWideString(pd.doc_start).c_str());
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), toWideString(pd.doc_line).c_str());
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), toWideString(pd.doc_end).c_str());
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), toWideString(pd.command_prefix).c_str());
 }
 
 void SettingsDialog::saveSettings()
@@ -95,23 +110,22 @@ void SettingsDialog::saveSettings()
 		Parser *p = &parsers[i];
 		ParserDefinition pd = parserDefinitions[p->lang];
 
-		p->doc_start.assign(pd.doc_start.begin(), pd.doc_start.end());
-		p->doc_line.assign(pd.doc_line.begin(), pd.doc_line.end());
-		p->doc_end.assign(pd.doc_end.begin(), pd.doc_end.end());
-		p->command_prefix.assign(pd.command_prefix.begin(), pd.command_prefix.end());
+		// TODO: Figure out if we can do "p->pd = pd;"
+		p->pd.doc_start = pd.doc_start;
+		p->pd.doc_line = pd.doc_line;
+		p->pd.doc_end = pd.doc_end;
+		p->pd.command_prefix = pd.command_prefix;
 	}
 }
 
 // HACK: This probably isn't a good way of doing it, but this will work for now
 void SettingsDialog::updatePreview()
 {
-	Parser p = {0, TEXT(""), "", "", "", "", "", TEXT(""), TEXT(""), TEXT(""), TEXT(""), NULL, NULL, NULL};
 	ParserDefinition *pd;
 	wchar_t name[32];
 	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 
 	ComboBox_GetText(cmb, name, 32);
-
 	pd = &parserDefinitions[name];
 	
 	int len = sizeof(parsers) / sizeof(parsers[0]);
@@ -119,14 +133,8 @@ void SettingsDialog::updatePreview()
 	{
 		if(parsers[i].lang == name)
 		{
-			p.doc_start.assign(pd->doc_start.begin(), pd->doc_start.end());
-			p.doc_line.assign(pd->doc_line.begin(), pd->doc_line.end());
-			p.doc_end.assign(pd->doc_end.begin(), pd->doc_end.end());
-			p.command_prefix.assign(pd->command_prefix.begin(), pd->command_prefix.end());
-			
-			//std::string block = parsers[i].callback(&p, "int foo(Struct my_struct, char *pointer)");
-			//block += "\r\nint foo(Struct my_struct, char *pointer)";
-			std::string block = parsers[i].callback(&p, parsers[i].example.c_str());
+			// Pass in the ParserDefinition held by the Dialog box
+			std::string block = parsers[i].callback(pd, parsers[i].example.c_str());
 			block += "\r\n" + parsers[i].example;
 			
 			std::wstring wblock(block.begin(), block.end());
