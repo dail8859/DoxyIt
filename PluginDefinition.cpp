@@ -202,14 +202,12 @@ void commandMenuInit()
 	//setCommand(3, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
 }
 
-//
-// Here you can do the clean up (especially for the shortcut)
-//
 void commandMenuCleanUp()
 {
 	// Don't forget to deallocate your shortcut here
 	delete funcItem[0]._pShKey;
 }
+
 
 void setNppInfo(NppData notepadPlusData)
 {

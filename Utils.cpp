@@ -21,25 +21,6 @@
 
 extern bool fingertext_enabled;
 
-// If finger text is enabled, it wrappes the string with $[![...]!], else it just returns the string
-std::string FT(const char *p)
-{
-	std::string s;
-	
-	if(fingertext_enabled)
-	{
-		s += "$[![";
-		s += p;
-		s += "]!]";
-	}
-	else
-	{
-		s += p;
-	}
-
-	return s;
-}
-
 // Clears the line
 void clearLine(int line)
 {
@@ -132,4 +113,37 @@ char *getEolStr()
 	int eolmode = SendScintilla(SCI_GETEOLMODE);
 	static char *eol[] = {"\r\n","\r","\n"};
 	return eol[eolmode];
+}
+
+
+// If finger text is enabled, it wrappes the string with $[![...]!], else it just returns the string
+std::string FT(const char *p)
+{
+	std::string s;
+	
+	if(fingertext_enabled)
+	{
+		s += "$[![";
+		s += p;
+		s += "]!]";
+	}
+	else
+	{
+		s += p;
+	}
+
+	return s;
+}
+
+std::wstring toWideString(std::string s)
+{
+	std::wstring wide(s.begin(), s.end());
+	return wide;
+}
+
+std::string toString(const wchar_t *w)
+{
+	std::wstring wide(w);
+	std::string s(wide.begin(), wide.end());
+	return s;
 }

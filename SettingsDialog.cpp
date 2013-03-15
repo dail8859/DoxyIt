@@ -20,26 +20,11 @@
 #include "Parsers.h"
 #include "PluginDefinition.h"
 
-// TODO: move these!
-std::wstring toWideString(std::string s)
-{
-	std::wstring wide(s.begin(), s.end());
-	return wide;
-}
-
-std::string toString(const wchar_t *w)
-{
-	std::wstring wide(w);
-	std::string s(wide.begin(), wide.end());
-	return s;
-}
+extern bool fingertext_enabled;
 
 void SettingsDialog::doDialog()
 {
-	if (!isCreated())
-	{
-		create(IDD_SETTINGSDLG);
-	}
+	if (!isCreated()) create(IDD_SETTINGSDLG);
 	goToCenter();
 
 	initParserDefinitions();
@@ -52,18 +37,7 @@ void SettingsDialog::initParserDefinitions()
 	
 	parserDefinitions.clear();
 	for(int i = 0; i < len; ++i)
-	{
-		ParserDefinition pd;
-		Parser *p = &parsers[i];
-
-		// TODO: Figure out if we can do "pd = p->pd;"
-		pd.doc_start = p->pd.doc_start;
-		pd.doc_line = p->pd.doc_line;
-		pd.doc_end = p->pd.doc_end;
-		pd.command_prefix = p->pd.command_prefix;
-
-		parserDefinitions[p->lang] = pd;
-	}
+		parserDefinitions[parsers[i].lang] = parsers[i].pd;
 }
 
 void SettingsDialog::saveParserDefinition(int index)
@@ -106,16 +80,7 @@ void SettingsDialog::saveSettings()
 
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
-	{
-		Parser *p = &parsers[i];
-		ParserDefinition pd = parserDefinitions[p->lang];
-
-		// TODO: Figure out if we can do "p->pd = pd;"
-		p->pd.doc_start = pd.doc_start;
-		p->pd.doc_line = pd.doc_line;
-		p->pd.doc_end = pd.doc_end;
-		p->pd.command_prefix = pd.command_prefix;
-	}
+		parsers[i].pd = parserDefinitions[parsers[i].lang];
 }
 
 // HACK: This probably isn't a good way of doing it, but this will work for now
@@ -128,6 +93,9 @@ void SettingsDialog::updatePreview()
 	ComboBox_GetText(cmb, name, 32);
 	pd = &parserDefinitions[name];
 	
+	// Disable fingertext for the preview
+	fingertext_enabled = false;
+
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
 	{
