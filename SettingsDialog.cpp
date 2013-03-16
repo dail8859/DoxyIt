@@ -89,12 +89,17 @@ void SettingsDialog::updatePreview()
 	ParserDefinition *pd;
 	wchar_t name[32];
 	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
+	int prev_eol_mode;
 
 	ComboBox_GetText(cmb, name, 32);
 	pd = &parserDefinitions[name];
 	
 	// Disable fingertext for the preview
 	fingertext_enabled = false;
+
+	// Set eol mode to "\r\n" so it will display correctly in the dialogbox
+	prev_eol_mode = SendScintilla(SCI_GETEOLMODE);
+	SendScintilla(SCI_SETEOLMODE, SC_EOL_CRLF);
 
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
@@ -111,6 +116,8 @@ void SettingsDialog::updatePreview()
 			break;
 		}
 	}
+
+	SendScintilla(SCI_SETEOLMODE, prev_eol_mode);
 }
 
 
