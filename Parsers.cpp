@@ -30,7 +30,7 @@ Parser parsers[] =
 	REGISTER_PARSER(C,      "/**", " *  ", " */", "\\", "int function(const char *p, int index)"),
 	REGISTER_PARSER(CPP,    "/**", " *  ", " */", "\\", "std::string function(const char *p, int &index)"),
 	REGISTER_PARSER(JAVA,   "/**", " *  ", " */", "@",  "example"),
-	REGISTER_PARSER(PYTHON, "## ", "#  ",  "#  ", "@",  "example")
+	REGISTER_PARSER(PYTHON, "## ", "#  ",  "#  ", "@",  "def foo(bar, baz=none)")
 	//REGISTER_PARSER(CS),
 	//REGISTER_PARSER(PHP),
 };
@@ -50,12 +50,24 @@ const Parser *getCurrentParser(void)
 
 std::string Parse(int lang_type)
 {
-	int len = sizeof(parsers) / sizeof(parsers[0]);
+	std::string doc_block = "";
+	int len, curPos, found;
+	char *buffer;
+	
+	// Get the text until a closing parenthesis, possibly make this settable for each parser
+	curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
+	found = findNext(")", false);
+	buffer = getRange(curPos, found + 1);
+	if(found == -1) return "";
+
+	len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
 		if(parsers[i].lang_type == lang_type)
-			return (*parsers[i].callback)(&parsers[i].pd, NULL);
+			doc_block = (*parsers[i].callback)(&parsers[i].pd, buffer);
 
-	return "";
+	delete[] buffer;
+
+	return doc_block;
 }
 
 void InitializeParsers(void)

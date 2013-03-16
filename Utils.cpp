@@ -108,7 +108,7 @@ char *getLine(int lineNum)
 }
 
 // Get the end of line string for the current eol mode
-char *getEolStr()
+const char *getEolStr()
 {
 	int eolmode = SendScintilla(SCI_GETEOLMODE);
 	static char *eol[] = {"\r\n","\r","\n"};

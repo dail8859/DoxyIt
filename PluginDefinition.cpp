@@ -352,7 +352,8 @@ void doxyItNewLine()
 	std::ostringstream doc_block;
 	std::string indentation;
 	std::string short_doc_start;
-	char *previousLine, *eol, *found = NULL;
+	char *previousLine, *found = NULL;
+	const char *eol;
 	int curPos, curLine;
 
 	if(!updateScintilla()) return;
