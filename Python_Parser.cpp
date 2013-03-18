@@ -81,7 +81,12 @@ std::string Parse_PYTHON(const ParserDefinition *pd, const char *text)
 			
 			cur_params = p_end;
 		}
+		
+		// Return value
+		doc_block << pd->doc_line << pd->command_prefix << "return ";
+		doc_block << FT("[Return Description]") << eol;
 		doc_block << pd->doc_line << eol;
+
 		doc_block << pd->doc_line << pd->command_prefix << "details " << FT("[Details]") << eol;
 		doc_block << pd->doc_end;
 	}

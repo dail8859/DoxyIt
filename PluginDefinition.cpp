@@ -264,15 +264,9 @@ void doxyItFunction()
 	indent = getLineIndentStr(startLine + 1);
 
 	SendScintilla(SCI_BEGINUNDOACTION);
-
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
-
-	// get the end of the document block
-	endPos = SendScintilla(SCI_GETCURRENTPOS);
-	endLine = SendScintilla(SCI_LINEFROMPOSITION, endPos);
-
+	endLine = SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS)); // get the end of the document block
 	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
-
 	SendScintilla(SCI_ENDUNDOACTION);
 
 	// Activate FingerText

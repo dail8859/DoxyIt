@@ -84,14 +84,10 @@ std::string Parse_C(const ParserDefinition *pd, const char *text)
 		}
 
 		// Return value
-		doc_block << pd->doc_line << pd->command_prefix << "return " << pd->command_prefix << "em ";
-		doc_block.write(return_match.begin, return_match.len); 
-		doc_block << " " << FT("[Return Description]") << eol;
+		doc_block << pd->doc_line << pd->command_prefix << "return ";
+		doc_block << FT("[Return Description]") << eol;
 		doc_block << pd->doc_line << eol;
 
-		//doc_block << doc_line << command_prefix << "revision 1 $[![(key)DATE:MM/dd/yyyy]!]" << eol;
-		//doc_block << doc_line << command_prefix << "history <b>Rev. 1 $[![(key)DATE:MM/dd/yyyy]!]</b> $[![description]!]" << eol;
-		//doc_block << doc_line << eol;
 		doc_block << pd->doc_line << pd->command_prefix << "details " << FT("[Details]") << eol;
 		doc_block << pd->doc_end;
 	}
