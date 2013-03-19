@@ -141,7 +141,7 @@ std::wstring toWideString(std::string s)
 	return wide;
 }
 
-std::string toString(const wchar_t *w)
+std::string toString(const TCHAR *w)
 {
 	std::wstring wide(w);
 	std::string s(wide.begin(), wide.end());

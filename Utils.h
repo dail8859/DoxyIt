@@ -31,6 +31,6 @@ const char *getEolStr();
 // Generic string utilites
 std::string FT(const char *p);
 std::wstring toWideString(std::string s);
-std::string toString(const wchar_t *w);
+std::string toString(const TCHAR *w);
 
 #endif

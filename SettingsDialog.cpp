@@ -22,6 +22,14 @@
 
 extern bool fingertext_enabled;
 
+const TCHAR *msg = TEXT("An option is blank (or all whitespace). If this is desired, it is recommended to disable Active Commenting. Continue anyways?");
+
+void SettingsDialog::init(HINSTANCE hInst, NppData nppData)
+{
+	_nppData = nppData;
+	Window::init(hInst, nppData._nppHandle);
+}
+
 void SettingsDialog::doDialog()
 {
 	if (!isCreated()) create(IDD_SETTINGSDLG);
@@ -43,8 +51,8 @@ void SettingsDialog::initParserDefinitions()
 void SettingsDialog::saveParserDefinition(int index)
 {
 	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
-	wchar_t prev_name[32];
-	wchar_t text[256];
+	TCHAR prev_name[32];
+	TCHAR text[256];
 
 	// Save the text from the edit controls for the previous selection
 	ComboBox_GetLBText(cmb, index, prev_name);
@@ -61,7 +69,7 @@ void SettingsDialog::saveParserDefinition(int index)
 
 void SettingsDialog::loadParserDefinition()
 {
-	wchar_t name[32];
+	TCHAR name[32];
 	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 
 	// Load the edit controls with the new parsers settings
@@ -73,11 +81,47 @@ void SettingsDialog::loadParserDefinition()
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), toWideString(pd.command_prefix).c_str());
 }
 
+bool SettingsDialog::validateText(std::string text, int idc)
+{
+	if(text.length() != 0)
+	{
+		for(unsigned int i = 0; i < text.length(); ++i)
+			if(!isspace(text[i]))
+				return true;
+	}
+
+	SetFocus(GetDlgItem(_hSelf, idc));
+	//Edit_SetSel(GetDlgItem(_hSelf, idc), 0, -1);
+	return false;
+}
+bool SettingsDialog::validateSettings()
+{
+	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
+	
+	int len = sizeof(parsers) / sizeof(parsers[0]);
+	for(int i = 0; i < len; ++i)
+	{
+		bool ret = true;
+		const ParserDefinition *pd = &parserDefinitions[parsers[i].lang];
+		
+		if(!validateText(pd->doc_start, IDC_EDIT_START)) ret = false;
+		if(!validateText(pd->doc_line, IDC_EDIT_LINE)) ret = false;
+		if(!validateText(pd->doc_end, IDC_EDIT_END)) ret = false;
+		if(!validateText(pd->command_prefix, IDC_EDIT_PREFIX)) ret = false;
+
+		if(!ret)
+		{
+			ComboBox_SelectString(cmb, -1, parsers[i].lang.c_str());
+			loadParserDefinition();
+			return false;
+		}
+	}
+	
+	return true;
+}
+
 void SettingsDialog::saveSettings()
 {
-	last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
-	saveParserDefinition(last_selection);
-
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
 		parsers[i].pd = parserDefinitions[parsers[i].lang];
@@ -160,8 +204,18 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			switch(wParam)
 			{
 				case IDOK:
-					saveSettings();
-					display(false);
+					last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+					saveParserDefinition(last_selection);
+					if(validateSettings())
+					{
+						saveSettings();
+						display(false);
+					}
+					else if(::MessageBox(_hSelf, msg, NPP_PLUGIN_NAME, MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
+					{
+						saveSettings();
+						display(false);
+					}
 					return true;
 				case IDCANCEL:
 					display(false);

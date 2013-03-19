@@ -241,7 +241,7 @@ void doxyItFunction()
 {
 	std::string doc_block;
 	int lang_type;
-	int startPos, endPos;
+	int startPos;
 	int startLine, endLine;
 	char *indent = NULL;
 

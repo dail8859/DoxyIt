@@ -29,22 +29,20 @@
 class SettingsDialog : public StaticDialog
 {
 public:
-	SettingsDialog() : StaticDialog() { last_selection = 0;};
+	SettingsDialog() : StaticDialog(), last_selection(0) {};
 
-	void init(HINSTANCE hInst, NppData nppData)
-	{
-		_nppData = nppData;
-		Window::init(hInst, nppData._nppHandle);
-	};
+	void init(HINSTANCE hInst, NppData nppData);
+	void doDialog();
+	virtual void destroy() {DeleteObject(mono);}
 
+private:
 	void initParserDefinitions();
 	void saveParserDefinition(int index);
 	void loadParserDefinition();
+	bool validateText(std::string text, int idc);
+	bool validateSettings();
 	void saveSettings();
 	void updatePreview();
-
-	void doDialog();
-	virtual void destroy() {DeleteObject(mono);};
 
 protected :
 	virtual BOOL CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
@@ -53,7 +51,6 @@ private:
 	std::map<std::wstring, ParserDefinition> parserDefinitions;
 	HFONT mono;
 	int last_selection;
-
 	NppData _nppData;
 	HWND _HSource;
 };
