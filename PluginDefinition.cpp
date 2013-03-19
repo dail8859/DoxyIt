@@ -31,6 +31,7 @@ NppData nppData;
 HANDLE _hModule;			// For dialog initialization
 bool do_active_commenting;	// active commenting - when pressing enter in a document block, create a new doc line
 //bool do_active_wrapping;	// active wrapping - wrap text inside of document blocks...todo
+bool use_fingertext;		// use fingertext if it is available
 bool fingertext_found;		// if we found the fingertext plugin installed
 bool fingertext_enabled;	// if fingertext is enabled
 
@@ -42,6 +43,14 @@ SettingsDialog sd;
 
 void commandMenuInit();
 void commandMenuCleanUp();
+
+// --- Menu callbacks ---
+void doxyItFunction();
+void doxyItFile();
+void activeCommenting();
+void useFingerText();
+//void activeWrapping();
+void showSettings();
 
 
 LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
@@ -81,6 +90,7 @@ void configSave()
 
 	// [DoxyIt]
 	::WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), do_active_commenting ? TEXT("true") : TEXT("false"), iniPath);
+	::WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), use_fingertext ? TEXT("true") : TEXT("false"), iniPath);
 
 	for(int i = 0; i < len; ++i)
 	{
@@ -123,6 +133,9 @@ void configLoad()
 	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
 	wcstombs(buffer, tbuffer, MAX_PATH);
 	do_active_commenting = strcmp(buffer, "true") == 0;
+	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
+	wcstombs(buffer, tbuffer, MAX_PATH);
+	use_fingertext = strcmp(buffer, "true") == 0;
 
 	for(int i = 0; i < len; ++i)
 	{
@@ -197,8 +210,9 @@ void commandMenuInit()
 	setCommand(0, TEXT("DoxyIt - Function"), doxyItFunction, sk, false);
 	//setCommand(1, TEXT("DoxyIt - File"), doxyItFile, NULL, false);
 	setCommand(1, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
-	setCommand(2, TEXT(""), NULL);
-	setCommand(3, TEXT("Settings"), showSettings);
+	setCommand(2, TEXT("Use FingerText (if available)"), useFingerText, NULL, use_fingertext);
+	setCommand(3, TEXT(""), NULL);
+	setCommand(4, TEXT("Settings..."), showSettings);
 	//setCommand(3, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
 }
 
@@ -221,7 +235,7 @@ void setNppInfo(NppData notepadPlusData)
 
 bool checkFingerText()
 {
-	if(fingertext_found)
+	if(fingertext_found && use_fingertext)
 	{
 		CommunicationInfo ci;
 		ci.internalMsg = FINGERTEXT_ISENABLED;
@@ -321,6 +335,12 @@ void activeCommenting()
 {
 	do_active_commenting = !do_active_commenting;
 	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[1]._cmdID, (LPARAM) do_active_commenting);
+}
+
+void useFingerText()
+{
+	use_fingertext = !use_fingertext;
+	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[2]._cmdID, (LPARAM) use_fingertext);
 }
 
 /*

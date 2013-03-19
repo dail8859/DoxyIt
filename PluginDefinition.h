@@ -31,7 +31,7 @@
 #define FINGERTEXT_ACTIVATE 3
 
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
-const int nbFunc = 4;
+const int nbFunc = 5;
 
 // --- Helper function ---
 LRESULT SendScintilla(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
@@ -41,12 +41,5 @@ void pluginInit(HANDLE hModule);						// Called from DllMain, DLL_PROCESS_ATTACH
 void pluginCleanUp();									// Called from DllMain, DLL_PROCESS_DETACH
 void setNppInfo(NppData notepadPlusData);				// Called from setInfo()
 void handleNotification(SCNotification *notifyCode);	// Called from beNotified()
-
-// --- Menu callbacks ---
-void doxyItFunction();
-void doxyItFile();
-void activeCommenting();
-//void activeWrapping();
-void showSettings();
 
 #endif //PLUGINDEFINITION_H
