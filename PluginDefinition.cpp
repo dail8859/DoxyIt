@@ -362,18 +362,16 @@ void showSettings()
 
 void doxyItNewLine()
 {
-	const Parser *p;
 	std::ostringstream doc_block;
 	std::string indentation;
-	std::string short_doc_start;
-	char *previousLine, *found = NULL;
-	const char *eol;
 	int curPos, curLine;
+	const ParserDefinition *pd;
+	const char *eol;
+	char *previousLine, *found = NULL;
 
 	if(!updateScintilla()) return;
 
-	if(!(p = getCurrentParser())) return;
-	short_doc_start = p->pd.doc_start.substr(0, 3);
+	if(!(pd = &getCurrentParser()->pd)) return;
 	eol = getEolStr();
 
 	curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
@@ -384,44 +382,42 @@ void doxyItNewLine()
 	// NOTE: we cannot use getLineIndentStr() because doc_start or doc_line may start with whitespace
 	// which we don't want counted towards the indentation string.
 
-	// search for doc_start or doc_line in the previous line to see if we should complete a document
-	// block or if we should add a single document line
-
-	// short_doc_start is the first 3 characters of the doc_start. If doc_start is relatively long
-	// we do not want the user typing the entire line, just the first 3 should suffice.
-	if((found = strstr(previousLine, short_doc_start.c_str()))
-		&& strstr(previousLine, p->pd.doc_end.c_str()) == 0)
+	if(found = strstr(previousLine, pd->doc_line.c_str()))
 	{
+		indentation.append(previousLine, found - previousLine);
+
+		doc_block << indentation.c_str() <<  pd->doc_line.c_str();
+
+		SendScintilla(SCI_BEGINUNDOACTION);
+		clearLine(curLine); // Clear any automatic indentation
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
+		SendScintilla(SCI_ENDUNDOACTION);
+	}
+	// If doc_start is relatively long we do not want the user typing the entire line, just the first 3 should suffice.
+	// Also, if doc_end is found, this means a doc block was closed. This allows e.g. /** inline comment */
+	else if((found = strstr(previousLine, pd->doc_start.substr(0, 3).c_str())) &&
+			strstr(previousLine, pd->doc_end.c_str()) == 0)
+	{
+		//::MessageBox(NULL, TEXT("Insert doc_line and doc_end"), NPP_PLUGIN_NAME, MB_OK);
 		indentation.append(previousLine, found - previousLine);
 
 		// Count the characters in common so we can add the rest
 		unsigned int i = 0;
-		while(i < p->pd.doc_start.length() && found[i] == p->pd.doc_start.at(i)) ++i;
+		while(i < pd->doc_start.length() && found[i] == pd->doc_start.at(i)) ++i;
 
-		doc_block << &p->pd.doc_start.c_str()[i] << eol;
-		doc_block << indentation.c_str() << p->pd.doc_line.c_str() << eol;
-		doc_block << indentation.c_str() << p->pd.doc_end.c_str();
+		doc_block << &pd->doc_start.c_str()[i] << eol;
+		doc_block << indentation.c_str() << pd->doc_line.c_str() << eol;
+		doc_block << indentation.c_str() << pd->doc_end.c_str();
 
 		SendScintilla(SCI_BEGINUNDOACTION);
 		clearLine(curLine); // Clear any automatic indentation
-		SendScintilla(SCI_DELETEBACK);
+		SendScintilla(SCI_DELETEBACK); // Clear the newline
 		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
 		SendScintilla(SCI_ENDUNDOACTION);
 
 		// Go up and to the end of the previous line
 		SendScintilla(SCI_LINEUP);
 		SendScintilla(SCI_LINEEND);
-	}
-	else if(found = strstr(previousLine, p->pd.doc_line.c_str()))
-	{
-		indentation.append(previousLine, found - previousLine);
-
-		doc_block << indentation.c_str() <<  p->pd.doc_line.c_str();
-
-		SendScintilla(SCI_BEGINUNDOACTION);
-		clearLine(curLine); // Clear any automatic indentation
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
-		SendScintilla(SCI_ENDUNDOACTION);
 	}
 
 	delete[] previousLine;
