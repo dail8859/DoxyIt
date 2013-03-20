@@ -8,23 +8,23 @@ Placing the cursor on the line directly above the function definition and pressi
 
 ```c
 /**
- *  @brief [Brief]
+ *  \brief [Brief]
  *  
- *  @param [in] my_struct [Param my_struct Description]
- *  @param [in] pointer [Param pointer Description]
- *  @return @em int [Return Description]
+ *  \param [in] p [Param p Description]
+ *  \param [in] index [Param pointer Description]
+ *  \return [Return Description]
  *  
- *  @details [Details]
+ *  \details [Details]
  */
-int function(Struct my_struct, const char *pointer)
+int function(const char *p, int index)
 ```
 
 ## Features
 - ~~[FingerText](http://sourceforge.net/projects/fingertext/) integration for hotspot navigation (optional).~~ *Pending pull request*
-- Active Commenting - automatically closes newly created comment blocks (e.g. type /** then enter). Also, when creating a new line in a comment block, it prefixes the line with "*".
+- Active Commenting - automatically closes newly created comment blocks (e.g. type /** then enter). Also, when creating a new line in a comment block, it prefixes the line with " * ".
 - Per language settings
 
-![Settings Dialog](https://dl.dropbox.com/u/13788271/Settings.png)
+![Settings Dialog](http://goo.gl/E9S66)
 
 ##Todo
 - Line wrapping inside comment blocks.
