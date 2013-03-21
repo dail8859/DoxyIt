@@ -31,7 +31,7 @@
 #define FINGERTEXT_ACTIVATE 3
 
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
-const int nbFunc = 5;
+const int nbFunc = 7;
 
 // --- Helper function ---
 LRESULT SendScintilla(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);

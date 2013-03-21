@@ -202,17 +202,16 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 void commandMenuInit()
 {
 	ShortcutKey *sk = new ShortcutKey();
-	sk->_isAlt = TRUE;
-	sk->_isCtrl = TRUE;
-	sk->_isShift = TRUE;
+	sk->_isAlt = sk->_isCtrl = sk->_isShift = TRUE;
 	sk->_key = 'D';
 
-	setCommand(0, TEXT("DoxyIt - Function"), doxyItFunction, sk, false);
-	//setCommand(1, TEXT("DoxyIt - File"), doxyItFile, NULL, false);
-	setCommand(1, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
-	setCommand(2, TEXT("Use FingerText (if available)"), useFingerText, NULL, use_fingertext);
-	setCommand(3, TEXT(""), NULL);
-	setCommand(4, TEXT("Settings..."), showSettings);
+	setCommand(0, TEXT("Function"), doxyItFunction, sk);
+	setCommand(1, TEXT("File"), doxyItFile);
+	setCommand(2, TEXT(""), NULL);
+	setCommand(3, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
+	setCommand(4, TEXT("Use FingerText (if available)"), useFingerText, NULL, use_fingertext);
+	setCommand(5, TEXT(""), NULL);
+	setCommand(6, TEXT("Settings..."), showSettings);
 	//setCommand(3, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
 }
 
@@ -233,6 +232,8 @@ void setNppInfo(NppData notepadPlusData)
 	sd.init((HINSTANCE) _hModule, nppData);
 }
 
+// NOTE: when using this you should do 'fingertext_enabled = checkFingerText();'
+// This function could set it explicitly, but that makes the code harder to follow
 bool checkFingerText()
 {
 	if(fingertext_found && use_fingertext)
@@ -246,6 +247,18 @@ bool checkFingerText()
 	}
 	else
 		return false;
+}
+
+void activateFingerText()
+{
+	if(fingertext_enabled)
+	{
+		CommunicationInfo ci;
+		ci.internalMsg = FINGERTEXT_ACTIVATE;
+		ci.srcModuleName = NPP_PLUGIN_NAME;
+		ci.info = NULL;
+		::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
+	}
 }
 
 
@@ -283,19 +296,7 @@ void doxyItFunction()
 	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
 	SendScintilla(SCI_ENDUNDOACTION);
 
-	// Activate FingerText
-	if(fingertext_enabled)
-	{
-		CommunicationInfo ci;
-		ci.internalMsg = FINGERTEXT_ACTIVATE;
-		ci.srcModuleName = NPP_PLUGIN_NAME;
-		ci.info = NULL;
-
-		// Reset to where we started
-		SendScintilla(SCI_SETCURRENTPOS, startPos);
-
-		::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
-	}
+	activateFingerText();
 
 	if(indent) delete[] indent;
 	// return (return_val, function_name, (parameters))
@@ -303,44 +304,51 @@ void doxyItFunction()
 
 void doxyItFile()
 {
-	/*
+	std::ostringstream doc_block;
+	const ParserDefinition *pd;
+	const Parser *p;
 	TCHAR fileName[MAX_PATH];
 	char fname[MAX_PATH];
-	std::ostringstream doc_block;
-	char *eol;
-
-	::SendMessage(nppData._nppHandle, NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
-	wcstombs(fname, fileName, sizeof(fname));
+	const char *eol;
 
 	if(!updateScintilla()) return;
+	
+	p = getCurrentParser();
+	if(!p) return;
+	pd = &p->pd;
+
+	// Get the file name
+	::SendMessage(nppData._nppHandle, NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
+	wcstombs(fname, fileName, sizeof(fname));
 
 	eol = getEolStr();
 
 	// Check if it is enabled
 	fingertext_enabled = checkFingerText();
-
-	doc_block << doc_start << eol;
-	doc_block << doc_line << command_prefix << "file " << fname << eol;
-	doc_block << doc_line << command_prefix << "brief " << eol;
-	doc_block << doc_line << eol;
-	doc_block << doc_line << command_prefix << "author " << eol;
-	doc_block << doc_line << command_prefix << "version 1.0" << eol;
-	doc_block << doc_end;
-
+	
+	doc_block << pd->doc_start << eol;
+	doc_block << pd->doc_line << pd->command_prefix << "file " << fname << eol;
+	doc_block << pd->doc_line << pd->command_prefix << "brief " << FT("[Brief]") << eol;
+	//doc_block << pd->doc_line << eol;
+	//doc_block << pd->doc_line << pd->command_prefix << "author " << eol;
+	//doc_block << pd->doc_line << pd->command_prefix << "version 1.0" << eol;
+	doc_block << pd->doc_end;
+	
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
-	*/
+
+	activateFingerText();
 }
 
 void activeCommenting()
 {
 	do_active_commenting = !do_active_commenting;
-	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[1]._cmdID, (LPARAM) do_active_commenting);
+	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_commenting);
 }
 
 void useFingerText()
 {
 	use_fingertext = !use_fingertext;
-	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[2]._cmdID, (LPARAM) use_fingertext);
+	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[4]._cmdID, (LPARAM) use_fingertext);
 }
 
 /*
