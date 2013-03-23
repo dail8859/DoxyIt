@@ -394,12 +394,17 @@ void doxyItNewLine()
 	{
 		indentation.append(previousLine, found - previousLine);
 
-		doc_block << indentation.c_str() <<  pd->doc_line.c_str();
+		// doc_line should have only whitespace in front of it
+		if(isWhiteSpace(indentation))
+		{
+			doc_block << indentation.c_str() <<  pd->doc_line.c_str();
 
-		SendScintilla(SCI_BEGINUNDOACTION);
-		clearLine(curLine); // Clear any automatic indentation
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
-		SendScintilla(SCI_ENDUNDOACTION);
+			SendScintilla(SCI_BEGINUNDOACTION);
+			clearLine(curLine); // Clear any automatic indentation
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
+			SendScintilla(SCI_ENDUNDOACTION);
+		}
+		
 	}
 	// If doc_start is relatively long we do not want the user typing the entire line, just the first 3 should suffice.
 	// Also, if doc_end is found, this means a doc block was closed. This allows e.g. /** inline comment */

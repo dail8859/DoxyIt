@@ -83,12 +83,8 @@ void SettingsDialog::loadParserDefinition()
 
 bool SettingsDialog::validateText(std::string text, int idc)
 {
-	if(text.length() != 0)
-	{
-		for(unsigned int i = 0; i < text.length(); ++i)
-			if(!isspace(text[i]))
-				return true;
-	}
+	if(text.length() != 0 && !isWhiteSpace(text))
+		return true;
 
 	SetFocus(GetDlgItem(_hSelf, idc));
 	//Edit_SetSel(GetDlgItem(_hSelf, idc), 0, -1);

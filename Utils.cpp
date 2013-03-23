@@ -64,14 +64,14 @@ void insertBeforeLines(char *str, int start, int end, bool force)
 }
 
 // Find the next instance of text
-int findNext(char* text, bool regExp)
+int findNext(char* text, int len, bool regExp)
 {
 	int curPos = SendScintilla(SCI_GETCURRENTPOS);
 	int flags = (regExp ? SCI_SETSEARCHFLAGS : 0);
 
 	TextToFind ttf;
 	ttf.chrg.cpMin = curPos;
-	ttf.chrg.cpMax = curPos + 200;
+	ttf.chrg.cpMax = curPos + len;
 	ttf.lpstrText = text;
 
 	return SendScintilla(SCI_FINDTEXT, flags, (LPARAM) &ttf);
@@ -146,4 +146,12 @@ std::string toString(const TCHAR *w)
 	std::wstring wide(w);
 	std::string s(wide.begin(), wide.end());
 	return s;
+}
+
+bool isWhiteSpace(std::string str)
+{
+	for(unsigned int i = 0; i < str.length(); ++i)
+		if(!isspace(str[i]))
+			return false;
+	return true;
 }

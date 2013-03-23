@@ -23,7 +23,7 @@
 void clearLine(int line);
 char *getLineIndentStr(int line);
 void insertBeforeLines(char *str, int start, int end, bool force=false);
-int findNext(char* text, bool regExp);
+int findNext(char* text, int len=200, bool regExp=false);
 char *getRange(int start, int end);
 char *getLine(int lineNum);
 const char *getEolStr();
@@ -32,5 +32,6 @@ const char *getEolStr();
 std::string FT(const char *p);
 std::wstring toWideString(std::string s);
 std::string toString(const TCHAR *w);
+bool isWhiteSpace(std::string str);
 
 #endif

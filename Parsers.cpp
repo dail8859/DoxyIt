@@ -56,7 +56,7 @@ std::string Parse(int lang_type)
 	
 	// Get the text until a closing parenthesis, possibly make this settable for each parser
 	curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
-	found = findNext(")", false);
+	found = findNext(")");
 	buffer = getRange(curPos, found + 1);
 	if(found == -1) return "";
 
