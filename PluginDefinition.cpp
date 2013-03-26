@@ -205,8 +205,8 @@ void commandMenuInit()
 	sk->_isAlt = sk->_isCtrl = sk->_isShift = TRUE;
 	sk->_key = 'D';
 
-	setCommand(0, TEXT("Function"), doxyItFunction, sk);
-	setCommand(1, TEXT("File"), doxyItFile);
+	setCommand(0, TEXT("DoxyIt - Function"), doxyItFunction, sk);
+	setCommand(1, TEXT("DoxyIt - File"), doxyItFile);
 	setCommand(2, TEXT(""), NULL);
 	setCommand(3, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
 	setCommand(4, TEXT("Use FingerText (if available)"), useFingerText, NULL, use_fingertext);
@@ -370,20 +370,18 @@ void showSettings()
 
 void doxyItNewLine()
 {
-	std::ostringstream doc_block;
 	std::string indentation;
-	int curPos, curLine;
 	const ParserDefinition *pd;
 	const char *eol;
 	char *previousLine, *found = NULL;
+	int curLine;
 
 	if(!updateScintilla()) return;
 
 	if(!(pd = &getCurrentParser()->pd)) return;
 	eol = getEolStr();
 
-	curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
-	curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, curPos);
+	curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS));
 
 	previousLine = getLine(curLine - 1);
 
@@ -397,11 +395,10 @@ void doxyItNewLine()
 		// doc_line should have only whitespace in front of it
 		if(isWhiteSpace(indentation))
 		{
-			doc_block << indentation.c_str() <<  pd->doc_line.c_str();
-
 			SendScintilla(SCI_BEGINUNDOACTION);
-			clearLine(curLine); // Clear any automatic indentation
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
+			SendScintilla(SCI_DELLINELEFT);	// Clear any automatic indentation
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_line.c_str());
 			SendScintilla(SCI_ENDUNDOACTION);
 		}
 		
@@ -411,26 +408,30 @@ void doxyItNewLine()
 	else if((found = strstr(previousLine, pd->doc_start.substr(0, 3).c_str())) &&
 			strstr(previousLine, pd->doc_end.c_str()) == 0)
 	{
-		//::MessageBox(NULL, TEXT("Insert doc_line and doc_end"), NPP_PLUGIN_NAME, MB_OK);
+		int pos;
+		unsigned int i = 0;
+
 		indentation.append(previousLine, found - previousLine);
 
 		// Count the characters in common so we can add the rest
-		unsigned int i = 0;
 		while(i < pd->doc_start.length() && found[i] == pd->doc_start.at(i)) ++i;
 
-		doc_block << &pd->doc_start.c_str()[i] << eol;
-		doc_block << indentation.c_str() << pd->doc_line.c_str() << eol;
-		doc_block << indentation.c_str() << pd->doc_end.c_str();
-
 		SendScintilla(SCI_BEGINUNDOACTION);
-		clearLine(curLine); // Clear any automatic indentation
-		SendScintilla(SCI_DELETEBACK); // Clear the newline
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
+		SendScintilla(SCI_DELLINELEFT);			// Clear any automatic indentation
+		SendScintilla(SCI_DELETEBACK);			// Clear the newline
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) &pd->doc_start.c_str()[i]);	// Fill the rest of doc_start
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_line.c_str());
+		pos = SendScintilla(SCI_GETCURRENTPOS);	// Save this position so we can restore it
+		SendScintilla(SCI_LINEEND);				// Skip any text the user carried to next line
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
+		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_end.c_str());
 		SendScintilla(SCI_ENDUNDOACTION);
 
-		// Go up and to the end of the previous line
-		SendScintilla(SCI_LINEUP);
-		SendScintilla(SCI_LINEEND);
+		// Restore the position
+		SendScintilla(SCI_GOTOPOS, pos);
 	}
 
 	delete[] previousLine;
