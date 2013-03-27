@@ -212,6 +212,7 @@
     <ClInclude Include="SettingsDialog.h" />
     <ClInclude Include="trex.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="Version.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DockingFeature\resource.rc" />

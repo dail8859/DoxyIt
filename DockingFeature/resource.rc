@@ -36,3 +36,39 @@ FONT 8, "Ms Shell Dlg"
     GROUPBOX        "Settings", IDC_STATIC, 5, 28, 121, 118
     GROUPBOX        "Preview", IDC_STATIC, 136, 28, 302, 118
 }
+
+
+
+//
+// Version Information resources
+//
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+1 VERSIONINFO
+    FILEVERSION     0,1,0,0
+    PRODUCTVERSION  0,1,0,0
+    FILEOS          VOS__WINDOWS32
+    FILETYPE        VFT_DLL
+    FILESUBTYPE     VFT2_UNKNOWN
+    FILEFLAGSMASK   0x00000000
+    FILEFLAGS       0x00000000
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040901B5"
+        {
+            VALUE "Comments", "Notepad++ plugin for Doxygen commenting"
+            VALUE "CompanyName", "Justin Dailey"
+            VALUE "FileDescription", "Notepad++ plugin for Doxygen commenting"
+            VALUE "FileVersion", "0.1.0"
+            VALUE "InternalName", "DoxyIt"
+            VALUE "OriginalFilename", "DoxyIt.dll"
+            VALUE "ProductName", "DoxyIt"
+            VALUE "ProductVersion", "0.1.0"
+            VALUE "SpecialBuild", ""
+        }
+    }
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409, 0x01B5
+    }
+}

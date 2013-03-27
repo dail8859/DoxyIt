@@ -22,7 +22,7 @@
 #include "trex.h"
 #include "Utils.h"
 #include "Parsers.h"
-
+#include "Version.h"
 #include "SettingsDialog.h"
 
 // Global variables
@@ -89,8 +89,9 @@ void configSave()
 	::_tcscat_s(iniPath, TEXT(".ini"));
 
 	// [DoxyIt]
-	::WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), do_active_commenting ? TEXT("true") : TEXT("false"), iniPath);
-	::WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), use_fingertext ? TEXT("true") : TEXT("false"), iniPath);
+	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), do_active_commenting ? TEXT("true") : TEXT("false"), iniPath);
+	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), use_fingertext ? TEXT("true") : TEXT("false"), iniPath);
+	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version"), VERSION_LINEAR_TEXT, iniPath);
 
 	for(int i = 0; i < len; ++i)
 	{
@@ -101,19 +102,19 @@ void configSave()
 		// Wrap everything in quotes to perserve whitespace
 		ws.assign(pd->doc_start.begin(), pd->doc_start.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
-		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
+		WritePrivateProfileString(p->lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
 
 		ws.assign(pd->doc_line.begin(), pd->doc_line.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
-		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), ws.c_str(), iniPath);
+		WritePrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), ws.c_str(), iniPath);
 
 		ws.assign(pd->doc_end.begin(), pd->doc_end.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
-		::WritePrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), ws.c_str(), iniPath);
+		WritePrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), ws.c_str(), iniPath);
 
 		ws.assign(pd->command_prefix.begin(), pd->command_prefix.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
-		::WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
+		WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
 	}
 }
 
@@ -121,6 +122,7 @@ void configLoad()
 {
 	TCHAR iniPath[MAX_PATH];
 	int len = sizeof(parsers) / sizeof(parsers[0]);
+	int version;
 	TCHAR tbuffer[MAX_PATH];
 	char buffer[MAX_PATH];
 
@@ -133,9 +135,12 @@ void configLoad()
 	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
 	wcstombs(buffer, tbuffer, MAX_PATH);
 	do_active_commenting = strcmp(buffer, "true") == 0;
+
 	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
 	wcstombs(buffer, tbuffer, MAX_PATH);
 	use_fingertext = strcmp(buffer, "true") == 0;
+
+	version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
 
 	for(int i = 0; i < len; ++i)
 	{
