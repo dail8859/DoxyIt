@@ -377,6 +377,7 @@ void showSettings()
 void doxyItNewLine()
 {
 	std::string indentation;
+	const Parser *p;
 	const ParserDefinition *pd;
 	const char *eol;
 	char *previousLine, *found = NULL;
@@ -384,7 +385,10 @@ void doxyItNewLine()
 
 	if(!updateScintilla()) return;
 
-	if(!(pd = &getCurrentParser()->pd)) return;
+	p = getCurrentParser();
+	if(!p) return;
+	pd = &p->pd;
+
 	eol = getEolStr();
 
 	curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS));
