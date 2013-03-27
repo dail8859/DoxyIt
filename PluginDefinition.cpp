@@ -139,6 +139,7 @@ void configLoad()
 	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
 	wcstombs(buffer, tbuffer, MAX_PATH);
 	use_fingertext = strcmp(buffer, "true") == 0;
+	use_fingertext = false; // Disable fingertext
 
 	version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
 
@@ -214,9 +215,9 @@ void commandMenuInit()
 	setCommand(1, TEXT("DoxyIt - File"), doxyItFile);
 	setCommand(2, TEXT(""), NULL);
 	setCommand(3, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
-	setCommand(4, TEXT("Use FingerText (if available)"), useFingerText, NULL, use_fingertext);
-	setCommand(5, TEXT(""), NULL);
-	setCommand(6, TEXT("Settings..."), showSettings);
+	//setCommand(4, TEXT("Use FingerText (if available)"), useFingerText, NULL, use_fingertext);
+	setCommand(4, TEXT(""), NULL);
+	setCommand(5, TEXT("Settings..."), showSettings);
 	//setCommand(3, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
 }
 
@@ -478,9 +479,7 @@ void handleNotification(SCNotification *notifyCode)
 			}
 			else
 			{
-				::MessageBox(NULL, TEXT("FingerText not found."), NPP_PLUGIN_NAME, MB_OK);
 				fingertext_found = false;
-				return;
 			}
 			break;
 		case NPPN_SHUTDOWN:
@@ -532,4 +531,5 @@ void handleNotification(SCNotification *notifyCode)
 		}
 	}
 	*/
+	return;
 }
