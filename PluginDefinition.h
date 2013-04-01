@@ -19,7 +19,6 @@
 #define PLUGINDEFINITION_H
 
 #include <sstream>
-#include <Shlwapi.h>
 #include <tchar.h>
 #include "PluginInterface.h"
 
@@ -31,7 +30,7 @@
 #define FINGERTEXT_ACTIVATE 3
 
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
-const int nbFunc = 6;
+const int nbFunc = 7;
 
 // --- Helper function ---
 LRESULT SendScintilla(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);

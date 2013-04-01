@@ -187,8 +187,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AboutDialog.cpp" />
     <ClCompile Include="CPP_Parser.cpp" />
     <ClCompile Include="C_Parser.cpp" />
+    <ClCompile Include="DockingFeature\Hyperlinks.cpp" />
     <ClCompile Include="DockingFeature\StaticDialog.cpp" />
     <ClCompile Include="DoxyIt.cpp" />
     <ClCompile Include="Java_Parser.cpp" />
@@ -200,6 +202,8 @@
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AboutDialog.h" />
+    <ClInclude Include="DockingFeature\Hyperlinks.h" />
     <ClInclude Include="DockingFeature\StaticDialog.h" />
     <ClInclude Include="DockingFeature\Window.h" />
     <ClInclude Include="menuCmdID.h" />

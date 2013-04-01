@@ -75,7 +75,7 @@ void InitializeParsers(void)
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
 		if((*parsers[i].initializer)() == false)
-			::MessageBox(NULL, TEXT("Doxyit initialization failed"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+			::MessageBox(NULL, TEXT("DoxyIt initialization failed"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 }
 
 void CleanUpParsers(void)

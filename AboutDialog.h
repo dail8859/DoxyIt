@@ -16,8 +16,9 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#define VERSION_NUM				0,1,0,0
-#define VERSION_LINEAR			100
-#define VERSION_TEXT			TEXT("0.1.0")
-#define VERSION_LINEAR_TEXT		TEXT("100")
-#define VERSION_STAGE			TEXT("alpha") // "alpha", "beta", ""
+#ifndef ABOUTDIALOG_H
+#define ABOUTDIALOG_H
+
+INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+#endif

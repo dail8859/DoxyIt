@@ -14,6 +14,27 @@
 // Dialog resources
 //
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDD_ABOUTDLG DIALOG 0, 0, 170, 135
+STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_POPUP | WS_SYSMENU
+CAPTION "DoxyIt - About"
+FONT 8, "Ms Shell Dlg"
+{
+    DEFPUSHBUTTON   "OK", IDOK, 60, 116, 50, 14
+    LTEXT           "For detailed usage, view the", IDC_STATIC, 12, 79, 90, 8, SS_LEFT
+    LTEXT           "Version:", IDC_STATIC, 12, 35, 26, 8, SS_LEFT
+    LTEXT           "Author: Justin Dailey <dail8859@yahoo.com>", IDC_STATIC, 11, 45, 144, 8, SS_LEFT
+    LTEXT           "This code is licensed under GPLv2", IDC_STATIC, 11, 100, 111, 8, SS_LEFT
+    LTEXT           "A Notepad++ plugin for Doxygen commenting.", IDC_STATIC, 11, 17, 146, 8, SS_LEFT
+    LTEXT           "DoxyIt", IDC_STATIC, 12, 7, 21, 8, SS_LEFT
+    LTEXT           "v", IDC_VERSION, 40, 35, 61, 8, SS_LEFT
+    LTEXT           "The DoxyIt code is hosted on", IDC_STATIC, 11, 69, 94, 8, SS_LEFT
+    LTEXT           "github", IDC_GITHUB, 106, 69, 20, 8, SS_LEFT | SS_NOTIFY
+    LTEXT           "readme", IDC_README, 103, 79, 24, 8, SS_LEFT | SS_NOTIFY
+}
+
+
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDD_SETTINGSDLG DIALOG 0, 0, 443, 170
 STYLE DS_SHELLFONT | WS_CAPTION | WS_POPUP | WS_SYSMENU
 EXSTYLE WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW

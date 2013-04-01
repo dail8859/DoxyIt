@@ -24,33 +24,33 @@
 #include "Parsers.h"
 #include "Version.h"
 #include "SettingsDialog.h"
+#include "AboutDialog.h"
+
 
 // Global variables
 FuncItem funcItem[nbFunc];
 NppData nppData;
-HANDLE _hModule;			// For dialog initialization
-bool do_active_commenting;	// active commenting - when pressing enter in a document block, create a new doc line
-//bool do_active_wrapping;	// active wrapping - wrap text inside of document blocks...todo
-bool use_fingertext;		// use fingertext if it is available
-bool fingertext_found;		// if we found the fingertext plugin installed
-bool fingertext_enabled;	// if fingertext is enabled
+
+bool do_active_commenting;		// active commenting - when pressing enter in a document block, create a new doc line
+//bool do_active_wrapping;		// active wrapping - wrap text inside of document blocks...todo
+bool use_fingertext;			// use fingertext if it is available
+bool fingertext_found;			// if we found the fingertext plugin installed
+bool fingertext_enabled;		// if fingertext is enabled
 
 // Local variables
-SciFnDirect pSciMsg;		// For direct scintilla call
-sptr_t pSciWndData;			// For direct scintilla call
-SettingsDialog sd;
-
-
-void commandMenuInit();
-void commandMenuCleanUp();
+static SciFnDirect pSciMsg;		// For direct scintilla call
+static sptr_t pSciWndData;		// For direct scintilla call
+static SettingsDialog sd;
+static HANDLE _hModule;			// For dialog initialization
 
 // --- Menu callbacks ---
-void doxyItFunction();
-void doxyItFile();
-void activeCommenting();
-void useFingerText();
-//void activeWrapping();
-void showSettings();
+static void doxyItFunction();
+static void doxyItFile();
+static void activeCommenting();
+//static void useFingerText();
+//static void activeWrapping();
+static void showSettings();
+static void showAbout();
 
 
 LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
@@ -69,12 +69,11 @@ bool updateScintilla()
 	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 
 	// Get the function and pointer to it for more effecient calls
-	pSciMsg = (SciFnDirect) SendMessage(curScintilla,SCI_GETDIRECTFUNCTION, 0, 0);
-	pSciWndData = (sptr_t) SendMessage(curScintilla,SCI_GETDIRECTPOINTER, 0, 0);
+	pSciMsg = (SciFnDirect) SendMessage(curScintilla, SCI_GETDIRECTFUNCTION, 0, 0);
+	pSciWndData = (sptr_t) SendMessage(curScintilla, SCI_GETDIRECTPOINTER, 0, 0);
 
 	return true;
 }
-
 
 // --- Configuration ---
 
@@ -92,6 +91,7 @@ void configSave()
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), do_active_commenting ? TEXT("true") : TEXT("false"), iniPath);
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), use_fingertext ? TEXT("true") : TEXT("false"), iniPath);
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version"), VERSION_LINEAR_TEXT, iniPath);
+	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), VERSION_STAGE, iniPath);
 
 	for(int i = 0; i < len; ++i)
 	{
@@ -122,7 +122,7 @@ void configLoad()
 {
 	TCHAR iniPath[MAX_PATH];
 	int len = sizeof(parsers) / sizeof(parsers[0]);
-	int version;
+	//int version;
 	TCHAR tbuffer[MAX_PATH];
 	char buffer[MAX_PATH];
 
@@ -141,7 +141,8 @@ void configLoad()
 	use_fingertext = strcmp(buffer, "true") == 0;
 	use_fingertext = false; // Disable fingertext
 
-	version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
+	//version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
+	//version_stage = GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), TEXT(""), tbuffer, MAX_PATH, iniPath);
 
 	for(int i = 0; i < len; ++i)
 	{
@@ -173,22 +174,7 @@ void configLoad()
 	}
 
 	// Write out the file if it doesnt exist yet
-	if(!PathFileExists(iniPath)) configSave();
-}
-
-
-
-void pluginInit(HANDLE hModule)
-{
-	InitializeParsers();
-
-	_hModule = hModule;
-}
-
-void pluginCleanUp()
-{
-	commandMenuCleanUp();
-	CleanUpParsers();
+	//if(!PathFileExists(iniPath)) configSave();
 }
 
 
@@ -218,6 +204,7 @@ void commandMenuInit()
 	//setCommand(4, TEXT("Use FingerText (if available)"), useFingerText, NULL, use_fingertext);
 	setCommand(4, TEXT(""), NULL);
 	setCommand(5, TEXT("Settings..."), showSettings);
+	setCommand(6, TEXT("About..."), showAbout);
 	//setCommand(3, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
 }
 
@@ -227,6 +214,18 @@ void commandMenuCleanUp()
 	delete funcItem[0]._pShKey;
 }
 
+void pluginInit(HANDLE hModule)
+{
+	InitializeParsers();
+
+	_hModule = hModule;
+}
+
+void pluginCleanUp()
+{
+	commandMenuCleanUp();
+	CleanUpParsers();
+}
 
 void setNppInfo(NppData notepadPlusData)
 {
@@ -237,6 +236,8 @@ void setNppInfo(NppData notepadPlusData)
 	// Dialog Init
 	sd.init((HINSTANCE) _hModule, nppData);
 }
+
+
 
 // NOTE: when using this you should do 'fingertext_enabled = checkFingerText();'
 // This function could set it explicitly, but that makes the code harder to follow
@@ -320,7 +321,13 @@ void doxyItFile()
 	if(!updateScintilla()) return;
 	
 	p = getCurrentParser();
-	if(!p) return;
+	
+	if(!p)
+	{
+		::MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		return;
+	}
+
 	pd = &p->pd;
 
 	// Get the file name
@@ -371,6 +378,12 @@ void showSettings()
 	sd.doDialog();
 }
 
+void showAbout()
+{
+	updateScintilla();
+	::CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
+}
+
 
 // --- Notification callbacks ---
 
@@ -418,30 +431,33 @@ void doxyItNewLine()
 	else if((found = strstr(previousLine, pd->doc_start.substr(0, 3).c_str())) &&
 			strstr(previousLine, pd->doc_end.c_str()) == 0)
 	{
-		int pos;
-		unsigned int i = 0;
-
 		indentation.append(previousLine, found - previousLine);
 
-		// Count the characters in common so we can add the rest
-		while(i < pd->doc_start.length() && found[i] == pd->doc_start.at(i)) ++i;
+		if(isWhiteSpace(indentation))
+		{
+			int pos;
+			unsigned int i = 0;
 
-		SendScintilla(SCI_BEGINUNDOACTION);
-		SendScintilla(SCI_DELLINELEFT);			// Clear any automatic indentation
-		SendScintilla(SCI_DELETEBACK);			// Clear the newline
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) &pd->doc_start.c_str()[i]);	// Fill the rest of doc_start
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_line.c_str());
-		pos = SendScintilla(SCI_GETCURRENTPOS);	// Save this position so we can restore it
-		SendScintilla(SCI_LINEEND);				// Skip any text the user carried to next line
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
-		SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_end.c_str());
-		SendScintilla(SCI_ENDUNDOACTION);
+			// Count the characters in common so we can add the rest
+			while(i < pd->doc_start.length() && found[i] == pd->doc_start.at(i)) ++i;
 
-		// Restore the position
-		SendScintilla(SCI_GOTOPOS, pos);
+			SendScintilla(SCI_BEGINUNDOACTION);
+			SendScintilla(SCI_DELLINELEFT);			// Clear any automatic indentation
+			SendScintilla(SCI_DELETEBACK);			// Clear the newline
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) &pd->doc_start.c_str()[i]);	// Fill the rest of doc_start
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_line.c_str());
+			pos = SendScintilla(SCI_GETCURRENTPOS);	// Save this position so we can restore it
+			SendScintilla(SCI_LINEEND);				// Skip any text the user carried to next line
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_end.c_str());
+			SendScintilla(SCI_ENDUNDOACTION);
+
+			// Restore the position
+			SendScintilla(SCI_GOTOPOS, pos);
+		}
 	}
 
 	delete[] previousLine;
