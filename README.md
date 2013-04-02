@@ -3,7 +3,7 @@ Notepad++ plugin for [Doxygen](http://www.doxygen.org) commenting. This also pro
 
 Currently there is support for C/C++, Python, and Java.
 
-<b><i> Note: This still in the pre-alpha stages and should not be considered stable. No DLL is being released at this time unless requested. </i></b>
+DoxyIt can be downloaded [here](http://goo.gl/Qjlyw).
 
 ## Usage
 ### Doxygen Function Commenting
