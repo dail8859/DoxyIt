@@ -24,8 +24,6 @@ static TRex *tr_parameters;
 bool Initialize_PYTHON(void)
 {
 	const TRexChar *error = NULL;
-	//tr_function = trex_compile("([\\w:]+)[*&]*\\s+[*&]*(\\w+)\\s*(\\([^)]*\\))", &error);
-	//tr_parameters = trex_compile("(\\w+|\\.\\.\\.)(\\s*=\\s*\\w+)?\\s*[,)]", &error);
 	tr_function = trex_compile("def\\s+(\\w+)\\s*(\\([^)]*\\))", &error);
 	tr_parameters = trex_compile("(\\w+)(\\s*=\\s*\\w+)?\\s*[,)]", &error);
 
@@ -49,13 +47,11 @@ std::string Parse_PYTHON(const ParserDefinition *pd, const char *text)
 
 	if(trex_search(tr_function, text, &begin, &end))
 	{
-		//TRexMatch return_match;
 		TRexMatch func_match;
 		TRexMatch params_match;
 		const TRexChar *cur_params;
 		const TRexChar *p_begin, *p_end;
 
-		//trex_getsubexp(tr_function, 1, &return_match);
 		trex_getsubexp(tr_function, 1, &func_match);
 		trex_getsubexp(tr_function, 2, &params_match);
 

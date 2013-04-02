@@ -57,6 +57,7 @@ typedef struct Parser
 extern Parser parsers[4];
 
 
+// Macro to help define the functions of each parser
 #define DEFINE_PARSER(lang) \
 	bool Initialize_##lang(void); \
 	void CleanUp_##lang(void); \
@@ -70,6 +71,7 @@ DEFINE_PARSER(PYTHON);
 
 const Parser *getCurrentParser();
 const ParserDefinition *getCurrentParserDefinition();
+
 void InitializeParsers();
 void CleanUpParsers();
 std::string Parse();

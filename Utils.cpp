@@ -75,7 +75,6 @@ int findNext(char* text, int len, bool regExp)
 	ttf.lpstrText = text;
 
 	return SendScintilla(SCI_FINDTEXT, flags, (LPARAM) &ttf);
-	//return ttf.chrgText.cpMin;
 }
 
 // Get a range of text from start to end, returned string must be free'd

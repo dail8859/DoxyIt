@@ -28,6 +28,14 @@
 
 class SettingsDialog : public StaticDialog
 {
+private:
+	std::map<std::wstring, ParserDefinition> parserDefinitions;
+	HFONT mono;
+	int last_selection;
+	NppData _nppData;
+	HWND _HSource;
+
+
 public:
 	SettingsDialog() : StaticDialog(), last_selection(0) {};
 
@@ -46,13 +54,6 @@ private:
 
 protected :
 	virtual BOOL CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
-
-private:
-	std::map<std::wstring, ParserDefinition> parserDefinitions;
-	HFONT mono;
-	int last_selection;
-	NppData _nppData;
-	HWND _HSource;
 };
 
 #endif

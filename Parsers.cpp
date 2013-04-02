@@ -20,6 +20,7 @@
 
 extern NppData nppData;
 
+// Very ugly macro
 #define REGISTER_PARSER(lang, doc_start, doc_line, doc_end, command_prefix, example) {L_##lang, TEXT(#lang), \
 	{"", "", "", ""}, \
 	example, TEXT(##doc_start), TEXT(##doc_line), TEXT(##doc_end), TEXT(##command_prefix), \

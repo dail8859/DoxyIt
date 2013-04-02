@@ -15,14 +15,15 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#include <windowsx.h>
+
+#include <WindowsX.h>
 #include "SettingsDialog.h"
 #include "Parsers.h"
 #include "PluginDefinition.h"
 
 extern bool fingertext_enabled;
 
-const TCHAR *msg = TEXT("An option is blank (or all whitespace). If this is desired, it is recommended to disable Active Commenting. Continue anyways?");
+const TCHAR *msg = TEXT("An option is blank (or all whitespace). If this is desired, it is recommended that you disable Active Commenting! Continue anyways?");
 
 void SettingsDialog::init(HINSTANCE hInst, NppData nppData)
 {
@@ -87,7 +88,6 @@ bool SettingsDialog::validateText(std::string text, int idc)
 		return true;
 
 	SetFocus(GetDlgItem(_hSelf, idc));
-	//Edit_SetSel(GetDlgItem(_hSelf, idc), 0, -1);
 	return false;
 }
 bool SettingsDialog::validateSettings()
@@ -123,12 +123,11 @@ void SettingsDialog::saveSettings()
 		parsers[i].pd = parserDefinitions[parsers[i].lang];
 }
 
-// HACK: This probably isn't a good way of doing it, but this will work for now
 void SettingsDialog::updatePreview()
 {
+	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 	ParserDefinition *pd;
 	wchar_t name[32];
-	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 	int prev_eol_mode;
 
 	ComboBox_GetText(cmb, name, 32);
@@ -150,9 +149,7 @@ void SettingsDialog::updatePreview()
 			std::string block = parsers[i].callback(pd, parsers[i].example.c_str());
 			block += "\r\n" + parsers[i].example;
 			
-			std::wstring wblock(block.begin(), block.end());
-			
-			Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), wblock.c_str());
+			Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), toWideString(block).c_str());
 			break;
 		}
 	}

@@ -18,20 +18,18 @@
 
 #include <fstream>
 #include "PluginDefinition.h"
-#include "menuCmdID.h"
-#include "trex.h"
 #include "Utils.h"
 #include "Parsers.h"
 #include "Version.h"
 #include "SettingsDialog.h"
 #include "AboutDialog.h"
-
+#include "trex.h"
 
 // Global variables
 FuncItem funcItem[nbFunc];
 NppData nppData;
 
-bool do_active_commenting;		// active commenting - when pressing enter in a document block, create a new doc line
+bool do_active_commenting;		// active commenting - create or extend a document block
 //bool do_active_wrapping;		// active wrapping - wrap text inside of document blocks...todo
 bool use_fingertext;			// use fingertext if it is available
 bool fingertext_found;			// if we found the fingertext plugin installed
@@ -40,7 +38,7 @@ bool fingertext_enabled;		// if fingertext is enabled
 // Local variables
 static SciFnDirect pSciMsg;		// For direct scintilla call
 static sptr_t pSciWndData;		// For direct scintilla call
-static SettingsDialog sd;
+static SettingsDialog sd;		// The settings dialog
 static HANDLE _hModule;			// For dialog initialization
 
 // --- Menu callbacks ---
@@ -99,7 +97,7 @@ void configSave()
 		const ParserDefinition *pd = &p->pd;
 		std::wstring ws;
 
-		// Wrap everything in quotes to perserve whitespace
+		// Wrap everything in quotes to preserve whitespace
 		ws.assign(pd->doc_start.begin(), pd->doc_start.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
 		WritePrivateProfileString(p->lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
@@ -141,6 +139,7 @@ void configLoad()
 	use_fingertext = strcmp(buffer, "true") == 0;
 	use_fingertext = false; // Disable fingertext
 
+	// Don't need these for now
 	//version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
 	//version_stage = GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), TEXT(""), tbuffer, MAX_PATH, iniPath);
 
@@ -303,7 +302,6 @@ void doxyItFunction()
 	activateFingerText();
 
 	if(indent) delete[] indent;
-	// return (return_val, function_name, (parameters))
 }
 
 void doxyItFile()
@@ -418,7 +416,7 @@ void doxyItNewLine()
 		
 	}
 	// If doc_start is relatively long we do not want the user typing the entire line, just the first 3 should suffice.
-	// Also, if doc_end is found, this means a doc block was closed. This allows e.g. /** inline comment */
+	// Also, if doc_end is found, this means a doc block was closed. This allows e.g. /** inline comments */
 	else if((found = strstr(previousLine, pd->doc_start.substr(0, 3).c_str())) &&
 			strstr(previousLine, pd->doc_end.c_str()) == 0)
 	{
