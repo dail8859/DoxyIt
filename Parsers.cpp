@@ -48,22 +48,35 @@ const Parser *getCurrentParser(void)
 	return NULL;
 }
 
-std::string Parse(int lang_type)
+const ParserDefinition *getCurrentParserDefinition(void)
 {
-	std::string doc_block = "";
-	int len, curPos, found;
+	const Parser *p;
+
+	p = getCurrentParser();
+	if(p) return &p->pd;
+	else return NULL;
+}
+
+std::string Parse(void)
+{
+	std::string doc_block;
+	const Parser *p;
+	int found;
 	char *buffer;
 	
+	p = getCurrentParser();
+	if(!p)
+	{
+		::MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		return "";
+	}
+
 	// Get the text until a closing parenthesis, possibly make this settable for each parser
-	curPos = (int) SendScintilla(SCI_GETCURRENTPOS);
 	found = findNext(")");
 	if(found == -1) return "";
-	buffer = getRange(curPos, found + 1);
 
-	len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-		if(parsers[i].lang_type == lang_type)
-			doc_block = (*parsers[i].callback)(&parsers[i].pd, buffer);
+	buffer = getRange(SendScintilla(SCI_GETCURRENTPOS), found + 1);
+	doc_block = p->callback(&p->pd, buffer);
 
 	delete[] buffer;
 

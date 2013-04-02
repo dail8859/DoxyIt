@@ -274,7 +274,6 @@ void activateFingerText()
 void doxyItFunction()
 {
 	std::string doc_block;
-	int lang_type;
 	int startPos;
 	int startLine, endLine;
 	char *indent = NULL;
@@ -284,9 +283,7 @@ void doxyItFunction()
 	// Check if it is enabled
 	fingertext_enabled = checkFingerText();
 
-	// Get the current language type and parse it
-	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM) &lang_type);
-	doc_block = Parse(lang_type);
+	doc_block = Parse();
 	if(doc_block.length() == 0) return;
 
 	// Keep track of where we started
@@ -313,22 +310,18 @@ void doxyItFile()
 {
 	std::ostringstream doc_block;
 	const ParserDefinition *pd;
-	const Parser *p;
 	TCHAR fileName[MAX_PATH];
 	char fname[MAX_PATH];
 	const char *eol;
 
 	if(!updateScintilla()) return;
 	
-	p = getCurrentParser();
-	
-	if(!p)
+	pd = getCurrentParserDefinition();
+	if(!pd)
 	{
 		::MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return;
 	}
-
-	pd = &p->pd;
 
 	// Get the file name
 	::SendMessage(nppData._nppHandle, NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
@@ -390,7 +383,6 @@ void showAbout()
 void doxyItNewLine()
 {
 	std::string indentation;
-	const Parser *p;
 	const ParserDefinition *pd;
 	const char *eol;
 	char *previousLine, *found = NULL;
@@ -398,9 +390,8 @@ void doxyItNewLine()
 
 	if(!updateScintilla()) return;
 
-	p = getCurrentParser();
-	if(!p) return;
-	pd = &p->pd;
+	pd = getCurrentParserDefinition();
+	if(!pd) return;
 
 	eol = getEolStr();
 

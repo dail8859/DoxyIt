@@ -68,9 +68,10 @@ DEFINE_PARSER(JAVA);
 DEFINE_PARSER(PYTHON);
 
 
-const Parser *getCurrentParser(void);
+const Parser *getCurrentParser();
+const ParserDefinition *getCurrentParserDefinition();
 void InitializeParsers();
 void CleanUpParsers();
-std::string Parse(int lang_type);
+std::string Parse();
 
 #endif
