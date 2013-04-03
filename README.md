@@ -14,7 +14,7 @@ Placing the cursor on the line directly above the function definition and pressi
  *  \brief [Brief]
  *  
  *  \param [in] p [Param p Description]
- *  \param [in] index [Param pointer Description]
+ *  \param [in] index [Param index Description]
  *  \return [Return Description]
  *  
  *  \details [Details]
