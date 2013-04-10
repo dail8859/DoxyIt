@@ -66,7 +66,7 @@ bool updateScintilla()
 	if(which == -1) return false;
 	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 
-	// Get the function and pointer to it for more effecient calls
+	// Get the function and pointer to it for more efficient calls
 	pSciMsg = (SciFnDirect) SendMessage(curScintilla, SCI_GETDIRECTFUNCTION, 0, 0);
 	pSciWndData = (sptr_t) SendMessage(curScintilla, SCI_GETDIRECTPOINTER, 0, 0);
 
@@ -149,7 +149,7 @@ void configLoad()
 
 		// NOTE: We cant use the default value because GetPrivateProfileString strips the whitespace,
 		// also, wrapping it in quotes doesn't seem to work either. So...use "!!!" as the default text
-		// and if we find that the value wasnt found and we have "!!!" then use the default value in the
+		// and if we find that the value wasn't found and we have "!!!" then use the default value in the
 		// parser, else, use what we pulled from the file.
 		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
@@ -172,7 +172,7 @@ void configLoad()
 		else p->pd.command_prefix.assign(buffer);
 	}
 
-	// Write out the file if it doesnt exist yet
+	// Write out the file if it doesn't exist yet
 	//if(!PathFileExists(iniPath)) configSave();
 }
 
@@ -289,7 +289,7 @@ void doxyItFunction()
 	startPos = SendScintilla(SCI_GETCURRENTPOS);
 	startLine = SendScintilla(SCI_LINEFROMPOSITION, startPos);
 
-	// Get the whitespace of the next line so we can insert it infront of 
+	// Get the whitespace of the next line so we can insert it in front of 
 	// all the lines of the document block that is going to be inserted
 	indent = getLineIndentStr(startLine + 1);
 

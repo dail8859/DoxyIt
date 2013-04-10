@@ -78,14 +78,14 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
         BLOCK "040901B5"
         {
             VALUE "Comments", "Notepad++ plugin for Doxygen commenting"
-            VALUE "CompanyName", "Justin Dailey"
+            VALUE "CompanyName", "Justin Dailey. dail8859@yahoo.com"
             VALUE "FileDescription", "Notepad++ plugin for Doxygen commenting"
             VALUE "FileVersion", "0.1.0"
             VALUE "InternalName", "DoxyIt"
             VALUE "OriginalFilename", "DoxyIt.dll"
             VALUE "ProductName", "DoxyIt"
             VALUE "ProductVersion", "0.1.0"
-            VALUE "SpecialBuild", ""
+            VALUE "SpecialBuild", "UNICODE"
         }
     }
     BLOCK "VarFileInfo"
