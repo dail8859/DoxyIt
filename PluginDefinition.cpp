@@ -471,6 +471,13 @@ void handleNotification(SCNotification *notifyCode)
 		case SCN_CHARADDED:
 			// Set a flag so that all line endings can trigger the commenting
 			if((ch == '\r' || ch == '\n') && do_active_commenting) do_newline = true;
+			//else if(ch == '\\')
+			//{
+			//	if(!updateScintilla()) return;
+			//	SendScintilla(SCI_AUTOCCANCEL);
+			//	SendScintilla(SCI_AUTOCSETSEPARATOR, '|');
+			//	SendScintilla(SCI_AUTOCSHOW, 1, (LPARAM) "\\a|\\br|\\brief|\\param|\\return");
+			//}
 			break;
 		case NPPN_READY:
 			CommunicationInfo ci;

@@ -36,6 +36,16 @@ Parser parsers[] =
 	//REGISTER_PARSER(PHP),
 };
 
+const Parser *getParserByName(std::wstring name)
+{
+	int len = sizeof(parsers) / sizeof(parsers[0]);
+	for(int i = 0; i < len; ++i)
+		if(parsers[i].lang == name)
+			return &parsers[i];
+
+	return NULL;
+}
+
 const Parser *getCurrentParser(void)
 {
 	int lang_type;

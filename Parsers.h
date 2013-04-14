@@ -68,7 +68,7 @@ DEFINE_PARSER(CPP);
 DEFINE_PARSER(JAVA);
 DEFINE_PARSER(PYTHON);
 
-
+const Parser *getParserByName(std::wstring name);
 const Parser *getCurrentParser();
 const ParserDefinition *getCurrentParserDefinition();
 

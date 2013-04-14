@@ -126,10 +126,13 @@ void SettingsDialog::saveSettings()
 void SettingsDialog::updatePreview()
 {
 	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
+	std::string block;
 	ParserDefinition *pd;
+	const Parser *p;
 	wchar_t name[32];
 	int prev_eol_mode;
 
+	// Get the name of the language that is selected
 	ComboBox_GetText(cmb, name, 32);
 	pd = &parserDefinitions[name];
 	
@@ -140,20 +143,15 @@ void SettingsDialog::updatePreview()
 	prev_eol_mode = SendScintilla(SCI_GETEOLMODE);
 	SendScintilla(SCI_SETEOLMODE, SC_EOL_CRLF);
 
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-	{
-		if(parsers[i].lang == name)
-		{
-			// Pass in the ParserDefinition held by the Dialog box
-			std::string block = parsers[i].callback(pd, parsers[i].example.c_str());
-			block += "\r\n" + parsers[i].example;
-			
-			Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), toWideString(block).c_str());
-			break;
-		}
-	}
+	// Get the parser and have it parse the example
+	p = getParserByName(name);
+	block = p->callback(pd, p->example.c_str());
+	block += "\r\n" + p->example;
+	
+	// Set the preview
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), toWideString(block).c_str());
 
+	// Restore the eol mode
 	SendScintilla(SCI_SETEOLMODE, prev_eol_mode);
 }
 
