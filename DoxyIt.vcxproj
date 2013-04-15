@@ -47,7 +47,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\DockingFeature;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\Dialogs;.\Parsers;.\Npp;.\Utilities;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DoxyIt_EXPORTS;__STDC_WANT_SECURE_LIB__=1;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -77,7 +77,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\DockingFeature;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\Dialogs;.\Parsers;.\Npp;.\Utilities;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DoxyIt_EXPORTS;__STDC_WANT_SECURE_LIB__=1;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -101,39 +101,39 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AboutDialog.cpp" />
-    <ClCompile Include="CPP_Parser.cpp" />
-    <ClCompile Include="C_Parser.cpp" />
-    <ClCompile Include="DockingFeature\Hyperlinks.cpp" />
-    <ClCompile Include="DockingFeature\StaticDialog.cpp" />
+    <ClCompile Include="Dialogs\AboutDialog.cpp" />
+    <ClCompile Include="Dialogs\Hyperlinks.cpp" />
+    <ClCompile Include="Dialogs\SettingsDialog.cpp" />
+    <ClCompile Include="Dialogs\StaticDialog.cpp" />
     <ClCompile Include="DoxyIt.cpp" />
-    <ClCompile Include="Java_Parser.cpp" />
-    <ClCompile Include="Parsers.cpp" />
+    <ClCompile Include="Parsers\CPP_Parser.cpp" />
+    <ClCompile Include="Parsers\C_Parser.cpp" />
+    <ClCompile Include="Parsers\Java_Parser.cpp" />
+    <ClCompile Include="Parsers\Parsers.cpp" />
+    <ClCompile Include="Parsers\Python_Parser.cpp" />
     <ClCompile Include="PluginDefinition.cpp" />
-    <ClCompile Include="Python_Parser.cpp" />
-    <ClCompile Include="SettingsDialog.cpp" />
-    <ClCompile Include="trex.cpp" />
-    <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="Utilities\trex.cpp" />
+    <ClCompile Include="Utilities\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AboutDialog.h" />
-    <ClInclude Include="DockingFeature\Hyperlinks.h" />
-    <ClInclude Include="DockingFeature\StaticDialog.h" />
-    <ClInclude Include="DockingFeature\Window.h" />
-    <ClInclude Include="menuCmdID.h" />
-    <ClInclude Include="Notepad_plus_msgs.h" />
-    <ClInclude Include="Parsers.h" />
+    <ClInclude Include="Dialogs\AboutDialog.h" />
+    <ClInclude Include="Dialogs\Hyperlinks.h" />
+    <ClInclude Include="Dialogs\resource.h" />
+    <ClInclude Include="Dialogs\SettingsDialog.h" />
+    <ClInclude Include="Dialogs\StaticDialog.h" />
+    <ClInclude Include="Dialogs\Window.h" />
+    <ClInclude Include="Npp\menuCmdID.h" />
+    <ClInclude Include="Npp\Notepad_plus_msgs.h" />
+    <ClInclude Include="Npp\PluginInterface.h" />
+    <ClInclude Include="Npp\Scintilla.h" />
+    <ClInclude Include="Parsers\Parsers.h" />
     <ClInclude Include="PluginDefinition.h" />
-    <ClInclude Include="PluginInterface.h" />
-    <ClInclude Include="DockingFeature\resource.h" />
-    <ClInclude Include="Scintilla.h" />
-    <ClInclude Include="SettingsDialog.h" />
-    <ClInclude Include="trex.h" />
-    <ClInclude Include="Utils.h" />
+    <ClInclude Include="Utilities\trex.h" />
+    <ClInclude Include="Utilities\Utils.h" />
     <ClInclude Include="Version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DockingFeature\resource.rc" />
+    <ResourceCompile Include="Dialogs\resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

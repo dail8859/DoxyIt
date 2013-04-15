@@ -24,89 +24,89 @@
     <ClCompile Include="PluginDefinition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="trex.cpp">
+    <ClCompile Include="Dialogs\AboutDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Utils.cpp">
+    <ClCompile Include="Dialogs\Hyperlinks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C_Parser.cpp">
-      <Filter>Source Files\Parsers</Filter>
-    </ClCompile>
-    <ClCompile Include="CPP_Parser.cpp">
-      <Filter>Source Files\Parsers</Filter>
-    </ClCompile>
-    <ClCompile Include="Parsers.cpp">
-      <Filter>Source Files\Parsers</Filter>
-    </ClCompile>
-    <ClCompile Include="Java_Parser.cpp">
-      <Filter>Source Files\Parsers</Filter>
-    </ClCompile>
-    <ClCompile Include="Python_Parser.cpp">
-      <Filter>Source Files\Parsers</Filter>
-    </ClCompile>
-    <ClCompile Include="DockingFeature\StaticDialog.cpp">
+    <ClCompile Include="Dialogs\StaticDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SettingsDialog.cpp">
+    <ClCompile Include="Dialogs\SettingsDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DockingFeature\Hyperlinks.cpp">
+    <ClCompile Include="Parsers\C_Parser.cpp">
+      <Filter>Source Files\Parsers</Filter>
+    </ClCompile>
+    <ClCompile Include="Parsers\CPP_Parser.cpp">
+      <Filter>Source Files\Parsers</Filter>
+    </ClCompile>
+    <ClCompile Include="Parsers\Java_Parser.cpp">
+      <Filter>Source Files\Parsers</Filter>
+    </ClCompile>
+    <ClCompile Include="Parsers\Parsers.cpp">
+      <Filter>Source Files\Parsers</Filter>
+    </ClCompile>
+    <ClCompile Include="Parsers\Python_Parser.cpp">
+      <Filter>Source Files\Parsers</Filter>
+    </ClCompile>
+    <ClCompile Include="Utilities\trex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AboutDialog.cpp">
+    <ClCompile Include="Utilities\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="menuCmdID.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Notepad_plus_msgs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PluginDefinition.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PluginInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DockingFeature\resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scintilla.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="trex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Parsers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DockingFeature\StaticDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DockingFeature\Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SettingsDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DockingFeature\Hyperlinks.h">
+    <ClInclude Include="Dialogs\AboutDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AboutDialog.h">
+    <ClInclude Include="Dialogs\Hyperlinks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\StaticDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\SettingsDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Parsers\Parsers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Npp\menuCmdID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Npp\Notepad_plus_msgs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Npp\PluginInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Npp\Scintilla.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\trex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DockingFeature\resource.rc">
+    <ResourceCompile Include="Dialogs\resource.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
