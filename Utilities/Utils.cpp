@@ -119,7 +119,7 @@ const char *getEolStr()
 std::string FT(const char *p)
 {
 	std::string s;
-	
+
 	if(fingertext_enabled)
 	{
 		s += "$[![";

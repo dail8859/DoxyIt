@@ -42,7 +42,7 @@ std::string Parse_C(const ParserDefinition *pd, const char *text)
 	const TRexChar *begin,*end;
 	const char *eol;
 	std::ostringstream doc_block;
-	
+
 	eol = getEolStr();
 
 	if(trex_search(tr_function, text, &begin, &end))

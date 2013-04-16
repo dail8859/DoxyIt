@@ -42,7 +42,7 @@ std::string Parse_PYTHON(const ParserDefinition *pd, const char *text)
 	const TRexChar *begin,*end;
 	const char *eol;
 	std::ostringstream doc_block;
-	
+
 	eol = getEolStr();
 
 	if(trex_search(tr_function, text, &begin, &end))
@@ -74,10 +74,10 @@ std::string Parse_PYTHON(const ParserDefinition *pd, const char *text)
 			doc_block << pd->doc_line << pd->command_prefix << "param [in] ";
 			doc_block.write(param_match.begin, param_match.len);
 			doc_block << " " << FT(desc.c_str()) << eol;
-			
+
 			cur_params = p_end;
 		}
-		
+
 		// Return value
 		doc_block << pd->doc_line << pd->command_prefix << "return ";
 		doc_block << FT("[Return Description]") << eol;

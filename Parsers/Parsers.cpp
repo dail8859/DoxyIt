@@ -22,7 +22,7 @@ extern NppData nppData;
 
 // Very ugly macro
 #define REGISTER_PARSER(lang, doc_start, doc_line, doc_end, command_prefix, example) {L_##lang, TEXT(#lang), \
-	{"", "", "", ""}, \
+{"", "", "", ""}, \
 	example, TEXT(##doc_start), TEXT(##doc_line), TEXT(##doc_end), TEXT(##command_prefix), \
 	Initialize_##lang, CleanUp_##lang, Parse_##lang}
 
@@ -74,7 +74,7 @@ std::string Parse(void)
 	const Parser *p;
 	int found;
 	char *buffer;
-	
+
 	p = getCurrentParser();
 	if(!p)
 	{

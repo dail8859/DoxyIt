@@ -27,28 +27,28 @@ INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 {
 	switch(uMsg)
 	{
-		case WM_INITDIALOG:
-			ConvertStaticToHyperlink(hwndDlg, IDC_GITHUB);
-			ConvertStaticToHyperlink(hwndDlg, IDC_README);
-			Edit_SetText(GetDlgItem(hwndDlg, IDC_VERSION), VERSION_TEXT TEXT(" ") VERSION_STAGE);
-			return true;
-		case WM_COMMAND:
-			switch(LOWORD(wParam))
-			{
-				case IDOK:
-					EndDialog(hwndDlg, wParam);
-					return true;
-				case IDC_GITHUB:
-					ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt"), NULL, NULL, SW_SHOWNORMAL);
-					return true;
-				case IDC_README:
-					//ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt/blob/master/README.md"), NULL, NULL, SW_SHOWNORMAL);
-					ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt/blob/v0.1a/README.md"), NULL, NULL, SW_SHOWNORMAL);
-					return true;
-			}
-		case WM_DESTROY:
+	case WM_INITDIALOG:
+		ConvertStaticToHyperlink(hwndDlg, IDC_GITHUB);
+		ConvertStaticToHyperlink(hwndDlg, IDC_README);
+		Edit_SetText(GetDlgItem(hwndDlg, IDC_VERSION), VERSION_TEXT TEXT(" ") VERSION_STAGE);
+		return true;
+	case WM_COMMAND:
+		switch(LOWORD(wParam))
+		{
+		case IDOK:
 			EndDialog(hwndDlg, wParam);
 			return true;
+		case IDC_GITHUB:
+			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt"), NULL, NULL, SW_SHOWNORMAL);
+			return true;
+		case IDC_README:
+			//ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt/blob/master/README.md"), NULL, NULL, SW_SHOWNORMAL);
+			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt/blob/v0.1a/README.md"), NULL, NULL, SW_SHOWNORMAL);
+			return true;
+		}
+	case WM_DESTROY:
+		EndDialog(hwndDlg, wParam);
+		return true;
 	}
 	return false;
 }

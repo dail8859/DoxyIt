@@ -313,7 +313,7 @@ void doxyItFile()
 	const char *eol;
 
 	if(!updateScintilla()) return;
-	
+
 	pd = getCurrentParserDefinition();
 	if(!pd)
 	{
@@ -329,7 +329,7 @@ void doxyItFile()
 
 	// Check if it is enabled
 	fingertext_enabled = checkFingerText();
-	
+
 	doc_block << pd->doc_start << eol;
 	doc_block << pd->doc_line << pd->command_prefix << "file " << fname << eol;
 	doc_block << pd->doc_line << pd->command_prefix << "brief " << FT("[Brief]") << eol;
@@ -337,7 +337,7 @@ void doxyItFile()
 	//doc_block << pd->doc_line << pd->command_prefix << "author " << eol;
 	//doc_block << pd->doc_line << pd->command_prefix << "version 1.0" << eol;
 	doc_block << pd->doc_end;
-	
+
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
 
 	activateFingerText();
@@ -358,8 +358,8 @@ void useFingerText()
 /*
 void activeWrapping()
 {
-	do_active_wrapping = !do_active_wrapping;
-	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_wrapping);
+do_active_wrapping = !do_active_wrapping;
+::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_wrapping);
 }
 */
 
@@ -413,12 +413,12 @@ void doxyItNewLine()
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_line.c_str());
 			SendScintilla(SCI_ENDUNDOACTION);
 		}
-		
+
 	}
 	// If doc_start is relatively long we do not want the user typing the entire line, just the first 3 should suffice.
 	// Also, if doc_end is found, this means a doc block was closed. This allows e.g. /** inline comments */
 	else if((found = strstr(previousLine, pd->doc_start.substr(0, 3).c_str())) &&
-			strstr(previousLine, pd->doc_end.c_str()) == 0)
+		strstr(previousLine, pd->doc_end.c_str()) == 0)
 	{
 		indentation.append(previousLine, found - previousLine);
 
@@ -460,47 +460,47 @@ void handleNotification(SCNotification *notifyCode)
 
 	switch(nh.code)
 	{
-		case SCN_UPDATEUI: // Now is when we can check to see if we do the commenting
-			if(do_newline)
-			{
-				do_newline = false;
-				if(!updateScintilla()) return;
-				doxyItNewLine();
-			}
-			break;
-		case SCN_CHARADDED:
-			// Set a flag so that all line endings can trigger the commenting
-			if((ch == '\r' || ch == '\n') && do_active_commenting) do_newline = true;
-			//else if(ch == '\\')
-			//{
-			//	if(!updateScintilla()) return;
-			//	SendScintilla(SCI_AUTOCCANCEL);
-			//	SendScintilla(SCI_AUTOCSETSEPARATOR, '|');
-			//	SendScintilla(SCI_AUTOCSHOW, 1, (LPARAM) "\\a|\\br|\\brief|\\param|\\return");
-			//}
-			break;
-		case NPPN_READY:
-			CommunicationInfo ci;
+	case SCN_UPDATEUI: // Now is when we can check to see if we do the commenting
+		if(do_newline)
+		{
+			do_newline = false;
+			if(!updateScintilla()) return;
+			doxyItNewLine();
+		}
+		break;
+	case SCN_CHARADDED:
+		// Set a flag so that all line endings can trigger the commenting
+		if((ch == '\r' || ch == '\n') && do_active_commenting) do_newline = true;
+		//else if(ch == '\\')
+		//{
+		//	if(!updateScintilla()) return;
+		//	SendScintilla(SCI_AUTOCCANCEL);
+		//	SendScintilla(SCI_AUTOCSETSEPARATOR, '|');
+		//	SendScintilla(SCI_AUTOCSHOW, 1, (LPARAM) "\\a|\\br|\\brief|\\param|\\return");
+		//}
+		break;
+	case NPPN_READY:
+		CommunicationInfo ci;
 
-			// Check if FingerText is installed
-			ci.internalMsg = FINGERTEXT_GETVERSION;
-			ci.srcModuleName = NPP_PLUGIN_NAME;
-			ci.info = NULL;
+		// Check if FingerText is installed
+		ci.internalMsg = FINGERTEXT_GETVERSION;
+		ci.srcModuleName = NPP_PLUGIN_NAME;
+		ci.info = NULL;
 
-			// NPPM_MSGTOPLUGIN returns true if the dll is found
-			if(::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci))
-			{
-				if((int) ci.info >= 561) fingertext_found = true;
-				else fingertext_found = false;
-			}
-			else
-			{
-				fingertext_found = false;
-			}
-			break;
-		case NPPN_SHUTDOWN:
-			configSave();
-			break;
+		// NPPM_MSGTOPLUGIN returns true if the dll is found
+		if(::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci))
+		{
+			if((int) ci.info >= 561) fingertext_found = true;
+			else fingertext_found = false;
+		}
+		else
+		{
+			fingertext_found = false;
+		}
+		break;
+	case NPPN_SHUTDOWN:
+		configSave();
+		break;
 	}
 	/*
 	else if(do_active_wrapping) // && line starts with doc_line

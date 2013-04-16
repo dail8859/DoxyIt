@@ -43,7 +43,7 @@ void SettingsDialog::doDialog()
 void SettingsDialog::initParserDefinitions()
 {
 	int len = sizeof(parsers) / sizeof(parsers[0]);
-	
+
 	parserDefinitions.clear();
 	for(int i = 0; i < len; ++i)
 		parserDefinitions[parsers[i].lang] = parsers[i].pd;
@@ -93,13 +93,13 @@ bool SettingsDialog::validateText(std::string text, int idc)
 bool SettingsDialog::validateSettings()
 {
 	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
-	
+
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
 	{
 		bool ret = true;
 		const ParserDefinition *pd = &parserDefinitions[parsers[i].lang];
-		
+
 		if(!validateText(pd->doc_start, IDC_EDIT_START)) ret = false;
 		if(!validateText(pd->doc_line, IDC_EDIT_LINE)) ret = false;
 		if(!validateText(pd->doc_end, IDC_EDIT_END)) ret = false;
@@ -112,7 +112,7 @@ bool SettingsDialog::validateSettings()
 			return false;
 		}
 	}
-	
+
 	return true;
 }
 
@@ -135,7 +135,7 @@ void SettingsDialog::updatePreview()
 	// Get the name of the language that is selected
 	ComboBox_GetText(cmb, name, 32);
 	pd = &parserDefinitions[name];
-	
+
 	// Disable fingertext for the preview
 	fingertext_enabled = false;
 
@@ -147,7 +147,7 @@ void SettingsDialog::updatePreview()
 	p = getParserByName(name);
 	block = p->callback(pd, p->example.c_str());
 	block += "\r\n" + p->example;
-	
+
 	// Set the preview
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), toWideString(block).c_str());
 
@@ -160,7 +160,7 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 {
 	switch(message) 
 	{
-		case WM_INITDIALOG:
+	case WM_INITDIALOG:
 		{
 			HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 			int len = sizeof(parsers) / sizeof(parsers[0]);
@@ -179,42 +179,42 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 
 			return true;
 		}
-		case WM_COMMAND:
-			switch(HIWORD(wParam))
+	case WM_COMMAND:
+		switch(HIWORD(wParam))
+		{
+		case CBN_SELCHANGE:
+			saveParserDefinition(last_selection);
+			loadParserDefinition();
+			last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+			return true;
+		case EN_CHANGE:
+			saveParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
+			updatePreview();
+			return true;
+		}
+		switch(wParam)
+		{
+		case IDOK:
+			last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+			saveParserDefinition(last_selection);
+			if(validateSettings())
 			{
-				case CBN_SELCHANGE:
-					saveParserDefinition(last_selection);
-					loadParserDefinition();
-					last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
-					return true;
-				case EN_CHANGE:
-					saveParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
-					updatePreview();
-					return true;
+				saveSettings();
+				display(false);
 			}
-			switch(wParam)
+			else if(::MessageBox(_hSelf, msg, NPP_PLUGIN_NAME, MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
 			{
-				case IDOK:
-					last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
-					saveParserDefinition(last_selection);
-					if(validateSettings())
-					{
-						saveSettings();
-						display(false);
-					}
-					else if(::MessageBox(_hSelf, msg, NPP_PLUGIN_NAME, MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
-					{
-						saveSettings();
-						display(false);
-					}
-					return true;
-				case IDCANCEL:
-					display(false);
-					return true;
-				default:
-					return false;
+				saveSettings();
+				display(false);
 			}
+			return true;
+		case IDCANCEL:
+			display(false);
+			return true;
 		default:
-			return StaticDialog::dlgProc(_HSource, message, wParam, lParam);
+			return false;
+		}
+	default:
+		return StaticDialog::dlgProc(_HSource, message, wParam, lParam);
 	}
 }

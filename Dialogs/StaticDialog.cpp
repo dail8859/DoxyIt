@@ -19,12 +19,12 @@
 
 void StaticDialog::goToCenter()
 {
-    RECT rc;
-    ::GetClientRect(_hParent, &rc);
-    POINT center;
-    center.x = rc.left + (rc.right - rc.left)/2;
-    center.y = rc.top + (rc.bottom - rc.top)/2;
-    ::ClientToScreen(_hParent, &center);
+	RECT rc;
+	::GetClientRect(_hParent, &rc);
+	POINT center;
+	center.x = rc.left + (rc.right - rc.left)/2;
+	center.y = rc.top + (rc.bottom - rc.top)/2;
+	::ClientToScreen(_hParent, &center);
 
 	int x = center.x - (_rc.right - _rc.left)/2;
 	int y = center.y - (_rc.bottom - _rc.top)/2;
@@ -38,14 +38,14 @@ HGLOBAL StaticDialog::makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplat
 	HRSRC  hDialogRC = ::FindResource(_hInst, MAKEINTRESOURCE(dialogID), RT_DIALOG);
 	HGLOBAL  hDlgTemplate = ::LoadResource(_hInst, hDialogRC);
 	DLGTEMPLATE *pDlgTemplate = (DLGTEMPLATE *)::LockResource(hDlgTemplate);
-	
+
 	// Duplicate Dlg Template resource
 	unsigned long sizeDlg = ::SizeofResource(_hInst, hDialogRC);
 	HGLOBAL hMyDlgTemplate = ::GlobalAlloc(GPTR, sizeDlg);
 	*ppMyDlgTemplate = (DLGTEMPLATE *)::GlobalLock(hMyDlgTemplate);
 
 	::memcpy(*ppMyDlgTemplate, pDlgTemplate, sizeDlg);
-	
+
 	DLGTEMPLATEEX *pMyDlgTemplateEx = (DLGTEMPLATEEX *)*ppMyDlgTemplate;
 	if (pMyDlgTemplateEx->signature == 0xFFFF)
 		pMyDlgTemplateEx->exStyle |= WS_EX_LAYOUTRTL;
@@ -79,18 +79,18 @@ BOOL CALLBACK StaticDialog::dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPAR
 {
 	switch (message) 
 	{
-		case WM_INITDIALOG :
+	case WM_INITDIALOG :
 		{
 			StaticDialog *pStaticDlg = (StaticDialog *)(lParam);
 			pStaticDlg->_hSelf = hwnd;
 			::SetWindowLongPtr(hwnd, GWL_USERDATA, (long)lParam);
 			::GetWindowRect(hwnd, &(pStaticDlg->_rc));
-            pStaticDlg->run_dlgProc(message, wParam, lParam);
-			
+			pStaticDlg->run_dlgProc(message, wParam, lParam);
+
 			return TRUE;
 		}
 
-		default :
+	default :
 		{
 			StaticDialog *pStaticDlg = (StaticDialog *)(::GetWindowLongPtr(hwnd, GWL_USERDATA));
 			if (!pStaticDlg)
@@ -102,34 +102,34 @@ BOOL CALLBACK StaticDialog::dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPAR
 
 void StaticDialog::alignWith(HWND handle, HWND handle2Align, PosAlign pos, POINT & point)
 {
-    RECT rc, rc2;
-    ::GetWindowRect(handle, &rc);
+	RECT rc, rc2;
+	::GetWindowRect(handle, &rc);
 
-    point.x = rc.left;
-    point.y = rc.top;
+	point.x = rc.left;
+	point.y = rc.top;
 
-    switch (pos)
-    {
-        case ALIGNPOS_LEFT :
-            ::GetWindowRect(handle2Align, &rc2);
-            point.x -= rc2.right - rc2.left;
-            break;
+	switch (pos)
+	{
+	case ALIGNPOS_LEFT :
+		::GetWindowRect(handle2Align, &rc2);
+		point.x -= rc2.right - rc2.left;
+		break;
 
-        case ALIGNPOS_RIGHT :
-            ::GetWindowRect(handle, &rc2);
-            point.x += rc2.right - rc2.left;
-            break;
+	case ALIGNPOS_RIGHT :
+		::GetWindowRect(handle, &rc2);
+		point.x += rc2.right - rc2.left;
+		break;
 
-        case ALIGNPOS_TOP :
-            ::GetWindowRect(handle2Align, &rc2);
-            point.y -= rc2.bottom - rc2.top;
-            break;
+	case ALIGNPOS_TOP :
+		::GetWindowRect(handle2Align, &rc2);
+		point.y -= rc2.bottom - rc2.top;
+		break;
 
-        default : //ALIGNPOS_BOTTOM
-            ::GetWindowRect(handle, &rc2);
-            point.y += rc2.bottom - rc2.top;
-            break;
-    }
-    
-    ::ScreenToClient(_hSelf, &point);
+	default : //ALIGNPOS_BOTTOM
+		::GetWindowRect(handle, &rc2);
+		point.y += rc2.bottom - rc2.top;
+		break;
+	}
+
+	::ScreenToClient(_hSelf, &point);
 }
