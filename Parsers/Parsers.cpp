@@ -22,7 +22,7 @@ extern NppData nppData;
 
 // Very ugly macro
 #define REGISTER_PARSER(lang, doc_start, doc_line, doc_end, command_prefix, example) {L_##lang, TEXT(#lang), \
-{"", "", "", ""}, \
+	{"", "", "", ""}, \
 	example, TEXT(##doc_start), TEXT(##doc_line), TEXT(##doc_end), TEXT(##command_prefix), \
 	Initialize_##lang, CleanUp_##lang, Parse_##lang}
 
@@ -82,8 +82,10 @@ std::string Parse(void)
 		return "";
 	}
 
-	// Get the text until a closing parenthesis, possibly make this settable for each parser
-	found = findNext(")");
+	// Get the text until a closing parenthesis. Find '(' then find its matching closing brace
+	found = findNext("(");
+	if(found == -1) return "";
+	found = SendScintilla(SCI_BRACEMATCH, found, SCI_UNUSED);
 	if(found == -1) return "";
 
 	buffer = getRange(SendScintilla(SCI_GETCURRENTPOS), found + 1);

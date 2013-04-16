@@ -91,10 +91,6 @@ std::string Parse_C(const ParserDefinition *pd, const char *text)
 		doc_block << pd->doc_line << pd->command_prefix << "details " << FT("[Details]") << eol;
 		doc_block << pd->doc_end;
 	}
-	else
-	{
-		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-	}
 
 	return doc_block.str();
 }
