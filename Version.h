@@ -18,6 +18,6 @@
 
 #define VERSION_NUM				0,1,0,0
 #define VERSION_LINEAR			100
-#define VERSION_TEXT			TEXT("0.1")
+#define VERSION_TEXT			TEXT("0.1") // This must match the tag pushed on the server
 #define VERSION_LINEAR_TEXT		TEXT("100")
 #define VERSION_STAGE			TEXT("") // "alpha", "beta", ""
