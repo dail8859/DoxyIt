@@ -54,7 +54,7 @@ typedef struct Parser
 	std::string (*callback)(const ParserDefinition *pd, const char *text);
 } Parser;
 
-extern Parser parsers[4];
+extern Parser parsers[6];
 
 
 // Macro to help define the functions of each parser
@@ -67,6 +67,8 @@ DEFINE_PARSER(C);
 DEFINE_PARSER(CPP);
 DEFINE_PARSER(JAVA);
 DEFINE_PARSER(PYTHON);
+DEFINE_PARSER(PHP);
+DEFINE_PARSER(JS);
 
 const Parser *getParserByName(std::wstring name);
 const Parser *getCurrentParser();

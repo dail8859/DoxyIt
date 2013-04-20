@@ -109,7 +109,9 @@
     <ClCompile Include="Parsers\CPP_Parser.cpp" />
     <ClCompile Include="Parsers\C_Parser.cpp" />
     <ClCompile Include="Parsers\Java_Parser.cpp" />
+    <ClCompile Include="Parsers\JS_Parser.cpp" />
     <ClCompile Include="Parsers\Parsers.cpp" />
+    <ClCompile Include="Parsers\PHP_Parser.cpp" />
     <ClCompile Include="Parsers\Python_Parser.cpp" />
     <ClCompile Include="PluginDefinition.cpp" />
     <ClCompile Include="Utilities\trex.cpp" />

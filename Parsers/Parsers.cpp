@@ -31,9 +31,11 @@ Parser parsers[] =
 	REGISTER_PARSER(C,      "/**", " *  ", " */", "\\", "int function(const char *p, int index)"),
 	REGISTER_PARSER(CPP,    "/**", " *  ", " */", "\\", "std::string function(const char *p, int &index)"),
 	REGISTER_PARSER(JAVA,   "/**", " *  ", " */", "@",  "public boolean action(Event event, Object arg)"),
-	REGISTER_PARSER(PYTHON, "## ", "#  ",  "#  ", "@",  "def foo(bar, baz=none)")
+	REGISTER_PARSER(PYTHON, "## ", "#  ",  "#  ", "@",  "def foo(bar, baz=none)"),
+	REGISTER_PARSER(PHP,    "/**", " *  ", " */", "\\", ""),
+	REGISTER_PARSER(JS,     "/**", " *  ", " */", "\\", "")
 	//REGISTER_PARSER(CS),
-	//REGISTER_PARSER(PHP),
+	
 };
 
 const Parser *getParserByName(std::wstring name)
