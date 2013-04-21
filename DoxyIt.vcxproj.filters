@@ -63,6 +63,9 @@
     <ClCompile Include="Parsers\PHP_Parser.cpp">
       <Filter>Source Files\Parsers</Filter>
     </ClCompile>
+    <ClCompile Include="Parsers\Null_Parser.cpp">
+      <Filter>Source Files\Parsers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PluginDefinition.h">

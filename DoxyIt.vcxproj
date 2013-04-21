@@ -56,6 +56,8 @@
       </PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -110,6 +112,7 @@
     <ClCompile Include="Parsers\C_Parser.cpp" />
     <ClCompile Include="Parsers\Java_Parser.cpp" />
     <ClCompile Include="Parsers\JS_Parser.cpp" />
+    <ClCompile Include="Parsers\Null_Parser.cpp" />
     <ClCompile Include="Parsers\Parsers.cpp" />
     <ClCompile Include="Parsers\PHP_Parser.cpp" />
     <ClCompile Include="Parsers\Python_Parser.cpp" />
