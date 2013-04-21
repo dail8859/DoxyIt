@@ -18,17 +18,17 @@
 
 #include "Parsers.h"
 
-bool Initialize_JAVA(void)
+bool Initialize_Java(void)
 {
 	return true;
 }
 
-void CleanUp_JAVA(void)
+void CleanUp_Java(void)
 {
 }
 
 // Just use this as a wrapper around the C implementation
-std::string Parse_JAVA(const ParserDefinition *pd, const char *text)
+std::string Parse_Java(const ParserDefinition *pd, const char *text)
 {
 	return Parse_C(pd, text);
 }

@@ -64,9 +64,9 @@ extern Parser parsers[6];
 	std::string Parse_##lang(const ParserDefinition *pd, const char *text);
 
 DEFINE_PARSER(C);
-DEFINE_PARSER(CPP);
-DEFINE_PARSER(JAVA);
-DEFINE_PARSER(PYTHON);
+DEFINE_PARSER(Cpp);
+DEFINE_PARSER(Java);
+DEFINE_PARSER(Python);
 DEFINE_PARSER(Null);
 
 const Parser *getParserByName(std::wstring name);

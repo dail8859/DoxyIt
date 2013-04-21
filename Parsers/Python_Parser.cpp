@@ -21,7 +21,7 @@
 static TRex *tr_function;
 static TRex *tr_parameters;
 
-bool Initialize_PYTHON(void)
+bool Initialize_Python(void)
 {
 	const TRexChar *error = NULL;
 	tr_function = trex_compile("def\\s+(\\w+)\\s*(\\([^)]*\\))", &error);
@@ -31,13 +31,13 @@ bool Initialize_PYTHON(void)
 	return true;
 }
 
-void CleanUp_PYTHON(void)
+void CleanUp_Python(void)
 {
 	trex_free(tr_function);
 	trex_free(tr_parameters);
 }
 
-std::string Parse_PYTHON(const ParserDefinition *pd, const char *text)
+std::string Parse_Python(const ParserDefinition *pd, const char *text)
 {
 	const TRexChar *begin,*end;
 	const char *eol;

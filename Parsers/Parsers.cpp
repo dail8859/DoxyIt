@@ -29,9 +29,9 @@ extern NppData nppData;
 Parser parsers[] = 
 {
 	REGISTER_PARSER(C, C,           "/**", " *  ", " */", "\\", "int function(const char *p, int index)"),
-	REGISTER_PARSER(CPP, CPP,       "/**", " *  ", " */", "\\", "std::string function(const char *p, int &index)"),
-	REGISTER_PARSER(JAVA, JAVA,     "/**", " *  ", " */", "@",  "public boolean action(Event event, Object arg)"),
-	REGISTER_PARSER(PYTHON, PYTHON, "## ", "#  ",  "#  ", "@",  "def foo(bar, baz=none)"),
+	REGISTER_PARSER(CPP, Cpp,       "/**", " *  ", " */", "\\", "std::string function(const char *p, int &index)"),
+	REGISTER_PARSER(JAVA, Java,     "/**", " *  ", " */", "@",  "public boolean action(Event event, Object arg)"),
+	REGISTER_PARSER(PYTHON, Python, "## ", "#  ",  "#  ", "@",  "def foo(bar, baz=None)"),
 	REGISTER_PARSER(PHP, Null,      "/**", " *  ", " */", "\\", ""),
 	REGISTER_PARSER(JS, Null,       "/**", " *  ", " */", "\\", "")
 };
