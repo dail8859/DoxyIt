@@ -72,26 +72,49 @@ std::string Parse(void)
 {
 	std::string doc_block;
 	const Parser *p;
-	int found;
+	int found, curLine, foundLine;
 	char *buffer;
 
-	p = getCurrentParser();
-	if(!p)
+	if(!(p = getCurrentParser()))
 	{
 		::MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return "";
 	}
 
-	// Get the text until a closing parenthesis. Find '(' then find its matching closing brace
-	found = findNext("(");
-	if(found == -1) return "";
-	found = SendScintilla(SCI_BRACEMATCH, found, SCI_UNUSED);
-	if(found == -1) return "";
+	// Get the text until a closing parenthesis. Find '('
+	if((found = findNext("(")) == -1)
+	{
+		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		return "";
+	}
+
+	// Do some sanity checking. Make sure curline <= found <= curline+2
+	curLine = SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS));
+	foundLine = SendScintilla(SCI_LINEFROMPOSITION, found);
+	if(foundLine < curLine || foundLine > curLine + 2)
+	{
+		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		return "";
+	}
+
+	// Find the matching closing brace
+	if((found = SendScintilla(SCI_BRACEMATCH, found, SCI_UNUSED)) == -1)
+	{
+		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		return "";
+	}
 
 	buffer = getRange(SendScintilla(SCI_GETCURRENTPOS), found + 1);
 	doc_block = p->callback(&p->pd, buffer);
-
 	delete[] buffer;
+
+	// I don't think there is currently a case where callback() will return a zero length string,
+	// but check it just in case we decide to for the future.
+	if(doc_block.length() == 0)
+	{
+		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		return "";
+	}
 
 	return doc_block;
 }

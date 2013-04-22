@@ -283,11 +283,11 @@ void doxyItFunction()
 	fingertext_enabled = checkFingerText();
 
 	doc_block = Parse();
+
+	// Don't issue any warning messages, let Parse() handle that for us since it knows
+	// about the error. Just return if it is a zero length string
 	if(doc_block.length() == 0) 
-	{
-		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return;
-	}
 
 	// Keep track of where we started
 	startPos = SendScintilla(SCI_GETCURRENTPOS);
