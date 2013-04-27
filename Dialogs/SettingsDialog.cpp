@@ -46,7 +46,7 @@ void SettingsDialog::initParserDefinitions()
 
 	parserDefinitions.clear();
 	for(int i = 0; i < len; ++i)
-		parserDefinitions[parsers[i].lang] = parsers[i].pd;
+		parserDefinitions[parsers[i].language_name] = parsers[i].pd;
 }
 
 void SettingsDialog::saveParserDefinition(int index)
@@ -98,7 +98,7 @@ bool SettingsDialog::validateSettings()
 	for(int i = 0; i < len; ++i)
 	{
 		bool ret = true;
-		const ParserDefinition *pd = &parserDefinitions[parsers[i].lang];
+		const ParserDefinition *pd = &parserDefinitions[parsers[i].language_name];
 
 		if(!validateText(pd->doc_start, IDC_EDIT_START)) ret = false;
 		if(!validateText(pd->doc_line, IDC_EDIT_LINE)) ret = false;
@@ -107,7 +107,7 @@ bool SettingsDialog::validateSettings()
 
 		if(!ret)
 		{
-			ComboBox_SelectString(cmb, -1, parsers[i].lang.c_str());
+			ComboBox_SelectString(cmb, -1, parsers[i].language_name.c_str());
 			loadParserDefinition();
 			return false;
 		}
@@ -120,7 +120,7 @@ void SettingsDialog::saveSettings()
 {
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
-		parsers[i].pd = parserDefinitions[parsers[i].lang];
+		parsers[i].pd = parserDefinitions[parsers[i].language_name];
 }
 
 void SettingsDialog::updatePreview()
@@ -166,7 +166,7 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			int len = sizeof(parsers) / sizeof(parsers[0]);
 
 			for(int i = 0; i < len; ++i)
-				ComboBox_AddString(cmb, parsers[i].lang.c_str());
+				ComboBox_AddString(cmb, parsers[i].language_name.c_str());
 			ComboBox_SetCurSel(cmb, last_selection);
 
 			// I have no idea what these values do, but these work

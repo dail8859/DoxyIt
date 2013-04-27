@@ -36,7 +36,8 @@ typedef struct ParserDefinition
 typedef struct Parser
 {
 	int lang_type;
-	std::wstring lang;
+	std::wstring lang; // Short language name. Postfix of enum from lang_type
+	std::wstring language_name; // User readable name
 
 	ParserDefinition pd;
 

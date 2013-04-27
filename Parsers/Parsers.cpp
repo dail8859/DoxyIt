@@ -21,26 +21,26 @@
 extern NppData nppData;
 
 // Very ugly macro
-#define REGISTER_PARSER(lang, parser, doc_start, doc_line, doc_end, command_prefix, example) {L_##lang, TEXT(#lang), \
+#define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) {L_##lang, TEXT(#lang),TEXT(language_name), \
 	{"", "", "", ""}, \
 	example, TEXT(##doc_start), TEXT(##doc_line), TEXT(##doc_end), TEXT(##command_prefix), \
 	Initialize_##parser, CleanUp_##parser, Parse_##parser}
 
 Parser parsers[] = 
 {
-	REGISTER_PARSER(C, C,           "/**", " *  ", " */", "\\", "int function(const char *p, int index)"),
-	REGISTER_PARSER(CPP, Cpp,       "/**", " *  ", " */", "\\", "std::string function(const char *p, int &index)"),
-	REGISTER_PARSER(JAVA, Java,     "/**", " *  ", " */", "@",  "public boolean action(Event event, Object arg)"),
-	REGISTER_PARSER(PYTHON, Python, "## ", "#  ",  "#  ", "@",  "def foo(bar, baz=None)"),
-	REGISTER_PARSER(PHP, Null,      "/**", " *  ", " */", "\\", ""),
-	REGISTER_PARSER(JS, Null,       "/**", " *  ", " */", "\\", "")
+	REGISTER_PARSER(C,      C,      "C",          "/**", " *  ", " */", "\\", "int function(const char *p, int index)"),
+	REGISTER_PARSER(CPP,    C,      "C++",        "/**", " *  ", " */", "\\", "std::string function(const char *p, int &index)"),
+	REGISTER_PARSER(JAVA,   C,      "Java",       "/**", " *  ", " */", "@",  "public boolean action(Event event, Object arg)"),
+	REGISTER_PARSER(PYTHON, Python, "Python",     "## ", "#  ",  "#  ", "@",  "def foo(bar, baz=None)"),
+	REGISTER_PARSER(PHP,    C,      "PHP",        "/**", " *  ", " */", "@",  "function myFunction($abc, $def)"),
+	REGISTER_PARSER(JS,     C,      "JavaScript", "/**", " *  ", " */", "@",  "function myFunction(abc, def)")
 };
 
 const Parser *getParserByName(std::wstring name)
 {
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
-		if(parsers[i].lang == name)
+		if(parsers[i].language_name == name)
 			return &parsers[i];
 
 	return NULL;

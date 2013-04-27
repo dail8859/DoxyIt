@@ -39,9 +39,6 @@
     <ClCompile Include="Parsers\C_Parser.cpp">
       <Filter>Source Files\Parsers</Filter>
     </ClCompile>
-    <ClCompile Include="Parsers\Java_Parser.cpp">
-      <Filter>Source Files\Parsers</Filter>
-    </ClCompile>
     <ClCompile Include="Parsers\Parsers.cpp">
       <Filter>Source Files\Parsers</Filter>
     </ClCompile>
@@ -54,16 +51,7 @@
     <ClCompile Include="Utilities\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Parsers\JS_Parser.cpp">
-      <Filter>Source Files\Parsers</Filter>
-    </ClCompile>
-    <ClCompile Include="Parsers\PHP_Parser.cpp">
-      <Filter>Source Files\Parsers</Filter>
-    </ClCompile>
     <ClCompile Include="Parsers\Null_Parser.cpp">
-      <Filter>Source Files\Parsers</Filter>
-    </ClCompile>
-    <ClCompile Include="Parsers\Cpp_Parser.cpp">
       <Filter>Source Files\Parsers</Filter>
     </ClCompile>
   </ItemGroup>

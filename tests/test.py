@@ -1,4 +1,5 @@
 # --- Test function names ---
+
 def f()
 
 deff f()    # fail

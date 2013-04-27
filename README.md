@@ -1,7 +1,14 @@
 # DoxyIt (v0.1)
 Notepad++ plugin for [Doxygen](http://www.doxygen.org) commenting. This also provides helpful features to support creating and editing comment blocks, even if Doxygen isn't desired. 
 
-Currently there is support for C/C++, Python, and Java.
+Currently there is support for:
+
+- C
+- C++
+- Python
+- Java
+- PHP
+- JavaScript
 
 DoxyIt can be downloaded [here](http://goo.gl/oTBQ2).
 
@@ -75,9 +82,7 @@ Each language can be configured to have any string to indicate the start, line, 
     - Enums
     - Structs
     - ...
-- Possible support for:
-    - PHP
-    - C#
+- Support for other languages
 - Configuration of:
     - Comment block contents
     - ~~Strings for comment start, line, and end~~
