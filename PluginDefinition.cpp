@@ -113,6 +113,8 @@ void configSave()
 		ws.assign(pd->command_prefix.begin(), pd->command_prefix.end());
 		ws = TEXT("\"") + ws + TEXT("\"");
 		WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
+
+		WritePrivateProfileString(p->lang.c_str(), TEXT("align"), pd->align_desc ? TEXT("true") : TEXT("false"), iniPath);
 	}
 }
 
@@ -170,6 +172,10 @@ void configLoad()
 		wcstombs(buffer, tbuffer, MAX_PATH);
 		if(strncmp(buffer, "!!!", 3) == 0) p->pd.command_prefix.assign(p->default_command_prefix.begin(), p->default_command_prefix.end());
 		else p->pd.command_prefix.assign(buffer);
+
+		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), TEXT("false"), tbuffer, MAX_PATH, iniPath);
+		wcstombs(buffer, tbuffer, MAX_PATH);
+		p->pd.align_desc = strcmp(buffer, "true") == 0;
 	}
 
 	// Write out the file if it doesn't exist yet

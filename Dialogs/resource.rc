@@ -56,4 +56,5 @@ FONT 8, "Ms Shell Dlg"
     EDITTEXT        IDC_EDIT_PREFIX, 35, 92, 26, 12, ES_AUTOHSCROLL
     GROUPBOX        "Settings", IDC_STATIC, 5, 28, 121, 118
     GROUPBOX        "Preview", IDC_STATIC, 136, 28, 302, 118
+    AUTOCHECKBOX    "Align Descriptions", IDC_CHB_ALIGN, 35, 116, 72, 8
 }

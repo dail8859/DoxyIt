@@ -13,3 +13,4 @@
 #define IDC_EDIT_LINE                           1009
 #define IDC_EDIT_END                            1010
 #define IDC_EDIT_PREVIEW                        1011
+#define IDC_CHB_ALIGN                           1013

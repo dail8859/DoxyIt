@@ -16,6 +16,7 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#include <vector>
 #include "Parsers.h"
 
 static TRex *tr_function;
@@ -42,6 +43,8 @@ std::string Parse_C(const ParserDefinition *pd, const char *text)
 	const TRexChar *begin,*end;
 	const char *eol;
 	std::ostringstream doc_block;
+	std::vector<std::string> params;
+	unsigned int max = 0;
 
 	eol = getEolStr();
 
@@ -71,11 +74,22 @@ std::string Parse_C(const ParserDefinition *pd, const char *text)
 			// handle "func(void)" by skipping it
 			if(strncmp(param_match.begin, "void", 4) != 0)
 			{
-				doc_block << pd->doc_line << pd->command_prefix << "param [in] ";
-				doc_block.write(param_match.begin, param_match.len);
-				doc_block << " " << FT("Parameter_Description") << eol;
+				std::string param;
+				param.append(param_match.begin, param_match.len);
+				params.push_back(param);
+				if(param.length() > max) max = param.length();
 			}
 			cur_params = p_end;
+		}
+
+		for(unsigned int i = 0; i < params.size(); ++i)
+		{
+			std::string param = params[i];
+
+			doc_block << pd->doc_line << pd->command_prefix << "param [in] " << param;
+			if(pd->align_desc)
+				for(unsigned int i = 0; i < (max - param.length()); ++i) doc_block << ' ';
+			doc_block << " " << FT("Parameter_Description") << eol;
 		}
 
 		// Return value

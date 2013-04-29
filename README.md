@@ -1,4 +1,4 @@
-# DoxyIt (v0.1)
+# DoxyIt
 Notepad++ plugin for [Doxygen](http://www.doxygen.org) commenting. This also provides helpful features to support creating and editing comment blocks, even if Doxygen isn't desired. 
 
 Currently there is support for:
@@ -18,13 +18,13 @@ Placing the cursor on the line directly above the function definition and pressi
 
 ```c
 /**
- *  \brief [Brief]
+ *  \brief Brief
  *  
- *  \param [in] p [Param p Description]
- *  \param [in] index [Param index Description]
- *  \return [Return Description]
+ *  \param [in] ptr Parameter_Description
+ *  \param [in] index Parameter_Description
+ *  \return Return_Description
  *  
- *  \details [Details]
+ *  \details Details
  */
 int function(const char *p, int index)
 ```
@@ -34,7 +34,7 @@ Using the menu command *Plugins > DoxyIt > DoxyIt - File* will insert a Doxygen 
 ```c
 /**
  *  \file DoxyIt.cpp
- *  \brief [Brief]
+ *  \brief Brief
  */
 ```
 
@@ -70,18 +70,13 @@ and then `Enter` will turn into:
 
 ### Settings
 Each language can be configured to have any string to indicate the start, line, and end of a document block. The settings dialog also provides a live preview of what a document block would look like:
-![Settings Dialog](http://goo.gl/E9S66)
+![Settings Dialog](http://db.tt/Nrk1LM4l)
 
 
 ##Todo
 - ~~[FingerText](http://sourceforge.net/projects/fingertext/) integration for hotspot navigation (optional).~~ [*Pending pull request*](https://github.com/erinata/FingerText/pull/38)
 - Line wrapping inside comment blocks.
 - Autocomplete for Doxygen commands.
-- Generate documentation for other code elements:
-    - Classes
-    - Enums
-    - Structs
-    - ...
 - Support for other languages
 - Configuration of:
     - Comment block contents

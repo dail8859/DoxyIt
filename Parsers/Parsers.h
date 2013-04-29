@@ -31,6 +31,7 @@ typedef struct ParserDefinition
 	std::string doc_line;
 	std::string doc_end;
 	std::string command_prefix;
+	bool align_desc;
 } ParserDefinition;
 
 typedef struct Parser

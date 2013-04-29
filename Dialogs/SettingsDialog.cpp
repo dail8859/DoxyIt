@@ -66,6 +66,7 @@ void SettingsDialog::saveParserDefinition(int index)
 	prev_pd->doc_end = toString(text);
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), text, 256);
 	prev_pd->command_prefix = toString(text);
+	prev_pd->align_desc = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED ? true : false);
 }
 
 void SettingsDialog::loadParserDefinition()
@@ -76,6 +77,7 @@ void SettingsDialog::loadParserDefinition()
 	// Load the edit controls with the new parsers settings
 	ComboBox_GetText(cmb, name, 32);
 	ParserDefinition pd = parserDefinitions[name];
+	Button_SetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN), pd.align_desc); // Cannot be last!  Doesn't update preview
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_START), toWideString(pd.doc_start).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), toWideString(pd.doc_line).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), toWideString(pd.doc_end).c_str());
@@ -185,36 +187,42 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 		case CBN_SELCHANGE:
 			saveParserDefinition(last_selection);
 			loadParserDefinition();
+			updatePreview();
 			last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
 			return true;
+		case BN_CLICKED:
+			switch(LOWORD(wParam))
+			{
+			case IDOK:
+				last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+				saveParserDefinition(last_selection);
+				if(validateSettings())
+				{
+					saveSettings();
+					display(false);
+				}
+				else if(::MessageBox(_hSelf, msg, NPP_PLUGIN_NAME, MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
+				{
+					saveSettings();
+					display(false);
+				}
+				return true;
+			case IDCANCEL:
+				display(false);
+				return true;
+			case IDC_CHB_ALIGN:
+				saveParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
+				updatePreview();
+				return true;
+			}
 		case EN_CHANGE:
 			saveParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
 			updatePreview();
 			return true;
 		}
-		switch(wParam)
-		{
-		case IDOK:
-			last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
-			saveParserDefinition(last_selection);
-			if(validateSettings())
-			{
-				saveSettings();
-				display(false);
-			}
-			else if(::MessageBox(_hSelf, msg, NPP_PLUGIN_NAME, MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
-			{
-				saveSettings();
-				display(false);
-			}
-			return true;
-		case IDCANCEL:
-			display(false);
-			return true;
-		default:
-			return false;
-		}
 	default:
 		return StaticDialog::dlgProc(_HSource, message, wParam, lParam);
 	}
+
+	return false;
 }
