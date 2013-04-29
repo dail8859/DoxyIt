@@ -198,13 +198,14 @@ void commandMenuInit()
 
 	setCommand(0, TEXT("DoxyIt - Function"), doxyItFunction, sk);
 	setCommand(1, TEXT("DoxyIt - File"), doxyItFile);
-	setCommand(2, TEXT(""), NULL);
+	// ---
 	setCommand(3, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
-	//setCommand(4, TEXT("Use FingerText (if available)"), useFingerText, NULL, use_fingertext);
-	setCommand(4, TEXT(""), NULL);
+	// ---
 	setCommand(5, TEXT("Settings..."), showSettings);
 	setCommand(6, TEXT("About..."), showAbout);
-	//setCommand(3, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
+
+	//setCommand(X, TEXT("Use FingerText (if available)"), useFingerText, NULL, use_fingertext);
+	//setCommand(X, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
 }
 
 void commandMenuCleanUp()
@@ -273,7 +274,6 @@ void activateFingerText()
 void doxyItFunction()
 {
 	std::string doc_block;
-	int startPos;
 	int startLine, endLine;
 	char *indent = NULL;
 
@@ -290,8 +290,7 @@ void doxyItFunction()
 		return;
 
 	// Keep track of where we started
-	startPos = SendScintilla(SCI_GETCURRENTPOS);
-	startLine = SendScintilla(SCI_LINEFROMPOSITION, startPos);
+	startLine = SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS));
 
 	// Get the whitespace of the next line so we can insert it in front of 
 	// all the lines of the document block that is going to be inserted
@@ -416,6 +415,7 @@ void doxyItNewLine()
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_line.c_str());
 			SendScintilla(SCI_ENDUNDOACTION);
+			SendScintilla(SCI_CHOOSECARETX);
 		}
 
 	}
@@ -447,6 +447,7 @@ void doxyItNewLine()
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_end.c_str());
 			SendScintilla(SCI_ENDUNDOACTION);
+			SendScintilla(SCI_CHOOSECARETX);
 
 			// Restore the position
 			SendScintilla(SCI_GOTOPOS, pos);

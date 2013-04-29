@@ -23,13 +23,15 @@ extern FuncItem funcItem[nbFunc];
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID lpReserved )
 {
+	static int attach_count = 0;
+
 	switch (reasonForCall)
 	{
 	case DLL_PROCESS_ATTACH:
-		pluginInit(hModule);
+		if(attach_count++ == 0) pluginInit(hModule);
 		break;
 	case DLL_PROCESS_DETACH:
-		pluginCleanUp();
+		if(--attach_count == 0) pluginCleanUp();
 		break;
 	case DLL_THREAD_ATTACH:
 		break;
