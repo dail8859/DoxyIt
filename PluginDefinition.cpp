@@ -335,7 +335,7 @@ void doxyItFile()
 
 	doc_block << pd->doc_start << eol;
 	doc_block << pd->doc_line << pd->command_prefix << "file " << fname << eol;
-	doc_block << pd->doc_line << pd->command_prefix << "brief " << FT("[Brief]") << eol;
+	doc_block << pd->doc_line << pd->command_prefix << "brief " << FT("Brief") << eol;
 	//doc_block << pd->doc_line << eol;
 	//doc_block << pd->doc_line << pd->command_prefix << "author " << eol;
 	//doc_block << pd->doc_line << pd->command_prefix << "version 1.0" << eol;

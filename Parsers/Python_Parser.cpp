@@ -56,7 +56,7 @@ std::string Parse_Python(const ParserDefinition *pd, const char *text)
 		trex_getsubexp(tr_function, 2, &params_match);
 
 		doc_block << pd->doc_start << eol;
-		doc_block << pd->doc_line << pd->command_prefix << "brief " << FT("[Brief]") << eol;
+		doc_block << pd->doc_line << pd->command_prefix << "brief " << FT("Brief") << eol;
 		doc_block << pd->doc_line << eol;
 
 		// For each param
@@ -65,25 +65,20 @@ std::string Parse_Python(const ParserDefinition *pd, const char *text)
 		{
 			TRexMatch param_match;
 			trex_getsubexp(tr_parameters, 1, &param_match);
-			std::string desc;
-
-			desc += "[Param ";
-			desc.append(param_match.begin, param_match.len);
-			desc += " Description]";
 
 			doc_block << pd->doc_line << pd->command_prefix << "param [in] ";
 			doc_block.write(param_match.begin, param_match.len);
-			doc_block << " " << FT(desc.c_str()) << eol;
+			doc_block << " " << FT("Parameter_Description") << eol;
 
 			cur_params = p_end;
 		}
 
 		// Return value
 		doc_block << pd->doc_line << pd->command_prefix << "return ";
-		doc_block << FT("[Return Description]") << eol;
+		doc_block << FT("Return_Description") << eol;
 		doc_block << pd->doc_line << eol;
 
-		doc_block << pd->doc_line << pd->command_prefix << "details " << FT("[Details]") << eol;
+		doc_block << pd->doc_line << pd->command_prefix << "details " << FT("Details") << eol;
 		doc_block << pd->doc_end;
 	}
 
