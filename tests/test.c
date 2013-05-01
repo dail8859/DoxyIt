@@ -8,8 +8,6 @@ void func_1(void)
 
 // --- Test return values ---
 
-func()	// fail
-
 int func()
 
 const char *func()

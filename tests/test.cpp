@@ -14,3 +14,7 @@ void Class::Method(std::string &str)
 void Class::Method(int x, float pi = 3.14)
 
 void Class::Method(std::mystring = std::string())	// This doesn't work, but should
+
+Constructor(int x)
+
+~Destructor()
