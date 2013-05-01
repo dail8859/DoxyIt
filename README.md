@@ -1,8 +1,9 @@
 # DoxyIt
-Notepad++ plugin for [Doxygen](http://www.doxygen.org) commenting. This also provides helpful features to support creating and editing comment blocks, even if Doxygen isn't desired. 
+Notepad++ plugin for [Doxygen](http://www.doxygen.org) commenting. This also provides helpful features to support creating and editing comment blocks, even if Doxygen isn't desired.
+
+The release versions of DoxyIt can be downloaded [here](http://sourceforge.net/projects/doxyit/files/).
 
 Currently there is support for:
-
 - C
 - C++
 - Python
@@ -10,7 +11,7 @@ Currently there is support for:
 - PHP
 - JavaScript
 
-DoxyIt can be downloaded [here](http://goo.gl/oTBQ2).
+**Note:** DoxyIt uses very simplistic parsing mechanisms and does not enforce valid language syntax, meaning it can easily be fooled. Thus, it is up to the user to ensure the function/method is syntactically valid when attempting to generate Doxygen function commenting as described below.
 
 ## Usage
 ### Doxygen Function Commenting
@@ -57,7 +58,7 @@ Pressing `Enter` inside a comment block will add a new line prepended with the d
  */
 ```
 
-<b>Note:</b> If DoxyIt is configured to use long strings to indicate the start of a comment block, only the first 3 characters need to be typed. For example:
+**Note:** If DoxyIt is configured to use long strings to indicate the start of a comment block, only the first 3 characters need to be typed. For example:
 ```
 /**|
 ```
@@ -69,7 +70,7 @@ and then `Enter` will turn into:
 ```
 
 ### Settings
-Each language can be configured to have any string to indicate the start, line, and end of a document block. The settings dialog also provides a live preview of what a document block would look like:
+Each language can be configured to have any string to indicate the start, line, and end of a document block. The settings dialog also provides a live preview of what a documentation block would look like:
 ![Settings Dialog](http://db.tt/Nrk1LM4l)
 
 
