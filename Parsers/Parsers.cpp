@@ -28,12 +28,13 @@ extern NppData nppData;
 
 Parser parsers[] = 
 {
-	REGISTER_PARSER(C,      C,      "C",          "/**", " *  ", " */", "\\", "int function(const char *ptr, int index)"),
-	REGISTER_PARSER(CPP,    C,      "C++",        "/**", " *  ", " */", "\\", "std::string function(const char *ptr, int &index)"),
-	REGISTER_PARSER(JAVA,   C,      "Java",       "/**", " *  ", " */", "@",  "public boolean action(Event event, Object arg)"),
-	REGISTER_PARSER(PYTHON, Python, "Python",     "## ", "#  ",  "#  ", "@",  "def foo(bar, string=None)"),
-	REGISTER_PARSER(PHP,    C,      "PHP",        "/**", " *  ", " */", "@",  "function myFunction($abc, $defg)"),
-	REGISTER_PARSER(JS,     C,      "JavaScript", "/**", " *  ", " */", "@",  "function myFunction(abc, defg)")
+	REGISTER_PARSER(C,      C,      "C",          "/**",  " *  ", " */",  "\\", "int function(const char *ptr, int index)"),
+	REGISTER_PARSER(CPP,    C,      "C++",        "/**",  " *  ", " */",  "\\", "std::string function(const char *ptr, int &index)"),
+	REGISTER_PARSER(JAVA,   C,      "Java",       "/**",  " *  ", " */",  "@",  "public boolean action(Event event, Object arg)"),
+	REGISTER_PARSER(PYTHON, Python, "Python",     "## ",  "#  ",  "#  ",  "@",  "def foo(bar, string=None)"),
+	REGISTER_PARSER(PHP,    C,      "PHP",        "/**",  " *  ", " */",  "@",  "function myFunction($abc, $defg)"),
+	REGISTER_PARSER(JS,     C,      "JavaScript", "/**",  " *  ", " */",  "@",  "function myFunction(abc, defg)"),
+	REGISTER_PARSER(CS,     C,      "C#",         "/// ", "/// ", "/// ", "\\", "public int Method(ref int abc, int defg)")
 };
 
 const Parser *getParserByName(std::wstring name)

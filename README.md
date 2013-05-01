@@ -10,6 +10,7 @@ Currently there is support for:
 - Java
 - PHP
 - JavaScript
+- C#
 
 **Note:** DoxyIt uses very simplistic parsing mechanisms and does not enforce valid language syntax, meaning it can easily be fooled. Thus, it is up to the user to ensure the function/method is syntactically valid when attempting to generate Doxygen function commenting as described below.
 
