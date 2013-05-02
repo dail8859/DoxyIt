@@ -18,8 +18,6 @@
 
 #include "Parsers.h"
 
-extern NppData nppData;
-
 // Very ugly macro
 #define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) {L_##lang, TEXT(#lang),TEXT(language_name), \
 	{"", "", "", "", false}, \
@@ -51,7 +49,7 @@ const Parser *getCurrentParser(void)
 {
 	int lang_type;
 	int len = sizeof(parsers) / sizeof(parsers[0]);
-	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM) &lang_type);
+	SendNpp(NPPM_GETCURRENTLANGTYPE, SCI_UNUSED, (LPARAM) &lang_type);
 
 	for(int i = 0; i < len; ++i)
 		if(parsers[i].lang_type == lang_type)

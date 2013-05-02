@@ -5,4 +5,4 @@ void PassRef(ref int x)
 
 void PassOut(out int x)
 
-void PrintAll(IEnumerable<object> objects, string! intput)
+void PrintAll(IEnumerable<object> objects, string! input)

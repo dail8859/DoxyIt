@@ -25,21 +25,21 @@
 #include "AboutDialog.h"
 #include "trex.h"
 
-// Global variables
+// --- Global variables ---
 FuncItem funcItem[nbFunc];
-NppData nppData;
 
-bool do_active_commenting;		// active commenting - create or extend a document block
-//bool do_active_wrapping;		// active wrapping - wrap text inside of document blocks...todo
-bool use_fingertext;			// use fingertext if it is available
-bool fingertext_found;			// if we found the fingertext plugin installed
-bool fingertext_enabled;		// if fingertext is enabled
+// --- Local variables ---
+static bool do_active_commenting;	// active commenting - create or extend a document block
+//static bool do_active_wrapping;	// active wrapping - wrap text inside of document blocks...todo
+static bool use_fingertext;			// use fingertext if it is available
+static bool fingertext_found;		// if we found the fingertext plugin installed
+bool fingertext_enabled;			// if fingertext is enabled (global)
 
-// Local variables
-static SciFnDirect pSciMsg;		// For direct scintilla call
-static sptr_t pSciWndData;		// For direct scintilla call
-static SettingsDialog sd;		// The settings dialog
-static HANDLE _hModule;			// For dialog initialization
+static NppData nppData;
+static SciFnDirect pSciMsg;			// For direct scintilla call
+static sptr_t pSciWndData;			// For direct scintilla call
+static SettingsDialog sd;			// The settings dialog
+static HANDLE _hModule;				// For dialog initialization
 
 // --- Menu callbacks ---
 static void doxyItFunction();
@@ -56,13 +56,18 @@ LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
 	return pSciMsg(pSciWndData, Msg, wParam, lParam);
 }
 
+LRESULT SendNpp(UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	return ::SendMessage(nppData._nppHandle, Msg, wParam, lParam);
+}
+
 bool updateScintilla()
 {
 	HWND curScintilla;
 
 	// Get the current scintilla
 	int which = -1;
-	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
+	SendNpp(NPPM_GETCURRENTSCINTILLA, SCI_UNUSED, (LPARAM)&which);
 	if(which == -1) return false;
 	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 
@@ -80,7 +85,7 @@ void configSave()
 	TCHAR iniPath[MAX_PATH];
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 
-	::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM) iniPath);
+	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM) iniPath);
 	::_tcscat_s(iniPath, TEXT("\\"));
 	::_tcscat_s(iniPath, NPP_PLUGIN_NAME);
 	::_tcscat_s(iniPath, TEXT(".ini"));
@@ -126,7 +131,7 @@ void configLoad()
 	TCHAR tbuffer[MAX_PATH];
 	char buffer[MAX_PATH];
 
-	::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM) iniPath);
+	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM) iniPath);
 	::_tcscat_s(iniPath, TEXT("\\"));
 	::_tcscat_s(iniPath, NPP_PLUGIN_NAME);
 	::_tcscat_s(iniPath, TEXT(".ini"));
@@ -255,7 +260,7 @@ bool checkFingerText()
 		ci.internalMsg = FINGERTEXT_ISENABLED;
 		ci.srcModuleName = NPP_PLUGIN_NAME;
 		ci.info = NULL;
-		::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
+		SendNpp(NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
 		return ci.info != NULL;
 	}
 	else
@@ -270,7 +275,7 @@ void activateFingerText()
 		ci.internalMsg = FINGERTEXT_ACTIVATE;
 		ci.srcModuleName = NPP_PLUGIN_NAME;
 		ci.info = NULL;
-		::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
+		SendNpp(NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
 	}
 }
 
@@ -331,7 +336,7 @@ void doxyItFile()
 	}
 
 	// Get the file name
-	::SendMessage(nppData._nppHandle, NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
+	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
 	wcstombs(fname, fileName, sizeof(fname));
 
 	eol = getEolStr();
@@ -355,20 +360,20 @@ void doxyItFile()
 void activeCommenting()
 {
 	do_active_commenting = !do_active_commenting;
-	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_commenting);
+	SendNpp(NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_commenting);
 }
 
 void useFingerText()
 {
 	use_fingertext = !use_fingertext;
-	::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[4]._cmdID, (LPARAM) use_fingertext);
+	SendNpp(NPPM_SETMENUITEMCHECK, funcItem[4]._cmdID, (LPARAM) use_fingertext);
 }
 
 /*
 void activeWrapping()
 {
-do_active_wrapping = !do_active_wrapping;
-::SendMessage(nppData._nppHandle, NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_wrapping);
+	do_active_wrapping = !do_active_wrapping;
+	SendNpp(NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_wrapping);
 }
 */
 
@@ -499,7 +504,7 @@ void handleNotification(SCNotification *notifyCode)
 		ci.info = NULL;
 
 		// NPPM_MSGTOPLUGIN returns true if the dll is found
-		if(::SendMessage(nppData._nppHandle, NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci))
+		if(SendNpp(NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci))
 		{
 			if((int) ci.info >= 561) fingertext_found = true;
 			else fingertext_found = false;

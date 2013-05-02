@@ -32,8 +32,9 @@
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
 const int nbFunc = 7;
 
-// --- Helper function ---
+// --- Helper functions ---
 LRESULT SendScintilla(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
+LRESULT SendNpp(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
 
 // Calls from DoxyIt.cpp
 void pluginInit(HANDLE hModule);						// Called from DllMain, DLL_PROCESS_ATTACH
