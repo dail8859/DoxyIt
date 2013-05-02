@@ -70,7 +70,7 @@ DEFINE_PARSER(Python);
 DEFINE_PARSER(Null);
 
 const Parser *getParserByName(std::wstring name);
-const Parser *getCurrentParser();
+const Parser *getCurrentParser(bool update=false);
 const ParserDefinition *getCurrentParserDefinition();
 
 void InitializeParsers();

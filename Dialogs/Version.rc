@@ -10,15 +10,15 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 1 VERSIONINFO
     FILEVERSION     VERSION_NUM
     PRODUCTVERSION  VERSION_NUM
-    FILEFLAGSMASK   0x37L
-    FILEFLAGS       0x20L
+    FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+    FILEFLAGS       VS_FF_SPECIALBUILD
     FILEOS          VOS__WINDOWS32
     FILETYPE        VFT_DLL
     FILESUBTYPE     VFT2_UNKNOWN
 {
     BLOCK "StringFileInfo"
     {
-        BLOCK "040901B5"
+        BLOCK "040904b0"
         {
             VALUE "Comments", "Notepad++ plugin for Doxygen commenting"
             VALUE "CompanyName", "Justin Dailey <dail8859@yahoo.com>"

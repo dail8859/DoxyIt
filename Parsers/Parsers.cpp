@@ -45,17 +45,32 @@ const Parser *getParserByName(std::wstring name)
 	return NULL;
 }
 
-const Parser *getCurrentParser(void)
+// "update" causes the current parser pointer to be updated
+// else just return the currently cached parser
+const Parser *getCurrentParser(bool update)
 {
-	int lang_type;
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	SendNpp(NPPM_GETCURRENTLANGTYPE, SCI_UNUSED, (LPARAM) &lang_type);
+	static const Parser *current = NULL;
 
-	for(int i = 0; i < len; ++i)
-		if(parsers[i].lang_type == lang_type)
-			return &parsers[i];
+	if(update)
+	{
+		int lang_type;
+		int len = sizeof(parsers) / sizeof(parsers[0]);
+		SendNpp(NPPM_GETCURRENTLANGTYPE, SCI_UNUSED, (LPARAM) &lang_type);
 
-	return NULL;
+		for(int i = 0; i < len; ++i)
+		{
+			if(parsers[i].lang_type == lang_type)
+			{
+				current = &parsers[i];
+				return current;
+			}
+		}
+
+		// Parser wasn't found for current language
+		current = NULL;
+	}
+
+	return current;
 }
 
 const ParserDefinition *getCurrentParserDefinition(void)

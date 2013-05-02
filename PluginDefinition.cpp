@@ -517,6 +517,11 @@ void handleNotification(SCNotification *notifyCode)
 	case NPPN_SHUTDOWN:
 		configSave();
 		break;
+	case NPPN_BUFFERACTIVATED:
+	case NPPN_LANGCHANGED:
+		// Don't actually need the parser here, but this forces it to updates the current reference
+		getCurrentParser(true);
+		break;
 	}
 	/*
 	else if(do_active_wrapping) // && line starts with doc_line
