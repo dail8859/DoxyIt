@@ -31,13 +31,14 @@ class SettingsDialog : public StaticDialog
 private:
 	std::map<std::wstring, ParserDefinition> parserDefinitions;
 	HFONT mono;
-	int last_selection;
 	NppData _nppData;
 	HWND _HSource;
+	int prev_selection;
+	bool updating;
 
 
 public:
-	SettingsDialog() : StaticDialog(), last_selection(0) {};
+	SettingsDialog() : StaticDialog(), prev_selection(0), updating(false) {};
 
 	void init(HINSTANCE hInst, NppData nppData);
 	void doDialog();

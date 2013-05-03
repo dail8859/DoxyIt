@@ -16,14 +16,12 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include <fstream>
 #include "PluginDefinition.h"
 #include "Utils.h"
 #include "Parsers.h"
 #include "Version.h"
 #include "SettingsDialog.h"
 #include "AboutDialog.h"
-#include "trex.h"
 
 // --- Global variables ---
 FuncItem funcItem[nbFunc];

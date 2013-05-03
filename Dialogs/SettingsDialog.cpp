@@ -38,6 +38,7 @@ void SettingsDialog::doDialog()
 
 	initParserDefinitions();
 	loadParserDefinition();
+	updatePreview();
 }
 
 void SettingsDialog::initParserDefinitions()
@@ -51,12 +52,11 @@ void SettingsDialog::initParserDefinitions()
 
 void SettingsDialog::saveParserDefinition(int index)
 {
-	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 	TCHAR prev_name[32];
 	TCHAR text[256];
 
 	// Save the text from the edit controls for the previous selection
-	ComboBox_GetLBText(cmb, index, prev_name);
+	ComboBox_GetLBText(GetDlgItem(_hSelf, IDC_CMB_LANG), index, prev_name);
 	ParserDefinition *prev_pd = &parserDefinitions[prev_name];
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_START), text, 256);
 	prev_pd->doc_start = toString(text);
@@ -69,19 +69,25 @@ void SettingsDialog::saveParserDefinition(int index)
 	prev_pd->align_desc = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED ? true : false);
 }
 
+// Note: Setting the text of edit boxes causes notifications to be generated, which update the 
+// preview multiple times when calling loadParserDefinition(). The 'updating' flag is used to 
+// temporarily ignore notifications.
 void SettingsDialog::loadParserDefinition()
 {
 	TCHAR name[32];
-	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 
 	// Load the edit controls with the new parsers settings
-	ComboBox_GetText(cmb, name, 32);
+	ComboBox_GetText(GetDlgItem(_hSelf, IDC_CMB_LANG), name, 32);
 	ParserDefinition pd = parserDefinitions[name];
+
+	updating = true;
 	Button_SetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN), pd.align_desc); // Cannot be last!  Doesn't update preview
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_START), toWideString(pd.doc_start).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), toWideString(pd.doc_line).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), toWideString(pd.doc_end).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), toWideString(pd.command_prefix).c_str());
+	updating = false;
+
 }
 
 bool SettingsDialog::validateText(std::string text, int idc)
@@ -94,8 +100,6 @@ bool SettingsDialog::validateText(std::string text, int idc)
 }
 bool SettingsDialog::validateSettings()
 {
-	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
-
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
 	{
@@ -109,7 +113,7 @@ bool SettingsDialog::validateSettings()
 
 		if(!ret)
 		{
-			ComboBox_SelectString(cmb, -1, parsers[i].language_name.c_str());
+			ComboBox_SelectString(GetDlgItem(_hSelf, IDC_CMB_LANG), -1, parsers[i].language_name.c_str());
 			loadParserDefinition();
 			return false;
 		}
@@ -127,7 +131,6 @@ void SettingsDialog::saveSettings()
 
 void SettingsDialog::updatePreview()
 {
-	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 	std::string block;
 	ParserDefinition *pd;
 	const Parser *p;
@@ -135,7 +138,7 @@ void SettingsDialog::updatePreview()
 	int prev_eol_mode;
 
 	// Get the name of the language that is selected
-	ComboBox_GetText(cmb, name, 32);
+	ComboBox_GetText(GetDlgItem(_hSelf, IDC_CMB_LANG), name, 32);
 	pd = &parserDefinitions[name];
 
 	// Disable fingertext for the preview
@@ -160,6 +163,8 @@ void SettingsDialog::updatePreview()
 
 BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if(updating) return true;
+
 	switch(message) 
 	{
 	case WM_INITDIALOG:
@@ -169,7 +174,7 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 
 			for(int i = 0; i < len; ++i)
 				ComboBox_AddString(cmb, parsers[i].language_name.c_str());
-			ComboBox_SetCurSel(cmb, last_selection);
+			ComboBox_SetCurSel(cmb, prev_selection);
 
 			// I have no idea what these values do, but these work
 			mono = CreateFont(16,8,0,0,0,0,0,0,0,0,0,0,0,TEXT("Courier New"));
@@ -185,17 +190,17 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 		switch(HIWORD(wParam))
 		{
 		case CBN_SELCHANGE:
-			saveParserDefinition(last_selection);
+			saveParserDefinition(prev_selection);
 			loadParserDefinition();
 			updatePreview();
-			last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+			prev_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
 			return true;
 		case BN_CLICKED:
 			switch(LOWORD(wParam))
 			{
 			case IDOK:
-				last_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
-				saveParserDefinition(last_selection);
+				prev_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+				saveParserDefinition(prev_selection);
 				if(validateSettings())
 				{
 					saveSettings();
