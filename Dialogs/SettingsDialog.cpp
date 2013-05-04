@@ -184,6 +184,9 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), mono, false);
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), mono, false);
 
+			// Limit the prefix box to 1 character
+			SendMessage(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), EM_SETLIMITTEXT, 1, 0);
+
 			return true;
 		}
 	case WM_COMMAND:
@@ -223,6 +226,9 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 		case EN_CHANGE:
 			saveParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
 			updatePreview();
+			return true;
+		case EN_MAXTEXT:
+			::MessageBeep(MB_ICONERROR);
 			return true;
 		}
 	default:

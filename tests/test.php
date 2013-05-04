@@ -5,4 +5,4 @@
 function myFunction($abc, $def = "test")
 
 // Thats about it for now...
- ?> 
+?>
