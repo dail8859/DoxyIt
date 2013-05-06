@@ -31,6 +31,7 @@ typedef struct ParserDefinition
 	std::string doc_line;
 	std::string doc_end;
 	std::string command_prefix;
+	std::string format;
 	bool align_desc;
 } ParserDefinition;
 
@@ -40,9 +41,10 @@ typedef struct Parser
 	std::wstring lang;						// Short language name. Postfix of enum from lang_type
 	std::wstring language_name;				// User readable name
 	const std::string example;				// Example function/method to parse for Settings Dialog
+	const std::string example;
 
 	ParserDefinition pd;
-	const ParserDefinition pd_default;		// For default values
+	const ParserDefinition pd_default;		// Stores default values
 
 	// Registered functions
 	bool (*initializer)(void);

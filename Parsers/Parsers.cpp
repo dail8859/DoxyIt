@@ -18,11 +18,13 @@
 
 #include "Parsers.h"
 
+const char *default_format = "abc\r\nefg";
+
 // Very ugly macro
 #define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) \
 	{L_##lang, TEXT(#lang),TEXT(language_name), example, \
-	{"", "", "", "", false}, \
-	{doc_start, doc_line, doc_end, command_prefix, false}, \
+	{"", "", "", "", "", false}, \
+	{doc_start, doc_line, doc_end, command_prefix, default_format, false}, \
 	Initialize_##parser, CleanUp_##parser, Parse_##parser}
 
 Parser parsers[] = 

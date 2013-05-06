@@ -152,3 +152,16 @@ bool isWhiteSpace(std::string str)
 			return false;
 	return true;
 }
+
+std::string stringReplace(const std::string& str, const std::string& oldStr, const std::string& newStr)
+{
+	std::string newstring = str;
+	size_t pos = 0;
+	while((pos = newstring.find(oldStr, pos)) != std::string::npos)
+	{
+		newstring.replace(pos, oldStr.length(), newStr);
+		pos += newStr.length();
+	}
+
+	return newstring;
+}
