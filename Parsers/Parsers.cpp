@@ -19,9 +19,10 @@
 #include "Parsers.h"
 
 // Very ugly macro
-#define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) {L_##lang, TEXT(#lang),TEXT(language_name), \
+#define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) \
+	{L_##lang, TEXT(#lang),TEXT(language_name), example, \
 	{"", "", "", "", false}, \
-	example, TEXT(##doc_start), TEXT(##doc_line), TEXT(##doc_end), TEXT(##command_prefix), \
+	{doc_start, doc_line, doc_end, command_prefix, false}, \
 	Initialize_##parser, CleanUp_##parser, Parse_##parser}
 
 Parser parsers[] = 

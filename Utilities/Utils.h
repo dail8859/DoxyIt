@@ -19,6 +19,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#define BOOLTOSTR(b) ((b) ? TEXT("true") : TEXT("false"))
+
 // Scintilla Utilities
 void clearLine(int line);
 char *getLineIndentStr(int line);

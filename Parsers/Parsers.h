@@ -39,16 +39,10 @@ typedef struct Parser
 	int lang_type;
 	std::wstring lang; // Short language name. Postfix of enum from lang_type
 	std::wstring language_name; // User readable name
-
-	ParserDefinition pd;
-
 	const std::string example;
 
-	// Store default values. For convenience, these are wstring to load and save easier
-	const std::wstring default_doc_start;
-	const std::wstring default_doc_line;
-	const std::wstring default_doc_end;
-	const std::wstring default_command_prefix;
+	ParserDefinition pd;
+	const ParserDefinition pd_default; // Stores default values
 
 	// Registered functions
 	bool (*initializer)(void);

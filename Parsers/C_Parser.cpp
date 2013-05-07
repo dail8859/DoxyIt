@@ -87,8 +87,7 @@ std::string Parse_C(const ParserDefinition *pd, const char *text)
 			std::string param = params[i];
 
 			doc_block << pd->doc_line << pd->command_prefix << "param [in] " << param;
-			if(pd->align_desc)
-				for(unsigned int i = 0; i < (max - param.length()); ++i) doc_block << ' ';
+			if(pd->align_desc) doc_block << std::string(max - param.length(), ' ');
 			doc_block << " " << FT("Parameter_Description") << eol;
 		}
 

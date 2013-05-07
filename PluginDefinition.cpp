@@ -101,23 +101,19 @@ void configSave()
 		std::wstring ws;
 
 		// Wrap everything in quotes to preserve whitespace
-		ws.assign(pd->doc_start.begin(), pd->doc_start.end());
-		ws = TEXT("\"") + ws + TEXT("\"");
+		ws = TEXT("\"") + toWideString(pd->doc_start) + TEXT("\"");
 		WritePrivateProfileString(p->lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
 
-		ws.assign(pd->doc_line.begin(), pd->doc_line.end());
-		ws = TEXT("\"") + ws + TEXT("\"");
+		ws = TEXT("\"") + toWideString(pd->doc_line) + TEXT("\"");
 		WritePrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), ws.c_str(), iniPath);
 
-		ws.assign(pd->doc_end.begin(), pd->doc_end.end());
-		ws = TEXT("\"") + ws + TEXT("\"");
+		ws = TEXT("\"") + toWideString(pd->doc_end) + TEXT("\"");
 		WritePrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), ws.c_str(), iniPath);
 
-		ws.assign(pd->command_prefix.begin(), pd->command_prefix.end());
-		ws = TEXT("\"") + ws + TEXT("\"");
+		ws = TEXT("\"") + toWideString(pd->command_prefix) + TEXT("\"");
 		WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
 
-		WritePrivateProfileString(p->lang.c_str(), TEXT("align"), pd->align_desc ? TEXT("true") : TEXT("false"), iniPath);
+		WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align_desc), iniPath);
 	}
 }
 
@@ -158,25 +154,25 @@ void configLoad()
 		// parser, else, use what we pulled from the file.
 		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_start.assign(p->default_doc_start.begin(), p->default_doc_start.end());
-		else p->pd.doc_start.assign(buffer);
+		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_start = p->pd_default.doc_start;
+		else p->pd.doc_start = buffer;
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_line.assign(p->default_doc_line.begin(), p->default_doc_line.end());
-		else p->pd.doc_line.assign(buffer);
+		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_line = p->pd_default.doc_line;
+		else p->pd.doc_line = buffer;
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_end.assign(p->default_doc_end.begin(), p->default_doc_end.end());
-		else p->pd.doc_end.assign(buffer);
+		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_end = p->pd_default.doc_end;
+		else p->pd.doc_end = buffer;
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.command_prefix.assign(p->default_command_prefix.begin(), p->default_command_prefix.end());
-		else p->pd.command_prefix.assign(buffer);
+		if(strncmp(buffer, "!!!", 3) == 0) p->pd.command_prefix = p->pd_default.command_prefix;
+		else p->pd.command_prefix = buffer;
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), TEXT("false"), tbuffer, MAX_PATH, iniPath);
+		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd_default.align_desc), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
 		p->pd.align_desc = strcmp(buffer, "true") == 0;
 	}
