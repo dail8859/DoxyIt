@@ -17,8 +17,17 @@
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "Parsers.h"
+#include <vector>
 
-const char *default_format = "abc\r\nefg";
+const char *default_format = "\
+\r\n\
+#brief Brief\r\n\
+\r\n\
+#$(PARAM) [in] key Parameter_Description\r\n\
+#return Return_Description\r\n\
+\r\n\
+#details Details\r\n\
+";
 
 // Very ugly macro
 #define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) \

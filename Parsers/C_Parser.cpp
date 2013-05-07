@@ -38,6 +38,43 @@ void CleanUp_C(void)
 	trex_free(tr_parameters);
 }
 
+std::string formatBlock(const ParserDefinition *pd, std::vector<std::string>& params)
+{
+	std::stringstream ss(pd->format);
+	std::vector<std::string> lines;
+	std::string line;
+	const char *eol;
+
+	eol = getEolStr();
+
+	while(std::getline(ss, line)) lines.push_back(line);
+	lines.push_back("");
+
+	ss.clear(); // re use
+	for(unsigned int i = 0; i < lines.size(); ++i)
+	{
+		if(lines[i].find("$(PARAM)") != std::string::npos)
+		{
+			for(unsigned int j = 0; j < params.size(); ++j)
+			{
+				line = stringReplace(lines[i], "$(PARAM)", params[j]);
+				
+				if(i == 0) ss << pd->doc_start << line << eol;
+				else if(i == lines.size() -1) ss << pd->doc_end << line << eol;
+				else ss << pd->doc_line << line << eol;
+			}
+		}
+		else
+		{
+			if(i == 0) ss << pd->doc_start << lines[i] << eol;
+			else if(i == lines.size() -1) ss << pd->doc_end << lines[i];
+			else ss << pd->doc_line << lines[i] << eol;
+		}
+	}
+
+	return stringReplace(ss.str(), "#", pd->command_prefix);
+}
+
 std::string Parse_C(const ParserDefinition *pd, const char *text)
 {
 	std::ostringstream doc_block;
@@ -79,6 +116,8 @@ std::string Parse_C(const ParserDefinition *pd, const char *text)
 			}
 			cur_params = p_end;
 		}
+
+		return formatBlock(pd, params);
 
 		for(unsigned int i = 0; i < params.size(); ++i)
 		{

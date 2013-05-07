@@ -6,6 +6,7 @@
 #define IDD_ABOUTDLG                            103
 #define IDC_EDIT_PREFIX                         1001
 #define IDC_GITHUB                              1001
+#define IDC_EDIT_FORMAT                         1002
 #define IDC_VERSION                             1002
 #define IDC_README                              1003
 #define IDC_CMB_LANG                            1007

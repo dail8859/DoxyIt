@@ -70,7 +70,10 @@ void SettingsDialog::saveParserDefinition(int index)
 	
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), text, 256);
 	prev_pd->command_prefix = toString(text);
-	
+
+	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), text, 256);
+	prev_pd->format = toString(text);
+
 	prev_pd->align_desc = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED ? true : false);
 }
 
@@ -91,8 +94,8 @@ void SettingsDialog::loadParserDefinition()
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), toWideString(pd.doc_line).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), toWideString(pd.doc_end).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), toWideString(pd.command_prefix).c_str());
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd.format).c_str());
 	m_updating = false;
-
 }
 
 bool SettingsDialog::validateText(std::string text, int idc)
@@ -188,6 +191,7 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_END), m_monoFont, false);
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), m_monoFont, false);
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), m_monoFont, false);
+			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), m_monoFont, false);
 
 			// Limit the prefix box to 1 character
 			SendMessage(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), EM_SETLIMITTEXT, 1, 0);

@@ -41,7 +41,6 @@ typedef struct Parser
 	std::wstring lang;						// Short language name. Postfix of enum from lang_type
 	std::wstring language_name;				// User readable name
 	const std::string example;				// Example function/method to parse for Settings Dialog
-	const std::string example;
 
 	ParserDefinition pd;
 	const ParserDefinition pd_default;		// Stores default values
