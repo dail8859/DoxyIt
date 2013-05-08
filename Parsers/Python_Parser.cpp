@@ -25,7 +25,7 @@ static TRex *tr_parameters;
 bool Initialize_Python(void)
 {
 	const TRexChar *error = NULL;
-	tr_function = trex_compile("def\\s+(\\w+)\\s*(\\([^)]*\\))", &error);
+	tr_function = trex_compile("\\sdef\\s+(\\w+)\\s*(\\([^)]*\\))", &error);
 	tr_parameters = trex_compile("(\\w+)(\\s*=\\s*\\w+)?\\s*[,)]", &error);
 
 	if(!tr_function || !tr_parameters) return false;
@@ -40,22 +40,22 @@ void CleanUp_Python(void)
 
 std::string Parse_Python(const ParserDefinition *pd, const char *text)
 {
-	const TRexChar *begin,*end;
-	const char *eol;
 	std::ostringstream doc_block;
 	std::vector<std::string> params;
+	const TRexChar *begin,*end;
+	const char *eol;
 	unsigned int max = 0;
 
 	eol = getEolStr();
 
 	if(trex_search(tr_function, text, &begin, &end))
 	{
-		TRexMatch func_match;
+		//TRexMatch func_match;
 		TRexMatch params_match;
 		const TRexChar *cur_params;
 		const TRexChar *p_begin, *p_end;
 
-		trex_getsubexp(tr_function, 1, &func_match);
+		//trex_getsubexp(tr_function, 1, &func_match);
 		trex_getsubexp(tr_function, 2, &params_match);
 
 		doc_block << pd->doc_start << eol;
@@ -67,9 +67,9 @@ std::string Parse_Python(const ParserDefinition *pd, const char *text)
 		while(trex_searchrange(tr_parameters, cur_params, end, &p_begin, &p_end))
 		{
 			TRexMatch param_match;
-			trex_getsubexp(tr_parameters, 1, &param_match);
 			std::string param;
 
+			trex_getsubexp(tr_parameters, 1, &param_match);
 			param.append(param_match.begin, param_match.len);
 			params.push_back(param);
 			if(param.length() > max) max = param.length();

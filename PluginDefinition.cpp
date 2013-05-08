@@ -56,7 +56,7 @@ LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT SendNpp(UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-	return ::SendMessage(nppData._nppHandle, Msg, wParam, lParam);
+	return SendMessage(nppData._nppHandle, Msg, wParam, lParam);
 }
 
 bool updateScintilla()
@@ -78,19 +78,24 @@ bool updateScintilla()
 
 // --- Configuration ---
 
+void getIniFilePath(TCHAR *iniPath, int size)
+{
+	SendNpp(NPPM_GETPLUGINSCONFIGDIR, size, (LPARAM) iniPath);
+	_tcscat_s(iniPath, size, TEXT("\\"));
+	_tcscat_s(iniPath, size, NPP_PLUGIN_NAME);
+	_tcscat_s(iniPath, size, TEXT(".ini"));
+}
+
 void configSave()
 {
 	TCHAR iniPath[MAX_PATH];
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 
-	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM) iniPath);
-	::_tcscat_s(iniPath, TEXT("\\"));
-	::_tcscat_s(iniPath, NPP_PLUGIN_NAME);
-	::_tcscat_s(iniPath, TEXT(".ini"));
+	getIniFilePath(iniPath, MAX_PATH);
 
 	// [DoxyIt]
-	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), do_active_commenting ? TEXT("true") : TEXT("false"), iniPath);
-	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), use_fingertext ? TEXT("true") : TEXT("false"), iniPath);
+	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), BOOLTOSTR(do_active_commenting), iniPath);
+	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), BOOLTOSTR(use_fingertext), iniPath);
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version"), VERSION_LINEAR_TEXT, iniPath);
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), VERSION_STAGE, iniPath);
 
@@ -120,15 +125,12 @@ void configSave()
 void configLoad()
 {
 	TCHAR iniPath[MAX_PATH];
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	//int version;
 	TCHAR tbuffer[MAX_PATH];
 	char buffer[MAX_PATH];
+	int len = sizeof(parsers) / sizeof(parsers[0]);
+	//int version;
 
-	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM) iniPath);
-	::_tcscat_s(iniPath, TEXT("\\"));
-	::_tcscat_s(iniPath, NPP_PLUGIN_NAME);
-	::_tcscat_s(iniPath, TEXT(".ini"));
+	getIniFilePath(iniPath, MAX_PATH);
 
 	// [DoxyIt]
 	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
@@ -183,13 +185,13 @@ void configLoad()
 
 
 
-bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk = NULL, bool check0nInit = false)
+bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk = NULL, bool checkOnInit = false)
 {
 	if (index >= nbFunc || !pFunc) return false;
 
 	lstrcpy(funcItem[index]._itemName, cmdName);
 	funcItem[index]._pFunc = pFunc;
-	funcItem[index]._init2Check = check0nInit;
+	funcItem[index]._init2Check = checkOnInit;
 	funcItem[index]._pShKey = sk;
 
 	return true;
@@ -300,13 +302,13 @@ void doxyItFunction()
 	// Get the whitespace of the next line so we can insert it in front of 
 	// all the lines of the document block that is going to be inserted
 	indent = getLineIndentStr(startLine + 1);
-
+	
 	SendScintilla(SCI_BEGINUNDOACTION);
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
 	endLine = SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS)); // get the end of the document block
 	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
 	SendScintilla(SCI_ENDUNDOACTION);
-
+	
 	activateFingerText();
 
 	if(indent) delete[] indent;
@@ -317,7 +319,6 @@ void doxyItFile()
 	std::ostringstream doc_block;
 	const ParserDefinition *pd;
 	TCHAR fileName[MAX_PATH];
-	char fname[MAX_PATH];
 	const char *eol;
 
 	if(!updateScintilla()) return;
@@ -331,7 +332,6 @@ void doxyItFile()
 
 	// Get the file name
 	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
-	wcstombs(fname, fileName, sizeof(fname));
 
 	eol = getEolStr();
 
@@ -339,7 +339,7 @@ void doxyItFile()
 	fingertext_enabled = checkFingerText();
 
 	doc_block << pd->doc_start << eol;
-	doc_block << pd->doc_line << pd->command_prefix << "file " << fname << eol;
+	doc_block << pd->doc_line << pd->command_prefix << "file " << toString(fileName) << eol;
 	doc_block << pd->doc_line << pd->command_prefix << "brief " << FT("Brief") << eol;
 	//doc_block << pd->doc_line << eol;
 	//doc_block << pd->doc_line << pd->command_prefix << "author " << eol;
@@ -373,14 +373,14 @@ void activeWrapping()
 
 void showSettings()
 {
-	updateScintilla();
+	if(!updateScintilla()) return;
 	sd.doDialog();
 }
 
 void showAbout()
 {
 	updateScintilla();
-	::CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
+	CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
 }
 
 

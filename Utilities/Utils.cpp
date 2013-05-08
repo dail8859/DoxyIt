@@ -26,6 +26,7 @@ void clearLine(int line)
 {
 	int lineStart = SendScintilla(SCI_POSITIONFROMLINE, line);
 	int lineEnd = SendScintilla(SCI_GETLINEENDPOSITION, line);
+
 	SendScintilla(SCI_SETSEL, lineStart, lineEnd);
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) "");
 }
@@ -46,18 +47,18 @@ void insertBeforeLines(char *str, int start, int end, bool force)
 {
 	for(int i = start; i < end; ++i)
 	{
-		int start = SendScintilla(SCI_POSITIONFROMLINE, i);
+		int line = SendScintilla(SCI_POSITIONFROMLINE, i);
 
 		// force=true will always insert the text in front of the line
 		// force=false will only insert it if the line doesnt start with str
 		if(force)
 		{
-			SendScintilla(SCI_INSERTTEXT, start, (LPARAM) str);
+			SendScintilla(SCI_INSERTTEXT, line, (LPARAM) str);
 		}
 		else
 		{
-			char *buffer = getRange(start, start + strlen(str));
-			if(strncmp(buffer, str, strlen(str)) != 0) SendScintilla(SCI_INSERTTEXT, start, (LPARAM) str);
+			char *buffer = getRange(line, line + strlen(str));
+			if(strncmp(buffer, str, strlen(str)) != 0) SendScintilla(SCI_INSERTTEXT, line, (LPARAM) str);
 			delete[] buffer;
 		}
 	}
@@ -96,10 +97,9 @@ char *getRange(int start, int end)
 // Get a line
 char *getLine(int lineNum)
 {
-	char *buffer;
 	int lineLen = (int) SendScintilla(SCI_LINELENGTH, lineNum);
-
-	buffer = new char[lineLen + 1];
+	char *buffer = new char[lineLen + 1];
+	
 	SendScintilla(SCI_GETLINE, lineNum, (LPARAM) buffer);
 	buffer[lineLen] = '\0';
 
@@ -109,8 +109,8 @@ char *getLine(int lineNum)
 // Get the end of line string for the current eol mode
 const char *getEolStr()
 {
+	static char *eol[] = {"\r\n", "\r", "\n"};
 	int eolmode = SendScintilla(SCI_GETEOLMODE);
-	static char *eol[] = {"\r\n","\r","\n"};
 	return eol[eolmode];
 }
 
@@ -122,13 +122,13 @@ std::string FT(const char *p)
 
 	if(fingertext_enabled)
 	{
-		s += "$[![";
+		s = "$[![";
 		s += p;
 		s += "]!]";
 	}
 	else
 	{
-		s += p;
+		s = p;
 	}
 
 	return s;
@@ -136,15 +136,13 @@ std::string FT(const char *p)
 
 std::wstring toWideString(std::string s)
 {
-	std::wstring wide(s.begin(), s.end());
-	return wide;
+	return std::wstring(s.begin(), s.end());
 }
 
 std::string toString(const TCHAR *w)
 {
 	std::wstring wide(w);
-	std::string s(wide.begin(), wide.end());
-	return s;
+	return std::string(wide.begin(), wide.end());
 }
 
 bool isWhiteSpace(std::string str)

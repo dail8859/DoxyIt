@@ -46,7 +46,7 @@ const Parser *getParserByName(std::wstring name)
 	return NULL;
 }
 
-// "update" causes the current parser pointer to be updated
+// 'update' causes the current parser pointer to be updated
 // else just return the currently cached parser
 const Parser *getCurrentParser(bool update)
 {
@@ -92,14 +92,14 @@ std::string Parse(void)
 
 	if(!(p = getCurrentParser()))
 	{
-		::MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return "";
 	}
 
-	// Get the text until a closing parenthesis. Find '('
+	// Get the text until a closing parenthesis. Find '(' first
 	if((found = findNext("(")) == -1)
 	{
-		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return "";
 	}
 
@@ -108,14 +108,14 @@ std::string Parse(void)
 	foundLine = SendScintilla(SCI_LINEFROMPOSITION, found);
 	if(foundLine < curLine || foundLine > curLine + 2)
 	{
-		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return "";
 	}
 
 	// Find the matching closing brace
-	if((found = SendScintilla(SCI_BRACEMATCH, found, SCI_UNUSED)) == -1)
+	if((found = SendScintilla(SCI_BRACEMATCH, found, 0)) == -1)
 	{
-		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return "";
 	}
 
@@ -127,7 +127,7 @@ std::string Parse(void)
 	// but check it just in case we decide to for the future.
 	if(doc_block.length() == 0)
 	{
-		::MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return "";
 	}
 
@@ -139,7 +139,7 @@ void InitializeParsers(void)
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	for(int i = 0; i < len; ++i)
 		if((*parsers[i].initializer)() == false)
-			::MessageBox(NULL, TEXT("DoxyIt initialization failed"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+			MessageBox(NULL, TEXT("DoxyIt initialization failed"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 }
 
 void CleanUpParsers(void)

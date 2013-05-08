@@ -42,7 +42,6 @@ INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt"), NULL, NULL, SW_SHOWNORMAL);
 			return true;
 		case IDC_README:
-			//ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt/blob/master/README.md"), NULL, NULL, SW_SHOWNORMAL);
 			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt/blob/v") VERSION_TEXT TEXT("/README.md"), NULL, NULL, SW_SHOWNORMAL);
 			return true;
 		}

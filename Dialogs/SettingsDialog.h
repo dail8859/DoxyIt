@@ -30,19 +30,19 @@ class SettingsDialog : public StaticDialog
 {
 private:
 	std::map<std::wstring, ParserDefinition> parserDefinitions;
-	HFONT mono;
-	NppData _nppData;
-	HWND _HSource;
-	int prev_selection;
-	bool updating;
+	HFONT m_monoFont;
+	NppData m_nppData;
+	HWND m_HSource;
+	int m_previousSelection;
+	bool m_updating;
 
 
 public:
-	SettingsDialog() : StaticDialog(), prev_selection(0), updating(false) {};
+	SettingsDialog() : StaticDialog(), m_previousSelection(0), m_updating(false) {};
 
 	void init(HINSTANCE hInst, NppData nppData);
 	void doDialog();
-	virtual void destroy() {DeleteObject(mono);}
+	virtual void destroy() { DeleteObject(m_monoFont); }
 
 private:
 	void initParserDefinitions();

@@ -37,12 +37,12 @@ typedef struct ParserDefinition
 typedef struct Parser
 {
 	int lang_type;
-	std::wstring lang; // Short language name. Postfix of enum from lang_type
-	std::wstring language_name; // User readable name
-	const std::string example;
+	std::wstring lang;						// Short language name. Postfix of enum from lang_type
+	std::wstring language_name;				// User readable name
+	const std::string example;				// Example function/method to parse for Settings Dialog
 
 	ParserDefinition pd;
-	const ParserDefinition pd_default; // Stores default values
+	const ParserDefinition pd_default;		// For default values
 
 	// Registered functions
 	bool (*initializer)(void);
@@ -62,6 +62,8 @@ extern Parser parsers[7];
 DEFINE_PARSER(C);
 DEFINE_PARSER(Python);
 DEFINE_PARSER(Null);
+
+
 
 const Parser *getParserByName(std::wstring name);
 const Parser *getCurrentParser(bool update=false);

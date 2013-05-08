@@ -40,24 +40,22 @@ void CleanUp_C(void)
 
 std::string Parse_C(const ParserDefinition *pd, const char *text)
 {
-	const TRexChar *begin,*end;
-	const char *eol;
 	std::ostringstream doc_block;
 	std::vector<std::string> params;
+	const TRexChar *begin,*end;
+	const char *eol;
 	unsigned int max = 0;
 
 	eol = getEolStr();
 
 	if(trex_search(tr_function, text, &begin, &end))
 	{
-		TRexMatch return_match;
-		TRexMatch func_match;
 		TRexMatch params_match;
 		const TRexChar *cur_params;
 		const TRexChar *p_begin, *p_end;
 
-		trex_getsubexp(tr_function, 1, &return_match);	// not used for now
-		trex_getsubexp(tr_function, 2, &func_match);	// not used for now
+		//trex_getsubexp(tr_function, 1, &return_match);	// not used for now
+		//trex_getsubexp(tr_function, 2, &func_match);		// not used for now
 		trex_getsubexp(tr_function, 3, &params_match);
 
 		doc_block << pd->doc_start << eol;

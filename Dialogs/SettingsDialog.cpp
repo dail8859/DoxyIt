@@ -27,7 +27,7 @@ const TCHAR *msg = TEXT("An option is blank (or all whitespace). If this is desi
 
 void SettingsDialog::init(HINSTANCE hInst, NppData nppData)
 {
-	_nppData = nppData;
+	m_nppData = nppData;
 	Window::init(hInst, nppData._nppHandle);
 }
 
@@ -58,14 +58,19 @@ void SettingsDialog::saveParserDefinition(int index)
 	// Save the text from the edit controls for the previous selection
 	ComboBox_GetLBText(GetDlgItem(_hSelf, IDC_CMB_LANG), index, prev_name);
 	ParserDefinition *prev_pd = &parserDefinitions[prev_name];
+	
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_START), text, 256);
 	prev_pd->doc_start = toString(text);
+	
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), text, 256);
 	prev_pd->doc_line = toString(text);
+	
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_END), text, 256);
 	prev_pd->doc_end = toString(text);
+	
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), text, 256);
 	prev_pd->command_prefix = toString(text);
+	
 	prev_pd->align_desc = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED ? true : false);
 }
 
@@ -80,13 +85,13 @@ void SettingsDialog::loadParserDefinition()
 	ComboBox_GetText(GetDlgItem(_hSelf, IDC_CMB_LANG), name, 32);
 	ParserDefinition pd = parserDefinitions[name];
 
-	updating = true;
+	m_updating = true;
 	Button_SetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN), pd.align_desc); // Cannot be last!  Doesn't update preview
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_START), toWideString(pd.doc_start).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), toWideString(pd.doc_line).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), toWideString(pd.doc_end).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), toWideString(pd.command_prefix).c_str());
-	updating = false;
+	m_updating = false;
 
 }
 
@@ -163,7 +168,7 @@ void SettingsDialog::updatePreview()
 
 BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if(updating) return true;
+	if(m_updating) return true;
 
 	switch(message) 
 	{
@@ -174,15 +179,15 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 
 			for(int i = 0; i < len; ++i)
 				ComboBox_AddString(cmb, parsers[i].language_name.c_str());
-			ComboBox_SetCurSel(cmb, prev_selection);
+			ComboBox_SetCurSel(cmb, m_previousSelection);
 
 			// I have no idea what these values do, but these work
-			mono = CreateFont(16,8,0,0,0,0,0,0,0,0,0,0,0,TEXT("Courier New"));
-			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_START), mono, false);
-			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_LINE), mono, false);
-			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_END), mono, false);
-			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), mono, false);
-			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), mono, false);
+			m_monoFont = CreateFont(16,8,0,0,0,0,0,0,0,0,0,0,0,TEXT("Courier New"));
+			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_START), m_monoFont, false);
+			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_LINE), m_monoFont, false);
+			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_END), m_monoFont, false);
+			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), m_monoFont, false);
+			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), m_monoFont, false);
 
 			// Limit the prefix box to 1 character
 			SendMessage(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), EM_SETLIMITTEXT, 1, 0);
@@ -193,23 +198,23 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 		switch(HIWORD(wParam))
 		{
 		case CBN_SELCHANGE:
-			saveParserDefinition(prev_selection);
+			saveParserDefinition(m_previousSelection);
 			loadParserDefinition();
 			updatePreview();
-			prev_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+			m_previousSelection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
 			return true;
 		case BN_CLICKED:
 			switch(LOWORD(wParam))
 			{
 			case IDOK:
-				prev_selection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
-				saveParserDefinition(prev_selection);
+				m_previousSelection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+				saveParserDefinition(m_previousSelection);
 				if(validateSettings())
 				{
 					saveSettings();
 					display(false);
 				}
-				else if(::MessageBox(_hSelf, msg, NPP_PLUGIN_NAME, MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
+				else if(MessageBox(_hSelf, msg, NPP_PLUGIN_NAME, MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
 				{
 					saveSettings();
 					display(false);
@@ -228,11 +233,11 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			updatePreview();
 			return true;
 		case EN_MAXTEXT:
-			::MessageBeep(MB_ICONERROR);
+			MessageBeep(MB_ICONERROR);
 			return true;
 		}
 	default:
-		return StaticDialog::dlgProc(_HSource, message, wParam, lParam);
+		return StaticDialog::dlgProc(m_HSource, message, wParam, lParam);
 	}
 
 	return false;

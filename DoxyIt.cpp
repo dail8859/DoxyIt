@@ -31,7 +31,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID lpReserved )
 		if(attach_count++ == 0) pluginInit(hModule);
 		break;
 	case DLL_PROCESS_DETACH:
-		if(--attach_count == 0) pluginCleanUp();
+		if(--attach_count == 0) pluginCleanUp(); // Should this be called in NPPN_SHUTDOWN?
 		break;
 	case DLL_THREAD_ATTACH:
 		break;
