@@ -42,12 +42,13 @@ std::string formatBlock(const ParserDefinition *pd, std::vector<std::string>& pa
 {
 	std::stringstream ss(pd->format);
 	std::vector<std::string> lines;
-	std::string line;
+	
 	const char *eol;
 
 	eol = getEolStr();
 
-	while(std::getline(ss, line)) lines.push_back(line);
+	std::string aline;
+	while(std::getline(ss, aline)) lines.push_back(aline);
 	lines.push_back("");
 
 	ss.clear(); // re use
@@ -55,13 +56,36 @@ std::string formatBlock(const ParserDefinition *pd, std::vector<std::string>& pa
 	{
 		if(lines[i].find("$(PARAM)") != std::string::npos)
 		{
+			unsigned int align_max = 0;
+			std::vector<std::string> formatted_lines;
 			for(unsigned int j = 0; j < params.size(); ++j)
 			{
+				std::string line;
 				line = stringReplace(lines[i], "$(PARAM)", params[j]);
+
+				unsigned int pipe = line.find('|');
+				if(pipe != std::string::npos)
+				{
+					align_max = max(pipe, align_max);
+				}
 				
-				if(i == 0) ss << pd->doc_start << line << eol;
-				else if(i == lines.size() -1) ss << pd->doc_end << line << eol;
-				else ss << pd->doc_line << line << eol;
+				formatted_lines.push_back(line);
+			}
+			if(align_max != 0)
+			{
+				for(unsigned int j = 0; j < formatted_lines.size(); ++j)
+				{
+					std::string formatted_line = formatted_lines[j];
+					int a = formatted_line.find('|');
+					formatted_line.replace(formatted_line.find('|'), 1, align_max - a, ' ');
+					formatted_lines[j] = formatted_line;
+				}
+			}
+			for(unsigned int j = 0; j < formatted_lines.size(); ++j)
+			{
+				if(i == 0) ss << pd->doc_start << formatted_lines[j] << eol;
+				else if(i == lines.size() -1) ss << pd->doc_end << formatted_lines[j] << eol;
+				else ss << pd->doc_line << formatted_lines[j] << eol;
 			}
 		}
 		else

@@ -23,7 +23,7 @@ const char *default_format = "\
 \r\n\
 #brief Brief\r\n\
 \r\n\
-#$(PARAM) [in] key Parameter_Description\r\n\
+#param [in] $(PARAM) |Parameter_Description\r\n\
 #return Return_Description\r\n\
 \r\n\
 #details Details\r\n\
