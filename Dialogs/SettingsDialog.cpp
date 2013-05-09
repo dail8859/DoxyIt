@@ -158,7 +158,7 @@ void SettingsDialog::updatePreview()
 
 	// Get the parser and have it parse the example
 	p = getParserByName(name);
-	block = p->callback(pd, p->example.c_str());
+	block = ParseFormatted(p, pd, p->example.c_str());
 	block += "\r\n" + p->example;
 
 	// Set the preview

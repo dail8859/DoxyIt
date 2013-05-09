@@ -27,18 +27,8 @@ void CleanUp_Null(void)
 {
 }
 
-std::string Parse_Null(const ParserDefinition *pd, const char *text)
+std::map<std::string, std::vector<std::string>> Parse_Null(const ParserDefinition *pd, const char *text)
 {
-	std::ostringstream doc_block;
-	const char *eol = getEolStr();
-
-	doc_block << pd->doc_start << eol;
-	doc_block << pd->doc_line << pd->command_prefix << "brief [Brief]" << eol;
-	doc_block << pd->doc_line << eol;
-	doc_block << pd->doc_line << pd->command_prefix << "return [Return Description]" << eol;
-	doc_block << pd->doc_line << eol;
-	doc_block << pd->doc_line << pd->command_prefix << "details [Details]" << eol;
-	doc_block << pd->doc_end;
-
-	return doc_block.str();
+	std::map<std::string, std::vector<std::string>> mapping;
+	return mapping;
 }

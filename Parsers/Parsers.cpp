@@ -94,6 +94,90 @@ const ParserDefinition *getCurrentParserDefinition(void)
 	else return NULL;
 }
 
+
+
+void InitializeParsers(void)
+{
+	int len = sizeof(parsers) / sizeof(parsers[0]);
+	for(int i = 0; i < len; ++i)
+		if((*parsers[i].initializer)() == false)
+			MessageBox(NULL, TEXT("DoxyIt initialization failed"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+}
+
+void CleanUpParsers(void)
+{
+	int len = sizeof(parsers) / sizeof(parsers[0]);
+	for(int i = 0; i < len; ++i)
+		(*parsers[i].cleanup)();
+}
+
+
+
+std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::vector<std::string>>& keywords)
+{
+	std::stringstream ss(pd->format);
+	std::vector<std::string> lines;
+	std::vector<std::string> params = keywords["$(PARAM)"];
+	const char *eol = getEolStr();
+
+	std::string aline;
+	while(std::getline(ss, aline)) lines.push_back(aline);
+	lines.push_back("");
+
+	ss.clear(); // re use
+	for(unsigned int i = 0; i < lines.size(); ++i)
+	{
+		if(lines[i].find("$(PARAM)") != std::string::npos)
+		{
+			unsigned int align_max = 0;
+			std::vector<std::string> formatted_lines;
+			for(unsigned int j = 0; j < params.size(); ++j)
+			{
+				std::string line;
+				line = stringReplace(lines[i], "$(PARAM)", params[j]);
+
+				unsigned int pipe = line.find('|');
+				if(pipe != std::string::npos)
+				{
+					align_max = max(pipe, align_max);
+				}
+				
+				formatted_lines.push_back(line);
+			}
+			if(align_max != 0)
+			{
+				for(unsigned int j = 0; j < formatted_lines.size(); ++j)
+				{
+					std::string formatted_line = formatted_lines[j];
+					int a = formatted_line.find('|');
+					formatted_line.replace(formatted_line.find('|'), 1, align_max - a, ' ');
+					formatted_lines[j] = formatted_line;
+				}
+			}
+			for(unsigned int j = 0; j < formatted_lines.size(); ++j)
+			{
+				if(i == 0) ss << pd->doc_start << formatted_lines[j] << eol;
+				else if(i == lines.size() -1) ss << pd->doc_end << formatted_lines[j] << eol;
+				else ss << pd->doc_line << formatted_lines[j] << eol;
+			}
+		}
+		else
+		{
+			if(i == 0) ss << pd->doc_start << lines[i] << eol;
+			else if(i == lines.size() -1) ss << pd->doc_end << lines[i];
+			else ss << pd->doc_line << lines[i] << eol;
+		}
+	}
+
+	return stringReplace(ss.str(), "#", pd->command_prefix);
+}
+
+std::string ParseFormatted(const Parser *p, const ParserDefinition *pd, const char *text)
+{
+	return formatBlock(pd, p->callback(pd, text));
+}
+
+// Get the current parser and text to parse
 std::string Parse(void)
 {
 	std::string doc_block;
@@ -131,7 +215,7 @@ std::string Parse(void)
 	}
 
 	buffer = getRange(SendScintilla(SCI_GETCURRENTPOS), found + 1);
-	doc_block = p->callback(&p->pd, buffer);
+	doc_block = ParseFormatted(p, &p->pd, buffer);
 	delete[] buffer;
 
 	// I don't think there is currently a case where callback() will return a zero length string,
@@ -143,19 +227,4 @@ std::string Parse(void)
 	}
 
 	return doc_block;
-}
-
-void InitializeParsers(void)
-{
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-		if((*parsers[i].initializer)() == false)
-			MessageBox(NULL, TEXT("DoxyIt initialization failed"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-}
-
-void CleanUpParsers(void)
-{
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-		(*parsers[i].cleanup)();
 }

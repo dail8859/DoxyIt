@@ -25,7 +25,7 @@ static TRex *tr_parameters;
 bool Initialize_Python(void)
 {
 	const TRexChar *error = NULL;
-	tr_function = trex_compile("\\sdef\\s+(\\w+)\\s*(\\([^)]*\\))", &error);
+	tr_function = trex_compile("def\\s+(\\w+)\\s*(\\([^)]*\\))", &error);
 	tr_parameters = trex_compile("(\\w+)(\\s*=\\s*\\w+)?\\s*[,)]", &error);
 
 	if(!tr_function || !tr_parameters) return false;
@@ -38,15 +38,11 @@ void CleanUp_Python(void)
 	trex_free(tr_parameters);
 }
 
-std::string Parse_Python(const ParserDefinition *pd, const char *text)
+std::map<std::string, std::vector<std::string>> Parse_Python(const ParserDefinition *pd, const char *text)
 {
-	std::ostringstream doc_block;
+	std::map<std::string, std::vector<std::string>> mapping;
 	std::vector<std::string> params;
 	const TRexChar *begin,*end;
-	const char *eol;
-	unsigned int max = 0;
-
-	eol = getEolStr();
 
 	if(trex_search(tr_function, text, &begin, &end))
 	{
@@ -58,42 +54,19 @@ std::string Parse_Python(const ParserDefinition *pd, const char *text)
 		//trex_getsubexp(tr_function, 1, &func_match);
 		trex_getsubexp(tr_function, 2, &params_match);
 
-		doc_block << pd->doc_start << eol;
-		doc_block << pd->doc_line << pd->command_prefix << "brief " << FT("Brief") << eol;
-		doc_block << pd->doc_line << eol;
-
 		// For each param
 		cur_params = params_match.begin;
 		while(trex_searchrange(tr_parameters, cur_params, end, &p_begin, &p_end))
 		{
 			TRexMatch param_match;
-			std::string param;
-
 			trex_getsubexp(tr_parameters, 1, &param_match);
-			param.append(param_match.begin, param_match.len);
-			params.push_back(param);
-			if(param.length() > max) max = param.length();
+			
+			params.push_back(std::string(param_match.begin, param_match.len));
 
 			cur_params = p_end;
 		}
-
-		for(unsigned int i = 0; i < params.size(); ++i)
-		{
-			std::string param = params[i];
-
-			doc_block << pd->doc_line << pd->command_prefix << "param [in] " << param;
-			if(pd->align_desc) doc_block << std::string(max - param.length(), ' ');
-			doc_block << " " << FT("Parameter_Description") << eol;
-		}
-
-		// Return value
-		doc_block << pd->doc_line << pd->command_prefix << "return ";
-		doc_block << FT("Return_Description") << eol;
-		doc_block << pd->doc_line << eol;
-
-		doc_block << pd->doc_line << pd->command_prefix << "details " << FT("Details") << eol;
-		doc_block << pd->doc_end;
+		mapping["$(PARAM)"] = params;
 	}
 
-	return doc_block.str();
+	return mapping;
 }

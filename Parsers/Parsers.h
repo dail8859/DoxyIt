@@ -22,6 +22,8 @@
 #include "PluginDefinition.h"
 #include "Utils.h"
 #include "trex.h"
+#include <map>
+#include <vector>
 
 // These are the settable fields in the parser
 // This makes it easier when changing settings in the dialog box
@@ -48,7 +50,7 @@ typedef struct Parser
 	// Registered functions
 	bool (*initializer)(void);
 	void (*cleanup)(void);
-	std::string (*callback)(const ParserDefinition *pd, const char *text);
+	std::map<std::string, std::vector<std::string>> (*callback)(const ParserDefinition *pd, const char *text);
 } Parser;
 
 extern Parser parsers[7];
@@ -58,7 +60,7 @@ extern Parser parsers[7];
 #define DEFINE_PARSER(lang) \
 	bool Initialize_##lang(void); \
 	void CleanUp_##lang(void); \
-	std::string Parse_##lang(const ParserDefinition *pd, const char *text);
+	std::map<std::string, std::vector<std::string>> Parse_##lang(const ParserDefinition *pd, const char *text);
 
 DEFINE_PARSER(C);
 DEFINE_PARSER(Python);
@@ -73,5 +75,6 @@ const ParserDefinition *getCurrentParserDefinition();
 void InitializeParsers();
 void CleanUpParsers();
 std::string Parse();
+std::string ParseFormatted(const Parser *p,const ParserDefinition *pd, const char *text);
 
 #endif
