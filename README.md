@@ -28,7 +28,7 @@ Placing the cursor on the line directly above the function definition and pressi
  *  
  *  \details Details
  */
-int function(const char *p, int index)
+int function(const char *ptr, int index)
 ```
 
 ### Doxygen File Commenting
