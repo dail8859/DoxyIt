@@ -142,19 +142,24 @@ std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::v
 
 	for(unsigned int i = 0; i < lines.size(); ++i)
 	{
-		lines[i] = stringReplace(lines[i], "#", pd->command_prefix);
+		stringReplace(lines[i], "#", pd->command_prefix);
 
 		if(lines[i].find("$(PARAM)") != std::string::npos)
 		{
 			std::vector<std::string> formatted_lines;
 			for(unsigned int j = 0; j < params.size(); ++j)
-				formatted_lines.push_back(stringReplace(lines[i], "$(PARAM)", params[j]));
+			{
+				// Make a copy of lines[i] before calling stringReplace
+				std::string line = lines[i];
+				stringReplace(line, "$(PARAM)", params[j]);
+				formatted_lines.push_back(line);
+			}
 			
 			if(pd->align_desc)
 				alignLines(formatted_lines);
 			else
 				for(unsigned int i = 0; i < formatted_lines.size(); ++i)
-					formatted_lines[i] = stringReplace(formatted_lines[i], "|", "");
+					stringReplace(formatted_lines[i], "|", "");
 
 			for(unsigned int j = 0; j < formatted_lines.size(); ++j)
 			{

@@ -119,7 +119,7 @@ void configSave()
 		WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
 
 		// Encode \r\n as literal "\r\n" in the ini file
-		ws = TEXT("\"") + toWideString(stringReplace(pd->format, "\r\n", "\\r\\n")) + TEXT("\"");
+		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->format), "\r\n", "\\r\\n")) + TEXT("\"");
 		WritePrivateProfileString(p->lang.c_str(), TEXT("format"), ws.c_str(), iniPath);
 
 		WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align_desc), iniPath);
@@ -181,7 +181,7 @@ void configLoad()
 		GetPrivateProfileString(p->lang.c_str(), TEXT("format"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
 		if(strncmp(buffer, "!!!", 3) == 0) p->pd.format = p->pd_default.format;
-		else p->pd.format = stringReplace(buffer, "\\r\\n", "\r\n"); // Un-encode "\r\n" as \r\n
+		else p->pd.format = stringReplace(std::string(buffer), "\\r\\n", "\r\n"); // Un-encode "\r\n" as \r\n
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd_default.align_desc), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
