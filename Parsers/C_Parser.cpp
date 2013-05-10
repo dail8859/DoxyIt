@@ -66,7 +66,7 @@ std::map<std::string, std::vector<std::string>> Parse_C(const ParserDefinition *
 
 			cur_params = p_end;
 		}
-		mapping["$(PARAM)"] = params;
+		mapping["$PARAM"] = params;
 	}
 
 	return mapping;

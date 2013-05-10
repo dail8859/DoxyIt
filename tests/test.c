@@ -2,7 +2,7 @@
 
 void ()	// fail
 
-void f()
+void f ()
 
 void func_1(void)
 

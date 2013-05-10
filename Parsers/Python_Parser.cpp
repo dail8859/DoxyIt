@@ -65,7 +65,7 @@ std::map<std::string, std::vector<std::string>> Parse_Python(const ParserDefinit
 
 			cur_params = p_end;
 		}
-		mapping["$(PARAM)"] = params;
+		mapping["$PARAM"] = params;
 	}
 
 	return mapping;

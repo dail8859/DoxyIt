@@ -21,12 +21,12 @@
 
 const char *default_format = "\
 \r\n\
-#brief Brief\r\n\
+$@brief Brief\r\n\
 \r\n\
-#param [in] $(PARAM) |Parameter_Description\r\n\
-#return Return_Description\r\n\
+$@param [in] $PARAM $|Parameter_Description\r\n\
+$@return Return_Description\r\n\
 \r\n\
-#details Details\r\n\
+$@details Details\r\n\
 ";
 
 // Very ugly macro
@@ -113,7 +113,7 @@ void CleanUpParsers(void)
 
 void alignLines(std::vector<std::string> &lines)
 {
-	char flag = '|';
+	std::string flag = "$|";
 	unsigned int align_max = 0;
 
 	// Find the max position the flag is found at
@@ -127,7 +127,7 @@ void alignLines(std::vector<std::string> &lines)
 	for(unsigned int i = 0; align_max != 0 && i < lines.size(); ++i)
 	{
 		unsigned int pos = lines[i].find(flag);
-		lines[i].replace(pos, 1, align_max - pos, ' ');
+		lines[i].replace(pos, flag.length(), align_max - pos, ' ');
 	}
 }
 
@@ -135,31 +135,37 @@ std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::v
 {
 	std::stringstream ss;
 	std::vector<std::string> lines;
-	std::vector<std::string> params = keywords["$(PARAM)"];
+	std::vector<std::string> params = keywords["$PARAM"];
 	const char *eol = getEolStr();
 
 	lines = splitLines(pd->format, "\r\n");
 
 	for(unsigned int i = 0; i < lines.size(); ++i)
 	{
-		stringReplace(lines[i], "#", pd->command_prefix);
+		stringReplace(lines[i], "$@", pd->command_prefix);
 
-		if(lines[i].find("$(PARAM)") != std::string::npos)
+		if(lines[i].find("$PARAM") != std::string::npos)
 		{
 			std::vector<std::string> formatted_lines;
 			for(unsigned int j = 0; j < params.size(); ++j)
 			{
 				// Make a copy of lines[i] before calling stringReplace
 				std::string line = lines[i];
-				stringReplace(line, "$(PARAM)", params[j]);
+				stringReplace(line, "$PARAM", params[j]);
 				formatted_lines.push_back(line);
 			}
 			
 			if(pd->align_desc)
+			{
 				alignLines(formatted_lines);
+			}
 			else
-				for(unsigned int i = 0; i < formatted_lines.size(); ++i)
-					stringReplace(formatted_lines[i], "|", "");
+			{
+				for(unsigned int j = 0; j < formatted_lines.size(); ++j)
+				{
+					stringReplace(formatted_lines[j], "$|", "");
+				}
+			}
 
 			for(unsigned int j = 0; j < formatted_lines.size(); ++j)
 			{
@@ -187,7 +193,9 @@ std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::v
 
 std::string ParseFormatted(const Parser *p, const ParserDefinition *pd, const char *text)
 {
-	return formatBlock(pd, p->callback(pd, text));
+	auto m = p->callback(pd, text);
+	if(m.size() == 0) return "";
+	else return formatBlock(pd, p->callback(pd, text));
 }
 
 // Get the current parser and text to parse
