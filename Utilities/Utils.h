@@ -19,6 +19,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <vector>
+
 #define BOOLTOSTR(b) ((b) ? TEXT("true") : TEXT("false"))
 
 // Scintilla Utilities
@@ -36,5 +38,6 @@ std::wstring toWideString(std::string s);
 std::string toString(const TCHAR *w);
 bool isWhiteSpace(std::string str);
 std::string stringReplace(const std::string& str, const std::string& oldStr, const std::string& newStr);
+std::vector<std::string> splitLines(const std::string &str, const std::string &split);
 
 #endif

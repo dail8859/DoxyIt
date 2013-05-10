@@ -165,3 +165,19 @@ std::string stringReplace(const std::string& str, const std::string& oldStr, con
 
 	return newstring;
 }
+
+std::vector<std::string> splitLines(const std::string &str, const std::string &split)
+{
+	std::vector<std::string> lines;
+	unsigned int prev_pos = 0, pos = 0;
+
+	while((pos = str.find(split, pos)) != std::string::npos)
+	{
+		lines.push_back(str.substr(prev_pos, pos - prev_pos));
+		prev_pos = pos = pos + split.length();
+	}
+	// Get the final line
+	lines.push_back(str.substr(prev_pos, std::string::npos));
+
+	return lines;
+}

@@ -111,65 +111,73 @@ void CleanUpParsers(void)
 		(*parsers[i].cleanup)();
 }
 
+void alignLines(std::vector<std::string> &lines)
+{
+	char flag = '|';
+	unsigned int align_max = 0;
 
+	// Find the max position the flag is found at
+	for(unsigned int i = 0; i < lines.size(); ++i)
+	{
+		unsigned int pos = lines[i].find(flag);
+		if(pos != std::string::npos) align_max = max(pos, align_max);
+	}
+
+	// Replace the flag with an appropriate number of spaces
+	for(unsigned int i = 0; align_max != 0 && i < lines.size(); ++i)
+	{
+		unsigned int pos = lines[i].find(flag);
+		lines[i].replace(pos, 1, align_max - pos, ' ');
+	}
+}
 
 std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::vector<std::string>>& keywords)
 {
-	std::stringstream ss(pd->format);
+	std::stringstream ss;
 	std::vector<std::string> lines;
 	std::vector<std::string> params = keywords["$(PARAM)"];
 	const char *eol = getEolStr();
 
-	std::string aline;
-	while(std::getline(ss, aline)) lines.push_back(aline);
-	lines.push_back("");
+	lines = splitLines(pd->format, "\r\n");
 
-	ss.clear(); // re use
 	for(unsigned int i = 0; i < lines.size(); ++i)
 	{
+		lines[i] = stringReplace(lines[i], "#", pd->command_prefix);
+
 		if(lines[i].find("$(PARAM)") != std::string::npos)
 		{
-			unsigned int align_max = 0;
 			std::vector<std::string> formatted_lines;
 			for(unsigned int j = 0; j < params.size(); ++j)
-			{
-				std::string line;
-				line = stringReplace(lines[i], "$(PARAM)", params[j]);
+				formatted_lines.push_back(stringReplace(lines[i], "$(PARAM)", params[j]));
+			
+			if(pd->align_desc)
+				alignLines(formatted_lines);
+			else
+				for(unsigned int i = 0; i < formatted_lines.size(); ++i)
+					formatted_lines[i] = stringReplace(formatted_lines[i], "|", "");
 
-				unsigned int pipe = line.find('|');
-				if(pipe != std::string::npos)
-				{
-					align_max = max(pipe, align_max);
-				}
-				
-				formatted_lines.push_back(line);
-			}
-			if(align_max != 0)
-			{
-				for(unsigned int j = 0; j < formatted_lines.size(); ++j)
-				{
-					std::string formatted_line = formatted_lines[j];
-					int a = formatted_line.find('|');
-					formatted_line.replace(formatted_line.find('|'), 1, align_max - a, ' ');
-					formatted_lines[j] = formatted_line;
-				}
-			}
 			for(unsigned int j = 0; j < formatted_lines.size(); ++j)
 			{
-				if(i == 0) ss << pd->doc_start << formatted_lines[j] << eol;
-				else if(i == lines.size() -1) ss << pd->doc_end << formatted_lines[j] << eol;
-				else ss << pd->doc_line << formatted_lines[j] << eol;
+				if(i == 0 && j == 0)
+					ss << pd->doc_start << formatted_lines[j] << eol;
+				else if(i == lines.size() - 1 && j == formatted_lines.size() - 1)
+					ss << pd->doc_end << formatted_lines[j] << eol;
+				else
+					ss << pd->doc_line << formatted_lines[j] << eol;
 			}
 		}
 		else
 		{
-			if(i == 0) ss << pd->doc_start << lines[i] << eol;
-			else if(i == lines.size() -1) ss << pd->doc_end << lines[i];
-			else ss << pd->doc_line << lines[i] << eol;
+			if(i == 0)
+				ss << pd->doc_start << lines[i] << eol;
+			else if(i == lines.size() -1)
+				ss << pd->doc_end << lines[i];
+			else
+				ss << pd->doc_line << lines[i] << eol;
 		}
 	}
 
-	return stringReplace(ss.str(), "#", pd->command_prefix);
+	return ss.str();
 }
 
 std::string ParseFormatted(const Parser *p, const ParserDefinition *pd, const char *text)
