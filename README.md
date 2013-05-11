@@ -70,10 +70,15 @@ and then `Enter` will turn into:
  ***********************************************/
 ```
 
-### Settings
+## Settings
 Each language can be configured to have any string to indicate the start, line, and end of a document block. The settings dialog also provides a live preview of what a documentation block would look like:
-![Settings Dialog](http://db.tt/Nrk1LM4l)
+![Settings Dialog](http://db.tt/mHK9fFLy)
 
+### Doxygen Commenting Format
+The format string is used to customize the Doxygen Function Commenting block generated. There are currently a few keywords that are used.
+- $PARAM - Expands to a single function/method parameter. Any line containing this will get repeated for each parameter.
+- $@ - Expands to the prefix character for Doxygen commands.
+- $| - Marks the alignment position. This flag is only valid for lines containing $PARAM. 
 
 ##Todo
 - ~~[FingerText](http://sourceforge.net/projects/fingertext/) integration for hotspot navigation (optional).~~ [*Pending pull request*](https://github.com/erinata/FingerText/pull/38)
