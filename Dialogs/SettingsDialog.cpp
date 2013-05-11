@@ -74,7 +74,7 @@ void SettingsDialog::saveParserDefinition(int index)
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), text, 256);
 	prev_pd->format = toString(text);
 
-	prev_pd->align_desc = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED ? true : false);
+	prev_pd->align = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED ? true : false);
 }
 
 // Note: Setting the text of edit boxes causes notifications to be generated, which update the 
@@ -89,7 +89,7 @@ void SettingsDialog::loadParserDefinition()
 	ParserDefinition pd = parserDefinitions[name];
 
 	m_updating = true;
-	Button_SetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN), pd.align_desc); // Cannot be last!  Doesn't update preview
+	Button_SetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN), pd.align); // Cannot be last!  Doesn't update preview
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_START), toWideString(pd.doc_start).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), toWideString(pd.doc_line).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), toWideString(pd.doc_end).c_str());
@@ -178,14 +178,15 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 	case WM_INITDIALOG:
 		{
 			HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
+			long lfHeight = -MulDiv(10, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72);
 			int len = sizeof(parsers) / sizeof(parsers[0]);
 
 			for(int i = 0; i < len; ++i)
 				ComboBox_AddString(cmb, parsers[i].language_name.c_str());
 			ComboBox_SetCurSel(cmb, m_previousSelection);
-
+			
 			// I have no idea what these values do, but these work
-			m_monoFont = CreateFont(16,8,0,0,0,0,0,0,0,0,0,0,0,TEXT("Courier New"));
+			m_monoFont = CreateFont(lfHeight,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("Courier New"));
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_START), m_monoFont, false);
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_LINE), m_monoFont, false);
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_END), m_monoFont, false);

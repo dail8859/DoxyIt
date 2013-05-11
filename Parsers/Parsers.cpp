@@ -155,7 +155,7 @@ std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::v
 				formatted_lines.push_back(line);
 			}
 			
-			if(pd->align_desc)
+			if(pd->align)
 			{
 				alignLines(formatted_lines);
 			}

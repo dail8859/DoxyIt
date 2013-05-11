@@ -36,7 +36,7 @@ const char *getEolStr();
 std::string FT(const char *p);
 std::wstring toWideString(std::string s);
 std::string toString(const TCHAR *w);
-bool isWhiteSpace(std::string str);
+bool isWhiteSpace(const std::string& str);
 std::string& stringReplace(std::string& str, const std::string& oldStr, const std::string& newStr);
 std::vector<std::string> splitLines(const std::string &str, const std::string &split);
 

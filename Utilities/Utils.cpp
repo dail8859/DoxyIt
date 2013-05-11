@@ -145,7 +145,7 @@ std::string toString(const TCHAR *w)
 	return std::string(wide.begin(), wide.end());
 }
 
-bool isWhiteSpace(std::string str)
+bool isWhiteSpace(const std::string& str)
 {
 	for(unsigned int i = 0; i < str.length(); ++i)
 		if(!isspace(str[i]))

@@ -122,7 +122,7 @@ void configSave()
 		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->format), "\r\n", "\\r\\n")) + TEXT("\"");
 		WritePrivateProfileString(p->lang.c_str(), TEXT("format"), ws.c_str(), iniPath);
 
-		WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align_desc), iniPath);
+		WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align), iniPath);
 	}
 }
 
@@ -183,9 +183,9 @@ void configLoad()
 		if(strncmp(buffer, "!!!", 3) == 0) p->pd.format = p->pd_default.format;
 		else p->pd.format = stringReplace(std::string(buffer), "\\r\\n", "\r\n"); // Un-encode "\r\n" as \r\n
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd_default.align_desc), tbuffer, MAX_PATH, iniPath);
+		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd_default.align), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		p->pd.align_desc = strcmp(buffer, "true") == 0;
+		p->pd.align = strcmp(buffer, "true") == 0;
 	}
 
 	// Write out the file if it doesn't exist yet
