@@ -29,9 +29,6 @@ FuncItem funcItem[nbFunc];
 // --- Local variables ---
 static bool do_active_commenting;	// active commenting - create or extend a document block
 //static bool do_active_wrapping;	// active wrapping - wrap text inside of document blocks...todo
-static bool use_fingertext;			// use fingertext if it is available
-static bool fingertext_found;		// if we found the fingertext plugin installed
-bool fingertext_enabled;			// if fingertext is enabled (global)
 
 static NppData nppData;
 static SciFnDirect pSciMsg;			// For direct scintilla call
@@ -43,7 +40,6 @@ static HANDLE _hModule;				// For dialog initialization
 static void doxyItFunction();
 static void doxyItFile();
 static void activeCommenting();
-//static void useFingerText();
 //static void activeWrapping();
 static void showSettings();
 static void showAbout();
@@ -95,7 +91,6 @@ void configSave()
 
 	// [DoxyIt]
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), BOOLTOSTR(do_active_commenting), iniPath);
-	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), BOOLTOSTR(use_fingertext), iniPath);
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version"), VERSION_LINEAR_TEXT, iniPath);
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), VERSION_STAGE, iniPath);
 
@@ -144,11 +139,6 @@ void configLoad()
 	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
 	wcstombs(buffer, tbuffer, MAX_PATH);
 	do_active_commenting = strcmp(buffer, "true") == 0;
-
-	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("use_fingertext"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
-	wcstombs(buffer, tbuffer, MAX_PATH);
-	use_fingertext = strcmp(buffer, "true") == 0;
-	use_fingertext = false; // Disable fingertext
 
 	// Don't need these for now
 	//version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
@@ -229,7 +219,6 @@ void commandMenuInit()
 	setCommand(5, TEXT("Settings..."), showSettings);
 	setCommand(6, TEXT("About..."), showAbout);
 
-	//setCommand(X, TEXT("Use FingerText (if available)"), useFingerText, NULL, use_fingertext);
 	//setCommand(X, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
 }
 
@@ -263,37 +252,6 @@ void setNppInfo(NppData notepadPlusData)
 }
 
 
-
-// NOTE: when using this you should do 'fingertext_enabled = checkFingerText();'
-// This function could set it explicitly, but that makes the code harder to follow
-bool checkFingerText()
-{
-	if(fingertext_found && use_fingertext)
-	{
-		CommunicationInfo ci;
-		ci.internalMsg = FINGERTEXT_ISENABLED;
-		ci.srcModuleName = NPP_PLUGIN_NAME;
-		ci.info = NULL;
-		SendNpp(NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
-		return ci.info != NULL;
-	}
-	else
-		return false;
-}
-
-void activateFingerText()
-{
-	if(fingertext_enabled)
-	{
-		CommunicationInfo ci;
-		ci.internalMsg = FINGERTEXT_ACTIVATE;
-		ci.srcModuleName = NPP_PLUGIN_NAME;
-		ci.info = NULL;
-		SendNpp(NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci);
-	}
-}
-
-
 // --- Menu call backs ---
 
 void doxyItFunction()
@@ -303,9 +261,6 @@ void doxyItFunction()
 	char *indent = NULL;
 
 	if(!updateScintilla()) return;
-
-	// Check if it is enabled
-	fingertext_enabled = checkFingerText();
 
 	doc_block = Parse();
 
@@ -326,8 +281,6 @@ void doxyItFunction()
 	endLine = SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS)); // get the end of the document block
 	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
 	SendScintilla(SCI_ENDUNDOACTION);
-	
-	activateFingerText();
 
 	if(indent) delete[] indent;
 }
@@ -350,19 +303,12 @@ void doxyItFile()
 
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
 
-	activateFingerText();
 }
 
 void activeCommenting()
 {
 	do_active_commenting = !do_active_commenting;
 	SendNpp(NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_commenting);
-}
-
-void useFingerText()
-{
-	use_fingertext = !use_fingertext;
-	SendNpp(NPPM_SETMENUITEMCHECK, funcItem[4]._cmdID, (LPARAM) use_fingertext);
 }
 
 /*
@@ -492,23 +438,6 @@ void handleNotification(SCNotification *notifyCode)
 		//}
 		break;
 	case NPPN_READY:
-		CommunicationInfo ci;
-
-		// Check if FingerText is installed
-		ci.internalMsg = FINGERTEXT_GETVERSION;
-		ci.srcModuleName = NPP_PLUGIN_NAME;
-		ci.info = NULL;
-
-		// NPPM_MSGTOPLUGIN returns true if the dll is found
-		if(SendNpp(NPPM_MSGTOPLUGIN, (WPARAM) TEXT("FingerText.dll"), (LPARAM) &ci))
-		{
-			if((int) ci.info >= 561) fingertext_found = true;
-			else fingertext_found = false;
-		}
-		else
-		{
-			fingertext_found = false;
-		}
 		break;
 	case NPPN_SHUTDOWN:
 		configSave();

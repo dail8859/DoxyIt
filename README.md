@@ -82,7 +82,6 @@ The format string is used to customize the Doxygen Function Commenting block gen
 - $| - Marks the alignment position. This flag is only valid for lines containing $PARAM. 
 
 ##Todo
-- ~~[FingerText](http://sourceforge.net/projects/fingertext/) integration for hotspot navigation (optional).~~ [*Pending pull request*](https://github.com/erinata/FingerText/pull/38)
 - Line wrapping inside comment blocks.
 - Autocomplete for Doxygen commands.
 - Support for other languages

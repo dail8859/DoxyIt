@@ -19,8 +19,6 @@
 #include "PluginDefinition.h"
 #include "Utils.h"
 
-extern bool fingertext_enabled;
-
 // Clears the line
 void clearLine(int line)
 {
@@ -112,26 +110,6 @@ const char *getEolStr()
 	static char *eol[] = {"\r\n", "\r", "\n"};
 	int eolmode = SendScintilla(SCI_GETEOLMODE);
 	return eol[eolmode];
-}
-
-
-// If finger text is enabled, it wrappes the string with $[![...]!], else it just returns the string
-std::string FT(const char *p)
-{
-	std::string s;
-
-	if(fingertext_enabled)
-	{
-		s = "$[![";
-		s += p;
-		s += "]!]";
-	}
-	else
-	{
-		s = p;
-	}
-
-	return s;
 }
 
 std::wstring toWideString(std::string s)

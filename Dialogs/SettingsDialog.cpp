@@ -21,8 +21,6 @@
 #include "Parsers.h"
 #include "PluginDefinition.h"
 
-extern bool fingertext_enabled;
-
 const TCHAR *msg = TEXT("An option is blank (or all whitespace). If this is desired, it is recommended that you disable Active Commenting! Continue anyways?");
 
 void SettingsDialog::init(HINSTANCE hInst, NppData nppData)
@@ -148,9 +146,6 @@ void SettingsDialog::updatePreview()
 	// Get the name of the language that is selected
 	ComboBox_GetText(GetDlgItem(_hSelf, IDC_CMB_LANG), name, 32);
 	pd = &parserDefinitions[name];
-
-	// Disable fingertext for the preview
-	fingertext_enabled = false;
 
 	// Set eol mode to "\r\n" so it will display correctly in the dialogbox
 	prev_eol_mode = SendScintilla(SCI_GETEOLMODE);

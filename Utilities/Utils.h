@@ -33,7 +33,6 @@ char *getLine(int lineNum);
 const char *getEolStr();
 
 // Generic string utilites
-std::string FT(const char *p);
 std::wstring toWideString(std::string s);
 std::string toString(const TCHAR *w);
 bool isWhiteSpace(const std::string& str);

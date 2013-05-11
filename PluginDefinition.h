@@ -24,11 +24,6 @@
 
 #define SCI_UNUSED 0
 
-// FingerText Messages
-#define FINGERTEXT_ISENABLED 1
-#define FINGERTEXT_GETVERSION 2
-#define FINGERTEXT_ACTIVATE 3
-
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
 const int nbFunc = 7;
 
