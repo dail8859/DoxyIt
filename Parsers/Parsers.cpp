@@ -143,6 +143,7 @@ std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::v
 	for(unsigned int i = 0; i < lines.size(); ++i)
 	{
 		stringReplace(lines[i], "$@", pd->command_prefix);
+		stringReplace(lines[i], "$FILENAME", keywords["$FILENAME"][0]);
 
 		if(lines[i].find("$PARAM") != std::string::npos)
 		{
@@ -156,16 +157,10 @@ std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::v
 			}
 			
 			if(pd->align)
-			{
 				alignLines(formatted_lines);
-			}
 			else
-			{
 				for(unsigned int j = 0; j < formatted_lines.size(); ++j)
-				{
 					stringReplace(formatted_lines[j], "$|", "");
-				}
-			}
 
 			for(unsigned int j = 0; j < formatted_lines.size(); ++j)
 			{
@@ -193,9 +188,20 @@ std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::v
 
 std::string ParseFormatted(const Parser *p, const ParserDefinition *pd, const char *text)
 {
-	auto m = p->callback(pd, text);
-	if(m.size() == 0) return "";
-	else return formatBlock(pd, p->callback(pd, text));
+	std::vector<std::string> filename;
+	std::map<std::string, std::vector<std::string>> m;
+	TCHAR fileName[MAX_PATH];
+
+	m = p->callback(pd, text);
+	if(m.size() == 0)
+		return "";
+	
+	// Insert the current file name into the map
+	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
+	filename.push_back(toString(fileName));
+	m["$FILENAME"] = filename;
+	
+	return formatBlock(pd, m);
 }
 
 // Get the current parser and text to parse
