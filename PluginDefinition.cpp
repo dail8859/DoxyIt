@@ -327,7 +327,6 @@ void showSettings()
 
 void showAbout()
 {
-	updateScintilla();
 	CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
 }
 

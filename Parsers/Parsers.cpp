@@ -137,7 +137,7 @@ void alignLines(std::vector<std::string> &lines)
 	}
 }
 
-std::string formatBlock(const ParserDefinition *pd, Keywords& keywords, const std::string &format)
+std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const std::string &format)
 {
 	std::stringstream ss;
 	std::vector<std::string> lines;
@@ -192,36 +192,35 @@ std::string formatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 	return ss.str();
 }
 
-std::string FormatFileBlock(const ParserDefinition *pd)
+void FillExtraKeywords(Keywords &kw)
 {
 	std::vector<std::string> filename;
-	Keywords kw;
 	TCHAR fileName[MAX_PATH];
 
 	// Insert the current file name into the map
 	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
 	filename.push_back(toString(fileName));
 	kw["$FILENAME"] = filename;
-
-	return formatBlock(pd, kw, pd->file_format);
 }
 
-std::string ParseFormatted(const Parser *p, const ParserDefinition *pd, const char *text)
+std::string FormatFileBlock(const ParserDefinition *pd)
 {
-	std::vector<std::string> filename;
 	Keywords kw;
-	TCHAR fileName[MAX_PATH];
 
-	kw = p->callback(pd, text);
-	if(kw.size() == 0)
-		return "";
+	FillExtraKeywords(kw);
+
+	return FormatBlock(pd, kw, pd->file_format);
+}
+
+std::string FormatFunctionBlock(const Parser *p, const ParserDefinition *pd, const char *text)
+{
+	Keywords kw = p->callback(pd, text);
 	
-	// Insert the current file name into the map
-	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
-	filename.push_back(toString(fileName));
-	kw["$FILENAME"] = filename;
+	if(kw.size() == 0) return "";
 	
-	return formatBlock(pd, kw, pd->function_format);
+	FillExtraKeywords(kw);
+	
+	return FormatBlock(pd, kw, pd->function_format);
 }
 
 // Get the current parser and text to parse
@@ -262,7 +261,7 @@ std::string Parse(void)
 	}
 
 	buffer = getRange(SendScintilla(SCI_GETCURRENTPOS), found + 1);
-	doc_block = ParseFormatted(p, &p->pd, buffer);
+	doc_block = FormatFunctionBlock(p, &p->pd, buffer);
 	delete[] buffer;
 
 	// I don't think there is currently a case where callback() will return a zero length string,

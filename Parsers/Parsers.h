@@ -78,8 +78,8 @@ const ParserDefinition *getCurrentParserDefinition();
 void InitializeParsers();
 void CleanUpParsers();
 std::string Parse();
-std::string ParseFormatted(const Parser *p,const ParserDefinition *pd, const char *text);
 
+std::string FormatFunctionBlock(const Parser *p,const ParserDefinition *pd, const char *text);
 std::string FormatFileBlock(const ParserDefinition *pd);
 
 #endif
