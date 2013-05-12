@@ -37,9 +37,9 @@ void CleanUp_C(void)
 	trex_free(tr_parameters);
 }
 
-std::map<std::string, std::vector<std::string>> Parse_C(const ParserDefinition *pd, const char *text)
+Keywords Parse_C(const ParserDefinition *pd, const char *text)
 {
-	std::map<std::string, std::vector<std::string>> mapping;
+	Keywords keywords;
 	std::vector<std::string> params;
 	const TRexChar *begin,*end;
 
@@ -66,8 +66,8 @@ std::map<std::string, std::vector<std::string>> Parse_C(const ParserDefinition *
 
 			cur_params = p_end;
 		}
-		mapping["$PARAM"] = params;
+		keywords["$PARAM"] = params;
 	}
 
-	return mapping;
+	return keywords;
 }

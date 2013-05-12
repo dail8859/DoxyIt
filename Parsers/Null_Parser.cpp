@@ -27,8 +27,8 @@ void CleanUp_Null(void)
 {
 }
 
-std::map<std::string, std::vector<std::string>> Parse_Null(const ParserDefinition *pd, const char *text)
+Keywords Parse_Null(const ParserDefinition *pd, const char *text)
 {
-	std::map<std::string, std::vector<std::string>> mapping;
-	return mapping;
+	Keywords keywords;
+	return keywords;
 }

@@ -58,21 +58,21 @@ void SettingsDialog::saveParserDefinition(int index)
 	// Save the text from the edit controls for the previous selection
 	ComboBox_GetLBText(GetDlgItem(_hSelf, IDC_CMB_LANG), index, prev_name);
 	ParserDefinition *prev_pd = &parserDefinitions[prev_name];
-	
+
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_START), text, 256);
 	prev_pd->doc_start = toString(text);
-	
+
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), text, 256);
 	prev_pd->doc_line = toString(text);
-	
+
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_END), text, 256);
 	prev_pd->doc_end = toString(text);
-	
+
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), text, 256);
 	prev_pd->command_prefix = toString(text);
 
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), text, 256);
-	prev_pd->format = toString(text);
+	prev_pd->function_format = toString(text);
 
 	prev_pd->align = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED ? true : false);
 }
@@ -94,7 +94,7 @@ void SettingsDialog::loadParserDefinition()
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), toWideString(pd.doc_line).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), toWideString(pd.doc_end).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), toWideString(pd.command_prefix).c_str());
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd.format).c_str());
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd.function_format).c_str());
 	m_updating = false;
 }
 

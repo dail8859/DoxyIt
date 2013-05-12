@@ -25,6 +25,8 @@
 #include <map>
 #include <vector>
 
+typedef std::map<std::string, std::vector<std::string>> Keywords;
+
 // These are the settable fields in the parser
 // This makes it easier when changing settings in the dialog box
 typedef struct ParserDefinition
@@ -33,7 +35,8 @@ typedef struct ParserDefinition
 	std::string doc_line;
 	std::string doc_end;
 	std::string command_prefix;
-	std::string format;
+	std::string function_format;
+	std::string file_format;
 	bool align;
 } ParserDefinition;
 
@@ -50,7 +53,7 @@ typedef struct Parser
 	// Registered functions
 	bool (*initializer)(void);
 	void (*cleanup)(void);
-	std::map<std::string, std::vector<std::string>> (*callback)(const ParserDefinition *pd, const char *text);
+	Keywords (*callback)(const ParserDefinition *pd, const char *text);
 } Parser;
 
 extern Parser parsers[7];
@@ -60,7 +63,7 @@ extern Parser parsers[7];
 #define DEFINE_PARSER(lang) \
 	bool Initialize_##lang(void); \
 	void CleanUp_##lang(void); \
-	std::map<std::string, std::vector<std::string>> Parse_##lang(const ParserDefinition *pd, const char *text);
+	Keywords Parse_##lang(const ParserDefinition *pd, const char *text);
 
 DEFINE_PARSER(C);
 DEFINE_PARSER(Python);
@@ -76,5 +79,7 @@ void InitializeParsers();
 void CleanUpParsers();
 std::string Parse();
 std::string ParseFormatted(const Parser *p,const ParserDefinition *pd, const char *text);
+
+std::string FormatFileBlock(const ParserDefinition *pd);
 
 #endif

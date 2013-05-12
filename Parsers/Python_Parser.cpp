@@ -38,9 +38,9 @@ void CleanUp_Python(void)
 	trex_free(tr_parameters);
 }
 
-std::map<std::string, std::vector<std::string>> Parse_Python(const ParserDefinition *pd, const char *text)
+Keywords Parse_Python(const ParserDefinition *pd, const char *text)
 {
-	std::map<std::string, std::vector<std::string>> mapping;
+	Keywords keywords;
 	std::vector<std::string> params;
 	const TRexChar *begin,*end;
 
@@ -65,8 +65,8 @@ std::map<std::string, std::vector<std::string>> Parse_Python(const ParserDefinit
 
 			cur_params = p_end;
 		}
-		mapping["$PARAM"] = params;
+		keywords["$PARAM"] = params;
 	}
 
-	return mapping;
+	return keywords;
 }

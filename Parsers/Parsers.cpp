@@ -19,7 +19,7 @@
 #include "Parsers.h"
 #include <vector>
 
-const char *default_format = "\
+const char *default_function_format = "\
 \r\n\
 $@brief Brief\r\n\
 \r\n\
@@ -29,11 +29,17 @@ $@return Return_Description\r\n\
 $@details Details\r\n\
 ";
 
+const char *default_file_format = "\
+\r\n\
+$@file $FILENAME\r\n\
+$@brief Brief\r\n\
+";
+
 // Very ugly macro
 #define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) \
 	{L_##lang, TEXT(#lang),TEXT(language_name), example, \
-	{"", "", "", "", "", false}, \
-	{doc_start, doc_line, doc_end, command_prefix, default_format, false}, \
+	{"", "", "", "", "", "", false}, \
+	{doc_start, doc_line, doc_end, command_prefix, default_function_format, default_file_format, false}, \
 	Initialize_##parser, CleanUp_##parser, Parse_##parser}
 
 Parser parsers[] = 
@@ -131,14 +137,14 @@ void alignLines(std::vector<std::string> &lines)
 	}
 }
 
-std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::vector<std::string>>& keywords)
+std::string formatBlock(const ParserDefinition *pd, Keywords& keywords, const std::string &format)
 {
 	std::stringstream ss;
 	std::vector<std::string> lines;
 	std::vector<std::string> params = keywords["$PARAM"];
 	const char *eol = getEolStr();
 
-	lines = splitLines(pd->format, "\r\n");
+	lines = splitLines(format, "\r\n");
 
 	for(unsigned int i = 0; i < lines.size(); ++i)
 	{
@@ -186,22 +192,36 @@ std::string formatBlock(const ParserDefinition *pd, std::map<std::string, std::v
 	return ss.str();
 }
 
+std::string FormatFileBlock(const ParserDefinition *pd)
+{
+	std::vector<std::string> filename;
+	Keywords kw;
+	TCHAR fileName[MAX_PATH];
+
+	// Insert the current file name into the map
+	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
+	filename.push_back(toString(fileName));
+	kw["$FILENAME"] = filename;
+
+	return formatBlock(pd, kw, pd->file_format);
+}
+
 std::string ParseFormatted(const Parser *p, const ParserDefinition *pd, const char *text)
 {
 	std::vector<std::string> filename;
-	std::map<std::string, std::vector<std::string>> m;
+	Keywords kw;
 	TCHAR fileName[MAX_PATH];
 
-	m = p->callback(pd, text);
-	if(m.size() == 0)
+	kw = p->callback(pd, text);
+	if(kw.size() == 0)
 		return "";
 	
 	// Insert the current file name into the map
 	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
 	filename.push_back(toString(fileName));
-	m["$FILENAME"] = filename;
+	kw["$FILENAME"] = filename;
 	
-	return formatBlock(pd, m);
+	return formatBlock(pd, kw, pd->function_format);
 }
 
 // Get the current parser and text to parse

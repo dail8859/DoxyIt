@@ -119,8 +119,12 @@ void configSave()
 		WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
 
 		// Encode \r\n as literal "\r\n" in the ini file
-		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->format), "\r\n", "\\r\\n")) + TEXT("\"");
-		WritePrivateProfileString(p->lang.c_str(), TEXT("format"), ws.c_str(), iniPath);
+		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->function_format), "\r\n", "\\r\\n")) + TEXT("\"");
+		WritePrivateProfileString(p->lang.c_str(), TEXT("function_format"), ws.c_str(), iniPath);
+
+		// Encode \r\n as literal "\r\n" in the ini file
+		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->file_format), "\r\n", "\\r\\n")) + TEXT("\"");
+		WritePrivateProfileString(p->lang.c_str(), TEXT("file_format"), ws.c_str(), iniPath);
 
 		WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align), iniPath);
 	}
@@ -178,10 +182,15 @@ void configLoad()
 		if(strncmp(buffer, "!!!", 3) == 0) p->pd.command_prefix = p->pd_default.command_prefix;
 		else p->pd.command_prefix = buffer;
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("format"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
+		GetPrivateProfileString(p->lang.c_str(), TEXT("function_format"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.format = p->pd_default.format;
-		else p->pd.format = stringReplace(std::string(buffer), "\\r\\n", "\r\n"); // Un-encode "\r\n" as \r\n
+		if(strncmp(buffer, "!!!", 3) == 0) p->pd.function_format = p->pd_default.function_format;
+		else p->pd.function_format = stringReplace(std::string(buffer), "\\r\\n", "\r\n"); // Un-encode "\r\n" as \r\n
+
+		GetPrivateProfileString(p->lang.c_str(), TEXT("file_format"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
+		wcstombs(buffer, tbuffer, MAX_PATH);
+		if(strncmp(buffer, "!!!", 3) == 0) p->pd.file_format = p->pd_default.file_format;
+		else p->pd.file_format = stringReplace(std::string(buffer), "\\r\\n", "\r\n"); // Un-encode "\r\n" as \r\n
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd_default.align), tbuffer, MAX_PATH, iniPath);
 		wcstombs(buffer, tbuffer, MAX_PATH);
@@ -325,10 +334,8 @@ void doxyItFunction()
 
 void doxyItFile()
 {
-	std::ostringstream doc_block;
+	std::string doc_block;
 	const ParserDefinition *pd;
-	TCHAR fileName[MAX_PATH];
-	const char *eol;
 
 	if(!updateScintilla()) return;
 
@@ -339,23 +346,9 @@ void doxyItFile()
 		return;
 	}
 
-	// Get the file name
-	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
+	doc_block = FormatFileBlock(pd);
 
-	eol = getEolStr();
-
-	// Check if it is enabled
-	fingertext_enabled = checkFingerText();
-
-	doc_block << pd->doc_start << eol;
-	doc_block << pd->doc_line << pd->command_prefix << "file " << toString(fileName) << eol;
-	doc_block << pd->doc_line << pd->command_prefix << "brief " << FT("Brief") << eol;
-	//doc_block << pd->doc_line << eol;
-	//doc_block << pd->doc_line << pd->command_prefix << "author " << eol;
-	//doc_block << pd->doc_line << pd->command_prefix << "version 1.0" << eol;
-	doc_block << pd->doc_end;
-
-	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.str().c_str());
+	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
 
 	activateFingerText();
 }
