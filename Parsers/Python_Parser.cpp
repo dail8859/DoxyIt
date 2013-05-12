@@ -42,17 +42,20 @@ Keywords Parse_Python(const ParserDefinition *pd, const char *text)
 {
 	Keywords keywords;
 	std::vector<std::string> params;
+	std::vector<std::string> function;
 	const TRexChar *begin,*end;
 
 	if(trex_search(tr_function, text, &begin, &end))
 	{
 		//TRexMatch func_match;
-		TRexMatch params_match;
+		TRexMatch params_match, func_match;
 		const TRexChar *cur_params;
 		const TRexChar *p_begin, *p_end;
 
-		//trex_getsubexp(tr_function, 1, &func_match);
+		trex_getsubexp(tr_function, 1, &func_match);
 		trex_getsubexp(tr_function, 2, &params_match);
+
+		function.push_back(std::string(func_match.begin, func_match.len));
 
 		// For each param
 		cur_params = params_match.begin;
@@ -66,6 +69,7 @@ Keywords Parse_Python(const ParserDefinition *pd, const char *text)
 			cur_params = p_end;
 		}
 		keywords["$PARAM"] = params;
+		keywords["$FUNCTION"] = function;
 	}
 
 	return keywords;

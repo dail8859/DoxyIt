@@ -77,6 +77,7 @@ Each language can be configured to have any string to indicate the start, line, 
 ### Doxygen Commenting Format
 The format string is used to customize the Doxygen Function Commenting block generated. There are currently a few keywords that are used.
 - $FILENAME - The current file name.
+- $FUNCTION - The name of the function/method.
 - $PARAM - Expands to a single function/method parameter. Any line containing this will get repeated for each parameter.
 - $@ - Expands to the prefix character for Doxygen commands.
 - $| - Marks the alignment position. This flag is only valid for lines containing $PARAM. 

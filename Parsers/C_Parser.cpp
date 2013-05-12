@@ -24,7 +24,7 @@ static TRex *tr_parameters;
 bool Initialize_C(void)
 {
 	const TRexChar *error = NULL;
-	tr_function = trex_compile("(:?([\\w:]+)[*&]*\\s+(?:[*&]*\\s+)?[*&]*)?([\\w:]+)\\s*(\\([^)]*\\))", &error);
+	tr_function = trex_compile("(?:([\\w:]+)[*&]*\\s+(?:[*&]*\\s+)?[*&]*)?([\\w:]+)\\s*(\\([^)]*\\))", &error);
 	tr_parameters = trex_compile("(\\$?\\w+|\\.\\.\\.)(\\s*=\\s*[\\\"\\w\\.]+)?\\s*[,)]", &error);
 
 	if(!tr_function || !tr_parameters) return false;
@@ -41,17 +41,20 @@ Keywords Parse_C(const ParserDefinition *pd, const char *text)
 {
 	Keywords keywords;
 	std::vector<std::string> params;
+	std::vector<std::string> function;
 	const TRexChar *begin,*end;
 
 	if(trex_search(tr_function, text, &begin, &end))
 	{
-		TRexMatch params_match;
+		TRexMatch params_match, func_match;
 		const TRexChar *cur_params;
 		const TRexChar *p_begin, *p_end;
 
 		//trex_getsubexp(tr_function, 1, &return_match);	// not used for now
-		//trex_getsubexp(tr_function, 2, &func_match);		// not used for now
+		trex_getsubexp(tr_function, 2, &func_match);
 		trex_getsubexp(tr_function, 3, &params_match);
+
+		function.push_back(std::string(func_match.begin, func_match.len));
 
 		// For each param
 		cur_params = params_match.begin;
@@ -67,6 +70,7 @@ Keywords Parse_C(const ParserDefinition *pd, const char *text)
 			cur_params = p_end;
 		}
 		keywords["$PARAM"] = params;
+		keywords["$FUNCTION"] = function;
 	}
 
 	return keywords;

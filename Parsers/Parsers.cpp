@@ -150,6 +150,7 @@ std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 	{
 		stringReplace(lines[i], "$@", pd->command_prefix);
 		stringReplace(lines[i], "$FILENAME", keywords["$FILENAME"][0]);
+		stringReplace(lines[i], "$FUNCTION", keywords["$FUNCTION"][0]);
 
 		if(lines[i].find("$PARAM") != std::string::npos)
 		{
