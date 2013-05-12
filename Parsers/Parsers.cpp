@@ -142,18 +142,23 @@ std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 	std::stringstream ss;
 	std::vector<std::string> lines;
 	std::vector<std::string> params = keywords["$PARAM"];
+	std::string format_copy(format);
 	const char *eol = getEolStr();
 
-	lines = splitLines(format, "\r\n");
+	// Replace keywords
+	stringReplace(format_copy, "$@", pd->command_prefix);
+	stringReplace(format_copy, "$FILENAME", keywords["$FILENAME"][0]);
+	// $FUNCTION may not exist
+	if(keywords.find("$FUNCTION") != keywords.end())
+		stringReplace(format_copy, "$FUNCTION", keywords["$FUNCTION"][0]);
+
+	lines = splitLines(format_copy, "\r\n");
 
 	for(unsigned int i = 0; i < lines.size(); ++i)
-	{
-		stringReplace(lines[i], "$@", pd->command_prefix);
-		stringReplace(lines[i], "$FILENAME", keywords["$FILENAME"][0]);
-		stringReplace(lines[i], "$FUNCTION", keywords["$FUNCTION"][0]);
-
+	{		
 		if(lines[i].find("$PARAM") != std::string::npos)
 		{
+			// Duplicate the current line for each $PARAM
 			std::vector<std::string> formatted_lines;
 			for(unsigned int j = 0; j < params.size(); ++j)
 			{
@@ -163,12 +168,14 @@ std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 				formatted_lines.push_back(line);
 			}
 			
+			// If the align flag is set, align the lines, else remove all "$|" flags
 			if(pd->align)
 				alignLines(formatted_lines);
 			else
 				for(unsigned int j = 0; j < formatted_lines.size(); ++j)
 					stringReplace(formatted_lines[j], "$|", "");
 
+			// Insert the lines
 			for(unsigned int j = 0; j < formatted_lines.size(); ++j)
 			{
 				if(i == 0 && j == 0)
