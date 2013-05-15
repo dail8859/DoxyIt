@@ -128,8 +128,8 @@ void configSave()
 void configLoad()
 {
 	TCHAR iniPath[MAX_PATH];
-	TCHAR tbuffer[MAX_PATH];
-	char buffer[MAX_PATH];
+	TCHAR tbuffer[512]; // "relatively" large
+	std::string buffer;
 	int len = sizeof(parsers) / sizeof(parsers[0]);
 	//int version;
 
@@ -137,8 +137,8 @@ void configLoad()
 
 	// [DoxyIt]
 	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
-	wcstombs(buffer, tbuffer, MAX_PATH);
-	do_active_commenting = strcmp(buffer, "true") == 0;
+	buffer = toString(tbuffer);
+	do_active_commenting = (buffer == "true");
 
 	// Don't need these for now
 	//version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
@@ -152,39 +152,39 @@ void configLoad()
 		// also, wrapping it in quotes doesn't seem to work either. So...use "!!!" as the default text
 		// and if we find that the value wasn't found and we have "!!!" then use the default value in the
 		// parser, else, use what we pulled from the file.
-		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
-		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_start = p->pd_default.doc_start;
+		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, 512, iniPath);
+		buffer = toString(tbuffer);
+		if(buffer == "!!!") p->pd.doc_start = p->pd_default.doc_start;
 		else p->pd.doc_start = buffer;
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
-		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_line = p->pd_default.doc_line;
+		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), TEXT("!!!"), tbuffer, 512, iniPath);
+		buffer = toString(tbuffer);
+		if(buffer == "!!!") p->pd.doc_line = p->pd_default.doc_line;
 		else p->pd.doc_line = buffer;
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
-		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.doc_end = p->pd_default.doc_end;
+		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), TEXT("!!!"), tbuffer, 512, iniPath);
+		buffer = toString(tbuffer);
+		if(buffer == "!!!") p->pd.doc_end = p->pd_default.doc_end;
 		else p->pd.doc_end = buffer;
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
-		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.command_prefix = p->pd_default.command_prefix;
+		GetPrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), TEXT("!!!"), tbuffer, 512, iniPath);
+		buffer = toString(tbuffer);
+		if(buffer == "!!!") p->pd.command_prefix = p->pd_default.command_prefix;
 		else p->pd.command_prefix = buffer;
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("function_format"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
-		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.function_format = p->pd_default.function_format;
-		else p->pd.function_format = stringReplace(std::string(buffer), "\\r\\n", "\r\n"); // Un-encode "\r\n" as \r\n
+		GetPrivateProfileString(p->lang.c_str(), TEXT("function_format"), TEXT("!!!"), tbuffer, 512, iniPath);
+		buffer = toString(tbuffer);
+		if(buffer == "!!!") p->pd.function_format = p->pd_default.function_format;
+		else p->pd.function_format = stringReplace(buffer, "\\r\\n", "\r\n"); // Un-encode "\r\n" as \r\n
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("file_format"), TEXT("!!!"), tbuffer, MAX_PATH, iniPath);
-		wcstombs(buffer, tbuffer, MAX_PATH);
-		if(strncmp(buffer, "!!!", 3) == 0) p->pd.file_format = p->pd_default.file_format;
-		else p->pd.file_format = stringReplace(std::string(buffer), "\\r\\n", "\r\n"); // Un-encode "\r\n" as \r\n
+		GetPrivateProfileString(p->lang.c_str(), TEXT("file_format"), TEXT("!!!"), tbuffer, 512, iniPath);
+		buffer = toString(tbuffer);
+		if(buffer == "!!!") p->pd.file_format = p->pd_default.file_format;
+		else p->pd.file_format = stringReplace(buffer, "\\r\\n", "\r\n"); // Un-encode "\r\n" as \r\n
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd_default.align), tbuffer, MAX_PATH, iniPath);
-		wcstombs(buffer, tbuffer, MAX_PATH);
-		p->pd.align = strcmp(buffer, "true") == 0;
+		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd_default.align), tbuffer, 512, iniPath);
+		buffer = toString(tbuffer);
+		p->pd.align = (buffer == "true");
 	}
 
 	// Write out the file if it doesn't exist yet

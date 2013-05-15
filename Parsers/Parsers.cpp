@@ -155,7 +155,7 @@ std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 	lines = splitLines(format_copy, "\r\n");
 
 	for(unsigned int i = 0; i < lines.size(); ++i)
-	{		
+	{
 		if(lines[i].find("$PARAM") != std::string::npos)
 		{
 			// Duplicate the current line for each $PARAM

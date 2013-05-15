@@ -51,7 +51,9 @@ void SettingsDialog::initParserDefinitions()
 void SettingsDialog::saveParserDefinition(int index)
 {
 	TCHAR prev_name[32];
-	TCHAR text[256];
+	TCHAR text[256]; // Edit_LimitText is used to limit to 255 chars
+	TCHAR *dtext;
+	int len;
 
 	// Save the text from the edit controls for the previous selection
 	ComboBox_GetLBText(GetDlgItem(_hSelf, IDC_CMB_LANG), index, prev_name);
@@ -69,11 +71,14 @@ void SettingsDialog::saveParserDefinition(int index)
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), text, 256);
 	prev_pd->command_prefix = toString(text);
 
-	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), text, 256);
+	len = Edit_GetTextLength(GetDlgItem(_hSelf, IDC_EDIT_FORMAT)) + 1;
+	dtext = new TCHAR[len];
+	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), dtext, len);
 	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED)
-		prev_pd->function_format = toString(text);
+		prev_pd->function_format = toString(dtext);
 	else
-		prev_pd->file_format = toString(text);
+		prev_pd->file_format = toString(dtext);
+	delete[] dtext;
 
 	prev_pd->align = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED ? true : false);
 }
@@ -145,8 +150,7 @@ void SettingsDialog::updatePreview()
 {
 	std::string block;
 	ParserDefinition *pd;
-	const Parser *p;
-	wchar_t name[32];
+	TCHAR name[32];
 	int prev_eol_mode;
 
 	// Get the name of the language that is selected
@@ -160,7 +164,7 @@ void SettingsDialog::updatePreview()
 	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED)
 	{
 		// Get the parser and have it parse the example
-		p = getParserByName(name);
+		const Parser *p = getParserByName(name);
 		block = FormatFunctionBlock(p, pd, p->example.c_str());
 		block += "\r\n" + p->example;
 	}
@@ -179,14 +183,20 @@ void SettingsDialog::updatePreview()
 void SettingsDialog::swapFormat()
 {
 	TCHAR name[32];
-	TCHAR text[256];
+	TCHAR *text;
+	unsigned int len;
 	ParserDefinition *pd;
 	static int last_rad = IDC_RAD_FUNCTION; // In case the selected radio button is clicked again
 	
+	// Get the parserDefinition
 	ComboBox_GetText(GetDlgItem(_hSelf, IDC_CMB_LANG), name, 32);
 	pd = &parserDefinitions[name];
 
-	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), text, 256);
+	// Get the text length, dynamically allocate it
+	len = Edit_GetTextLength(GetDlgItem(_hSelf, IDC_EDIT_FORMAT)) + 1;
+	text = new TCHAR[len];
+	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), text, len);
+
 	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED && last_rad == IDC_RAD_FILE)
 	{
 		pd->file_format = toString(text);
@@ -199,6 +209,8 @@ void SettingsDialog::swapFormat()
 		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd->file_format).c_str());
 		last_rad = IDC_RAD_FILE;
 	}
+
+	delete[] text;
 }
 
 BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
@@ -226,8 +238,11 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), m_monoFont, false);
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), m_monoFont, false);
 
-			// Limit the prefix box to 1 character
-			SendMessage(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), EM_SETLIMITTEXT, 1, 0);
+			// Limit the input boxes
+			Edit_LimitText(GetDlgItem(_hSelf, IDC_EDIT_START), 255);
+			Edit_LimitText(GetDlgItem(_hSelf, IDC_EDIT_LINE), 255);
+			Edit_LimitText(GetDlgItem(_hSelf, IDC_EDIT_END), 255);
+			Edit_LimitText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), 1);
 
 			Button_SetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION), BST_CHECKED);
 
