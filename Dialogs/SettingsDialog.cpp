@@ -70,7 +70,10 @@ void SettingsDialog::saveParserDefinition(int index)
 	prev_pd->command_prefix = toString(text);
 
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), text, 256);
-	prev_pd->function_format = toString(text);
+	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED)
+		prev_pd->function_format = toString(text);
+	else
+		prev_pd->file_format = toString(text);
 
 	prev_pd->align = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED ? true : false);
 }
@@ -92,7 +95,10 @@ void SettingsDialog::loadParserDefinition()
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), toWideString(pd.doc_line).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), toWideString(pd.doc_end).c_str());
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), toWideString(pd.command_prefix).c_str());
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd.function_format).c_str());
+	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED)
+		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd.function_format).c_str());
+	else
+		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd.file_format).c_str());
 	m_updating = false;
 }
 
@@ -151,10 +157,17 @@ void SettingsDialog::updatePreview()
 	prev_eol_mode = SendScintilla(SCI_GETEOLMODE);
 	SendScintilla(SCI_SETEOLMODE, SC_EOL_CRLF);
 
-	// Get the parser and have it parse the example
-	p = getParserByName(name);
-	block = FormatFunctionBlock(p, pd, p->example.c_str());
-	block += "\r\n" + p->example;
+	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED)
+	{
+		// Get the parser and have it parse the example
+		p = getParserByName(name);
+		block = FormatFunctionBlock(p, pd, p->example.c_str());
+		block += "\r\n" + p->example;
+	}
+	else // IDC_RAD_FILE is set
+	{
+		block = FormatFileBlock(pd);
+	}
 
 	// Set the preview
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), toWideString(block).c_str());
@@ -163,6 +176,30 @@ void SettingsDialog::updatePreview()
 	SendScintilla(SCI_SETEOLMODE, prev_eol_mode);
 }
 
+void SettingsDialog::swapFormat()
+{
+	TCHAR name[32];
+	TCHAR text[256];
+	ParserDefinition *pd;
+	static int last_rad = IDC_RAD_FUNCTION; // In case the selected radio button is clicked again
+	
+	ComboBox_GetText(GetDlgItem(_hSelf, IDC_CMB_LANG), name, 32);
+	pd = &parserDefinitions[name];
+
+	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), text, 256);
+	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED && last_rad == IDC_RAD_FILE)
+	{
+		pd->file_format = toString(text);
+		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd->function_format).c_str());
+		last_rad = IDC_RAD_FUNCTION;
+	}
+	else if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FILE)) == BST_CHECKED && last_rad == IDC_RAD_FUNCTION)
+	{
+		pd->function_format = toString(text);
+		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd->file_format).c_str());
+		last_rad = IDC_RAD_FILE;
+	}
+}
 
 BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -191,6 +228,8 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 
 			// Limit the prefix box to 1 character
 			SendMessage(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), EM_SETLIMITTEXT, 1, 0);
+
+			Button_SetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION), BST_CHECKED);
 
 			return true;
 		}
@@ -225,6 +264,11 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 				return true;
 			case IDC_CHB_ALIGN:
 				saveParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
+				updatePreview();
+				return true;
+			case IDC_RAD_FUNCTION:
+			case IDC_RAD_FILE:
+				swapFormat();
 				updatePreview();
 				return true;
 			}

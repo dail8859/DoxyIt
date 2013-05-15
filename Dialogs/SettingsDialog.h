@@ -52,6 +52,7 @@ private:
 	bool validateSettings();
 	void saveSettings();
 	void updatePreview();
+	void swapFormat();
 
 protected :
 	virtual BOOL CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
