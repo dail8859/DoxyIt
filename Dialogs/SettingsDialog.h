@@ -35,10 +35,10 @@ private:
 	HWND m_HSource;
 	int m_previousSelection;
 	bool m_updating;
-
+	ParserDefinition *current;
 
 public:
-	SettingsDialog() : StaticDialog(), m_previousSelection(0), m_updating(false) {};
+	SettingsDialog() : StaticDialog(), m_previousSelection(0), m_updating(false), current(NULL) {};
 
 	void init(HINSTANCE hInst, NppData nppData);
 	void doDialog();

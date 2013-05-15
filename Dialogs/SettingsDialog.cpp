@@ -18,7 +18,6 @@
 
 #include <WindowsX.h>
 #include "SettingsDialog.h"
-#include "Parsers.h"
 #include "PluginDefinition.h"
 
 const TCHAR *msg = TEXT("An option is blank (or all whitespace). If this is desired, it is recommended that you disable Active Commenting! Continue anyways?");
@@ -92,18 +91,18 @@ void SettingsDialog::loadParserDefinition()
 
 	// Load the edit controls with the new parsers settings
 	ComboBox_GetText(GetDlgItem(_hSelf, IDC_CMB_LANG), name, 32);
-	ParserDefinition pd = parserDefinitions[name];
+	current = &parserDefinitions[name];
 
 	m_updating = true;
-	Button_SetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN), pd.align); // Cannot be last!  Doesn't update preview
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_START), toWideString(pd.doc_start).c_str());
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), toWideString(pd.doc_line).c_str());
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), toWideString(pd.doc_end).c_str());
-	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), toWideString(pd.command_prefix).c_str());
+	Button_SetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN), current->align); // Cannot be last!  Doesn't update preview
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_START), toWideString(current->doc_start).c_str());
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_LINE), toWideString(current->doc_line).c_str());
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_END), toWideString(current->doc_end).c_str());
+	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), toWideString(current->command_prefix).c_str());
 	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED)
-		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd.function_format).c_str());
+		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(current->function_format).c_str());
 	else
-		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd.file_format).c_str());
+		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(current->file_format).c_str());
 	m_updating = false;
 }
 
@@ -149,13 +148,10 @@ void SettingsDialog::saveSettings()
 void SettingsDialog::updatePreview()
 {
 	std::string block;
-	ParserDefinition *pd;
 	TCHAR name[32];
 	int prev_eol_mode;
 
-	// Get the name of the language that is selected
 	ComboBox_GetText(GetDlgItem(_hSelf, IDC_CMB_LANG), name, 32);
-	pd = &parserDefinitions[name];
 
 	// Set eol mode to "\r\n" so it will display correctly in the dialogbox
 	prev_eol_mode = SendScintilla(SCI_GETEOLMODE);
@@ -165,12 +161,12 @@ void SettingsDialog::updatePreview()
 	{
 		// Get the parser and have it parse the example
 		const Parser *p = getParserByName(name);
-		block = FormatFunctionBlock(p, pd, p->example.c_str());
+		block = FormatFunctionBlock(p, current, p->example.c_str());
 		block += "\r\n" + p->example;
 	}
 	else // IDC_RAD_FILE is set
 	{
-		block = FormatFileBlock(pd);
+		block = FormatFileBlock(current);
 	}
 
 	// Set the preview
@@ -182,15 +178,9 @@ void SettingsDialog::updatePreview()
 
 void SettingsDialog::swapFormat()
 {
-	TCHAR name[32];
 	TCHAR *text;
 	unsigned int len;
-	ParserDefinition *pd;
 	static int last_rad = IDC_RAD_FUNCTION; // In case the selected radio button is clicked again
-	
-	// Get the parserDefinition
-	ComboBox_GetText(GetDlgItem(_hSelf, IDC_CMB_LANG), name, 32);
-	pd = &parserDefinitions[name];
 
 	// Get the text length, dynamically allocate it
 	len = Edit_GetTextLength(GetDlgItem(_hSelf, IDC_EDIT_FORMAT)) + 1;
@@ -199,14 +189,14 @@ void SettingsDialog::swapFormat()
 
 	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED && last_rad == IDC_RAD_FILE)
 	{
-		pd->file_format = toString(text);
-		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd->function_format).c_str());
+		current->file_format = toString(text);
+		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(current->function_format).c_str());
 		last_rad = IDC_RAD_FUNCTION;
 	}
 	else if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FILE)) == BST_CHECKED && last_rad == IDC_RAD_FUNCTION)
 	{
-		pd->function_format = toString(text);
-		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(pd->file_format).c_str());
+		current->function_format = toString(text);
+		Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), toWideString(current->file_format).c_str());
 		last_rad = IDC_RAD_FILE;
 	}
 
