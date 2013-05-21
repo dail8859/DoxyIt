@@ -87,7 +87,7 @@ The format string is used to customize the Doxygen Function Commenting block gen
 - Autocomplete for Doxygen commands.
 - Support for other languages
 - Configuration of:
-    - Comment block contents
+    - ~~Comment block contents~~
     - ~~Strings for comment start, line, and end~~
     - ~~Per language settings~~
     - ~~Doxygen command prefixes (i.e. '\' or '@')~~
