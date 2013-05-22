@@ -19,8 +19,16 @@
 #include <WindowsX.h>
 #include "SettingsDialog.h"
 #include "PluginDefinition.h"
+#include "Hyperlinks.h"
 
 const TCHAR *msg = TEXT("An option is blank (or all whitespace). If this is desired, it is recommended that you disable Active Commenting! Continue anyways?");
+const TCHAR *help = TEXT("\
+Format Keywords:\r\n\
+$FILENAME - The current file name.\r\n\
+$FUNCTION - The name of the function/method.\r\n\
+$PARAM - Expands to a single function/method parameter. Any line containing this will get repeated for each parameter.\r\n\
+$@ - Expands to the prefix character for Doxygen commands.\r\n\
+$| - Marks the alignment position. This is only valid for lines containing $PARAM.\r\n");
 
 void SettingsDialog::init(HINSTANCE hInst, NppData nppData)
 {
@@ -236,6 +244,8 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 
 			Button_SetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION), BST_CHECKED);
 
+			ConvertStaticToHyperlink(_hSelf, IDC_SETTINGS_HELP);
+
 			return true;
 		}
 	case WM_COMMAND:
@@ -275,6 +285,9 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			case IDC_RAD_FILE:
 				swapFormat();
 				updatePreview();
+				return true;
+			case IDC_SETTINGS_HELP:
+				MessageBox(NULL, help, NPP_PLUGIN_NAME, MB_OK);
 				return true;
 			}
 		case EN_CHANGE:

@@ -4,6 +4,7 @@
 
 #define IDD_SETTINGSDLG                         101
 #define IDD_ABOUTDLG                            103
+#define IDC_SETTINGS_HELP                       1000
 #define IDC_EDIT_PREFIX                         1001
 #define IDC_GITHUB                              1001
 #define IDC_EDIT_FORMAT                         1002
