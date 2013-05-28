@@ -19,21 +19,21 @@
 #include "Parsers.h"
 #include <vector>
 
-const char *default_function_format = "\
-\r\n\
-$@brief Brief\r\n\
-\r\n\
-$@param [in] $PARAM $|Parameter_Description\r\n\
-$@return Return_Description\r\n\
-\r\n\
-$@details Details\r\n\
-";
+const char *default_function_format = 
+"\r\n"
+"$@brief Brief\r\n"
+"\r\n"
+"$@param [in] $PARAM $|Parameter_Description\r\n"
+"$@return Return_Description\r\n"
+"\r\n"
+"$@details Details\r\n"
+;
 
-const char *default_file_format = "\
-\r\n\
-$@file $FILENAME\r\n\
-$@brief Brief\r\n\
-";
+const char *default_file_format = 
+"\r\n"
+"$@file $FILENAME\r\n"
+"$@brief Brief\r\n"
+;
 
 // Very ugly macro
 #define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) \
@@ -248,7 +248,7 @@ std::string Parse(void)
 	// Get the text until a closing parenthesis. Find '(' first
 	if((found = findNext("(")) == -1)
 	{
-		MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return "";
 	}
 
@@ -257,14 +257,14 @@ std::string Parse(void)
 	foundLine = SendScintilla(SCI_LINEFROMPOSITION, found);
 	if(foundLine < curLine || foundLine > curLine + 2)
 	{
-		MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return "";
 	}
 
 	// Find the matching closing brace
 	if((found = SendScintilla(SCI_BRACEMATCH, found, 0)) == -1)
 	{
-		MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return "";
 	}
 
@@ -276,7 +276,7 @@ std::string Parse(void)
 	// but check it just in case we decide to for the future.
 	if(doc_block.length() == 0)
 	{
-		MessageBox(NULL, TEXT("Error: Cannot parse function definition"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return "";
 	}
 
