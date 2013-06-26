@@ -23,9 +23,6 @@
 #include "SettingsDialog.h"
 #include "AboutDialog.h"
 
-// --- Global variables ---
-FuncItem funcItem[nbFunc];
-
 // --- Local variables ---
 static bool do_active_commenting;	// active commenting - create or extend a document block
 //static bool do_active_wrapping;	// active wrapping - wrap text inside of document blocks...todo
@@ -43,6 +40,18 @@ static void activeCommenting();
 //static void activeWrapping();
 static void showSettings();
 static void showAbout();
+
+// --- Global variables ---
+ShortcutKey sk = {true, true, true, 'D'};
+FuncItem funcItem[nbFunc] = {
+	{TEXT("DoxyIt - Function"), doxyItFunction,   0, false, &sk},
+	{TEXT("DoxyIt - File"),     doxyItFile,       0, false, NULL},
+	{TEXT(""),                  NULL,             0, false, NULL}, // separator
+	{TEXT("Active commenting"), activeCommenting, 0, false, NULL},
+	{TEXT(""),                  NULL,             0, false, NULL}, // separator
+	{TEXT("Settings..."),       showSettings,     0, false, NULL},
+	{TEXT("About..."),          showAbout,        0, false, NULL}
+};
 
 
 LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
@@ -140,6 +149,10 @@ void configLoad()
 	buffer = toString(tbuffer);
 	do_active_commenting = (buffer == "true");
 
+	// NPPM_SETMENUITEMCHECK does not seem to work unless the 
+	// menu item is actually clicked, so lets do it manually
+	if(do_active_commenting) CheckMenuItem(GetMenu(nppData._nppHandle), funcItem[3]._cmdID, MF_CHECKED);
+
 	// Don't need these for now
 	//version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
 	//version_stage = GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), TEXT(""), tbuffer, MAX_PATH, iniPath);
@@ -191,63 +204,19 @@ void configLoad()
 	//if(!PathFileExists(iniPath)) configSave();
 }
 
-
-
-bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk = NULL, bool checkOnInit = false)
-{
-	if (index >= nbFunc || !pFunc) return false;
-
-	lstrcpy(funcItem[index]._itemName, cmdName);
-	funcItem[index]._pFunc = pFunc;
-	funcItem[index]._init2Check = checkOnInit;
-	funcItem[index]._pShKey = sk;
-
-	return true;
-}
-
-void commandMenuInit()
-{
-	ShortcutKey *sk = new ShortcutKey();
-	sk->_isAlt = sk->_isCtrl = sk->_isShift = TRUE;
-	sk->_key = 'D';
-
-	setCommand(0, TEXT("DoxyIt - Function"), doxyItFunction, sk);
-	setCommand(1, TEXT("DoxyIt - File"), doxyItFile);
-	// ---
-	setCommand(3, TEXT("Active commenting"), activeCommenting, NULL, do_active_commenting);
-	// ---
-	setCommand(5, TEXT("Settings..."), showSettings);
-	setCommand(6, TEXT("About..."), showAbout);
-
-	//setCommand(X, TEXT("Active word wrapping"), activeWrapping, NULL, do_active_wrapping);
-}
-
-void commandMenuCleanUp()
-{
-	// Don't forget to deallocate your shortcut here
-	delete funcItem[0]._pShKey;
-}
-
 void pluginInit(HANDLE hModule)
 {
-	InitializeParsers();
-
 	_hModule = hModule;
 }
 
 void pluginCleanUp()
 {
-	commandMenuCleanUp();
-	CleanUpParsers();
 }
 
 void setNppInfo(NppData notepadPlusData)
 {
 	nppData = notepadPlusData;
-	configLoad();
-	commandMenuInit();
 
-	// Dialog Init
 	sd.init((HINSTANCE) _hModule, nppData);
 }
 
@@ -302,7 +271,6 @@ void doxyItFile()
 	doc_block = FormatFileBlock(pd);
 
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
-
 }
 
 void activeCommenting()
@@ -310,14 +278,6 @@ void activeCommenting()
 	do_active_commenting = !do_active_commenting;
 	SendNpp(NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_commenting);
 }
-
-/*
-void activeWrapping()
-{
-	do_active_wrapping = !do_active_wrapping;
-	SendNpp(NPPM_SETMENUITEMCHECK, funcItem[3]._cmdID, (LPARAM) do_active_wrapping);
-}
-*/
 
 void showSettings()
 {
@@ -428,18 +388,14 @@ void handleNotification(SCNotification *notifyCode)
 	case SCN_CHARADDED:
 		// Set a flag so that all line endings can trigger the commenting
 		if((ch == '\r' || ch == '\n') && do_active_commenting) do_newline = true;
-		//else if(ch == '\\')
-		//{
-		//	if(!updateScintilla()) return;
-		//	SendScintilla(SCI_AUTOCCANCEL);
-		//	SendScintilla(SCI_AUTOCSETSEPARATOR, '|');
-		//	SendScintilla(SCI_AUTOCSHOW, 1, (LPARAM) "\\a|\\br|\\brief|\\param|\\return");
-		//}
 		break;
 	case NPPN_READY:
+		configLoad();
+		InitializeParsers();
 		break;
 	case NPPN_SHUTDOWN:
 		configSave();
+		CleanUpParsers();
 		break;
 	case NPPN_BUFFERACTIVATED:
 	case NPPN_LANGCHANGED:
@@ -447,50 +403,5 @@ void handleNotification(SCNotification *notifyCode)
 		getCurrentParser(true);
 		break;
 	}
-	/*
-	else if(do_active_wrapping) // && line starts with doc_line
-	{
-		int lineMax = 40;
-		// Get the line length without counting line endings
-		int lineStart = ::SendMessage(curScintilla, SCI_POSITIONFROMLINE, curLine, 0);
-		int lineEnd = ::SendMessage(curScintilla, SCI_GETLINEENDPOSITION, curLine, 0);
-		int lineLen = lineEnd - lineStart;
-
-		if(lineLen > lineMax)
-		{
-			int char_width = ::SendMessage(curScintilla, SCI_TEXTWIDTH, STYLE_DEFAULT, (LPARAM) " ");
-			::SendMessage(curScintilla, SCI_SETTARGETSTART, lineStart, 0);
-			::SendMessage(curScintilla, SCI_SETTARGETEND, lineStart, 0);
-			::SendMessage(curScintilla, SCI_LINESSPLIT, lineMax * char_width, 0);
-
-			// Check the next few lines to insert the doc_line in front of them
-			for(int i = 1; i < 5; ++i)
-			{
-				// Get the length and allocate a buffer
-				int lineLen = ::SendMessage(curScintilla, SCI_LINELENGTH, curLine + i, 0);
-				char *text = new char[lineLen + 1];
-
-				// Get the text
-				::SendMessage(curScintilla, SCI_GETLINE, curLine + i, (LPARAM) text);
-				text[lineLen] = '\0';
-
-				// if it doesn't start with doc_line or doc_start, insert the doc_line
-				// else we are done
-				if(strncmp(text, doc_line.c_str(), doc_line.length()) != 0 && strncmp(text, doc_end.c_str(), doc_end.length()) != 0)
-				{
-					int lineStart = ::SendMessage(curScintilla, SCI_POSITIONFROMLINE, curLine + i, 0);
-					::SendMessage(curScintilla, SCI_INSERTTEXT, lineStart, (LPARAM) doc_line.c_str());
-				}
-				else
-				{
-					delete[] text;
-					break;
-				}
-
-				delete[] text;
-			}
-		}
-	}
-	*/
 	return;
 }

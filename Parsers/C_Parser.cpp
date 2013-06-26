@@ -21,20 +21,33 @@
 static TRex *tr_function;
 static TRex *tr_parameters;
 
+static bool isInit = false;
+static bool isFree = false;
+
 bool Initialize_C(void)
 {
-	const TRexChar *error = NULL;
-	tr_function = trex_compile("(?:([\\w:]+)[*&]*\\s+(?:[*&]*\\s+)?[*&]*)?([\\w:]+)\\s*(\\([^)]*\\))", &error);
-	tr_parameters = trex_compile("(\\$?\\w+|\\.\\.\\.)(\\s*=\\s*[\\\"\\w\\.]+)?\\s*[,)]", &error);
+	if(!isInit)
+	{
+		const TRexChar *error = NULL;
+		tr_function = trex_compile("(?:([\\w:]+)[*&]*\\s+(?:[*&]*\\s+)?[*&]*)?([\\w:]+)\\s*(\\([^)]*\\))", &error);
+		tr_parameters = trex_compile("(\\$?\\w+|\\.\\.\\.)(\\s*=\\s*[\\\"\\w\\.]+)?\\s*[,)]", &error);
 
-	if(!tr_function || !tr_parameters) return false;
+		if(!tr_function || !tr_parameters) return false;
+		
+		isInit = true;
+	}
 	return true;
 }
 
 void CleanUp_C(void)
 {
-	trex_free(tr_function);
-	trex_free(tr_parameters);
+	if(!isFree)
+	{
+		trex_free(tr_function);
+		trex_free(tr_parameters);
+
+		isFree = true;
+	}
 }
 
 Keywords Parse_C(const ParserDefinition *pd, const char *text)
