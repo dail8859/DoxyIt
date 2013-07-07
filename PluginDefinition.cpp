@@ -95,6 +95,7 @@ void configSave()
 {
 	TCHAR iniPath[MAX_PATH];
 	int len = sizeof(parsers) / sizeof(parsers[0]);
+	std::wstring ws;
 
 	getIniFilePath(iniPath, MAX_PATH);
 
@@ -107,7 +108,6 @@ void configSave()
 	{
 		const Parser *p = &parsers[i];
 		const ParserDefinition *pd = &p->pd;
-		std::wstring ws;
 
 		// Wrap everything in quotes to preserve whitespace
 		ws = TEXT("\"") + toWideString(pd->doc_start) + TEXT("\"");
@@ -146,8 +146,7 @@ void configLoad()
 
 	// [DoxyIt]
 	GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), TEXT("true"), tbuffer, MAX_PATH, iniPath);
-	buffer = toString(tbuffer);
-	do_active_commenting = (buffer == "true");
+	do_active_commenting = (lstrcmp(tbuffer, TEXT("true")) == 0);
 
 	// NPPM_SETMENUITEMCHECK does not seem to work unless the 
 	// menu item is actually clicked, so lets do it manually
