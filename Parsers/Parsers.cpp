@@ -1,20 +1,20 @@
-//This file is part of DoxyIt.
-//
-//Copyright (C)2013 Justin Dailey <dail8859@yahoo.com>
-//
-//DoxyIt is free software; you can redistribute it and/or
-//modify it under the terms of the GNU General Public License
-//as published by the Free Software Foundation; either
-//version 2 of the License, or (at your option) any later version.
-//
-//This program is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with this program; if not, write to the Free Software
-//Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+// This file is part of DoxyIt.
+// 
+// Copyright (C)2013 Justin Dailey <dail8859@yahoo.com>
+// 
+// DoxyIt is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either
+// version 2 of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "Parsers.h"
 #include <vector>
@@ -37,7 +37,7 @@ const char *default_file_format =
 
 // Very ugly macro
 #define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) \
-	{L_##lang, TEXT(#lang),TEXT(language_name), example, \
+	{L_##lang, TEXT(#lang), TEXT(language_name), example, \
 	{"", "", "", "", "", "", false}, \
 	{doc_start, doc_line, doc_end, command_prefix, default_function_format, default_file_format, false}, \
 	Initialize_##parser, CleanUp_##parser, Parse_##parser}
@@ -93,11 +93,9 @@ const Parser *getCurrentParser(bool update)
 
 const ParserDefinition *getCurrentParserDefinition(void)
 {
-	const Parser *p;
+	const Parser *p = getCurrentParser();
 
-	p = getCurrentParser();
-	if(p) return &p->pd;
-	else return NULL;
+	return (p ? &p->pd : NULL);
 }
 
 
@@ -119,7 +117,7 @@ void CleanUpParsers(void)
 
 void alignLines(std::vector<std::string> &lines)
 {
-	std::string flag = "$|";
+	const char *flag = "$|";
 	unsigned int align_max = 0;
 
 	// Find the max position the flag is found at
@@ -133,7 +131,7 @@ void alignLines(std::vector<std::string> &lines)
 	for(unsigned int i = 0; align_max != 0 && i < lines.size(); ++i)
 	{
 		unsigned int pos = lines[i].find(flag);
-		lines[i].replace(pos, flag.length(), align_max - pos, ' ');
+		lines[i].replace(pos, strlen(flag), align_max - pos, ' ');
 	}
 }
 
@@ -222,9 +220,9 @@ std::string FormatFileBlock(const ParserDefinition *pd)
 
 std::string FormatFunctionBlock(const Parser *p, const ParserDefinition *pd, const char *text)
 {
-	Keywords kw = p->callback(pd, text);
+	Keywords kw = p->parse(pd, text);
 	
-	if(kw.size() == 0) return "";
+	if(kw.size() == 0) return std::string("");
 	
 	FillExtraKeywords(kw);
 	
@@ -242,14 +240,14 @@ std::string Parse(void)
 	if(!(p = getCurrentParser()))
 	{
 		MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return "";
+		return std::string("");
 	}
 
 	// Get the text until a closing parenthesis. Find '(' first
 	if((found = findNext("(")) == -1)
 	{
 		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return "";
+		return std::string("");
 	}
 
 	// Do some sanity checking. Make sure curline <= found <= curline+2
@@ -258,14 +256,14 @@ std::string Parse(void)
 	if(foundLine < curLine || foundLine > curLine + 2)
 	{
 		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return "";
+		return std::string("");
 	}
 
 	// Find the matching closing brace
 	if((found = SendScintilla(SCI_BRACEMATCH, found, 0)) == -1)
 	{
 		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return "";
+		return std::string("");
 	}
 
 	buffer = getRange(SendScintilla(SCI_GETCURRENTPOS), found + 1);
@@ -277,7 +275,7 @@ std::string Parse(void)
 	if(doc_block.length() == 0)
 	{
 		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return "";
+		return std::string("");
 	}
 
 	return doc_block;
