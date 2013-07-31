@@ -18,38 +18,31 @@
 
 #include "Parsers.h"
 
-static TRex *tr_function;
-static TRex *tr_parameters;
-
-static bool isInit = false;
-static bool isFree = false;
+static TRex *tr_function = NULL;
+static TRex *tr_parameters = NULL;
 
 bool Initialize_C(void)
 {
-	if(!isInit)
+	if(tr_function == NULL && tr_parameters == NULL)
 	{
 		const TRexChar *error = NULL;
 		tr_function = trex_compile("(?:([\\w:]+)[*&]*\\s+(?:[*&]*\\s+)?[*&]*)?([\\w:]+)\\s*(\\([^)]*\\))", &error);
 		tr_parameters = trex_compile("(\\$?\\w+|\\.\\.\\.)(\\s*=\\s*[\\\"\\w\\.]+)?\\s*[,)]", &error);
 
 		if(!tr_function || !tr_parameters) return false;
-		
-		isInit = true;
 	}
 	return true;
 }
 
 void CleanUp_C(void)
 {
-	if(!isFree)
+	if(tr_function != NULL && tr_parameters != NULL)
 	{
 		trex_free(tr_function);
 		trex_free(tr_parameters);
 
 		tr_function = NULL;
 		tr_parameters = NULL;
-
-		isFree = true;
 	}
 }
 

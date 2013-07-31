@@ -16,29 +16,34 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include <vector>
 #include "Parsers.h"
 
-static TRex *tr_function;
-static TRex *tr_parameters;
+static TRex *tr_function = NULL;
+static TRex *tr_parameters = NULL;
 
 bool Initialize_Python(void)
 {
-	const TRexChar *error = NULL;
-	tr_function = trex_compile("def\\s+(\\w+)\\s*(\\([^)]*\\))", &error);
-	tr_parameters = trex_compile("(\\w+)(\\s*=\\s*\\w+)?\\s*[,)]", &error);
+	if(tr_function == NULL && tr_parameters == NULL)
+	{
+		const TRexChar *error = NULL;
+		tr_function = trex_compile("def\\s+(\\w+)\\s*(\\([^)]*\\))", &error);
+		tr_parameters = trex_compile("(\\w+)(\\s*=\\s*\\w+)?\\s*[,)]", &error);
 
-	if(!tr_function || !tr_parameters) return false;
+		if(!tr_function || !tr_parameters) return false;
+	}
 	return true;
 }
 
 void CleanUp_Python(void)
 {
-	trex_free(tr_function);
-	trex_free(tr_parameters);
+	if(tr_function != NULL && tr_parameters != NULL)
+	{
+		trex_free(tr_function);
+		trex_free(tr_parameters);
 
-	tr_function = NULL;
-	tr_parameters = NULL;
+		tr_function = NULL;
+		tr_parameters = NULL;
+	}
 }
 
 Keywords Parse_Python(const ParserDefinition *pd, const char *text)
