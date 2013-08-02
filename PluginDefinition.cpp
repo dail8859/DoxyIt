@@ -94,7 +94,6 @@ void getIniFilePath(TCHAR *iniPath, int size)
 void configSave()
 {
 	TCHAR iniPath[MAX_PATH];
-	int len = sizeof(parsers) / sizeof(parsers[0]);
 	std::wstring ws;
 
 	getIniFilePath(iniPath, MAX_PATH);
@@ -104,9 +103,9 @@ void configSave()
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version"), VERSION_LINEAR_TEXT, iniPath);
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), VERSION_STAGE, iniPath);
 
-	for(int i = 0; i < len; ++i)
+	for(unsigned int i = 0; i < parsers.size(); ++i)
 	{
-		const Parser *p = &parsers[i];
+		const Parser *p = parsers[i];
 		const ParserDefinition *pd = &p->pd;
 
 		// Wrap everything in quotes to preserve whitespace
@@ -132,13 +131,14 @@ void configSave()
 
 		WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align), iniPath);
 	}
+
+
 }
 
 void configLoad()
 {
 	TCHAR iniPath[MAX_PATH];
 	TCHAR tbuffer[512]; // "relatively" large
-	int len = sizeof(parsers) / sizeof(parsers[0]);
 
 	getIniFilePath(iniPath, MAX_PATH);
 
@@ -154,9 +154,9 @@ void configLoad()
 	//version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
 	//version_stage = GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), TEXT(""), tbuffer, MAX_PATH, iniPath);
 
-	for(int i = 0; i < len; ++i)
+	for(unsigned int i = 0; i < parsers.size(); ++i)
 	{
-		Parser *p = &parsers[i];
+		Parser *p = parsers[i];
 
 		// NOTE: We cant use the default value because GetPrivateProfileString strips the whitespace,
 		// also, wrapping it in quotes doesn't seem to work either. So...use "!!!" as the default text
@@ -182,6 +182,14 @@ void configLoad()
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd_default.align), tbuffer, 512, iniPath);
 		p->pd.align = (lstrcmp(tbuffer, TEXT("true")) == 0);
+	}
+
+	GetPrivateProfileSection(TEXT("External"), tbuffer, 512, iniPath);
+	TCHAR *current = tbuffer;
+	while(current[0] != NULL)
+	{
+		//MessageBox(NULL, current, NPP_PLUGIN_NAME, MB_OK);
+		current = &current[lstrlen(current) + 1];
 	}
 
 	// Write out the file if it doesn't exist yet

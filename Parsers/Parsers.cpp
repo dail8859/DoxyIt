@@ -35,30 +35,11 @@ const char *default_file_format =
 "$@brief Brief\r\n"
 ;
 
-// Very ugly macro
-#define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) \
-	{L_##lang, TEXT(#lang), TEXT(language_name), example, \
-	{"", "", "", "", "", "", false}, \
-	{doc_start, doc_line, doc_end, command_prefix, default_function_format, default_file_format, false}, \
-	Initialize_##parser, CleanUp_##parser, Parse_##parser}
-
-Parser parsers[] = 
-{
-	REGISTER_PARSER(C,      C,      "C",          "/**",  " *  ", " */",  "\\", "int function(const char *ptr, int index)"),
-	REGISTER_PARSER(CPP,    C,      "C++",        "/**",  " *  ", " */",  "\\", "std::string function(const char *ptr, int &index)"),
-	REGISTER_PARSER(JAVA,   C,      "Java",       "/**",  " *  ", " */",  "@",  "public boolean action(Event event, Object arg)"),
-	REGISTER_PARSER(PYTHON, Python, "Python",     "## ",  "#  ",  "#  ",  "@",  "def foo(bar, string=None)"),
-	REGISTER_PARSER(PHP,    C,      "PHP",        "/**",  " *  ", " */",  "@",  "function myFunction($abc, $defg)"),
-	REGISTER_PARSER(JS,     C,      "JavaScript", "/**",  " *  ", " */",  "@",  "function myFunction(abc, defg)"),
-	REGISTER_PARSER(CS,     C,      "C#",         "/// ", "/// ", "/// ", "\\", "public int Method(ref int abc, int defg)")
-};
-
 const Parser *getParserByName(std::wstring name)
 {
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-		if(parsers[i].language_name == name)
-			return &parsers[i];
+	for(unsigned int i = 0; i < parsers.size(); ++i)
+		if(parsers[i]->language_name == name)
+			return parsers[i];
 
 	return NULL;
 }
@@ -72,15 +53,31 @@ const Parser *getCurrentParser(bool update)
 	if(update)
 	{
 		int lang_type;
-		int len = sizeof(parsers) / sizeof(parsers[0]);
 		SendNpp(NPPM_GETCURRENTLANGTYPE, SCI_UNUSED, (LPARAM) &lang_type);
 
-		for(int i = 0; i < len; ++i)
+		if(lang_type == L_USER)
 		{
-			if(parsers[i].lang_type == lang_type)
+			TCHAR *name = NULL;
+			int len = 0;
+
+			len = SendNpp(NPPM_GETLANGUAGENAME, lang_type, NULL) + 1;
+			name = (TCHAR *) malloc(sizeof(TCHAR) * len);
+			SendNpp(NPPM_GETLANGUAGENAME, lang_type, (LPARAM) name);
+
+			MessageBox(NULL, name, NPP_PLUGIN_NAME, MB_OK);
+			MessageBox(NULL, &name[6], NPP_PLUGIN_NAME, MB_OK);
+
+			free(name);
+		}
+		else
+		{
+			for(unsigned int i = 0; i < parsers.size(); ++i)
 			{
-				current = &parsers[i];
-				return current;
+				if(parsers[i]->lang_type == lang_type)
+				{
+					current = parsers[i];
+					return current;
+				}
 			}
 		}
 
@@ -99,20 +96,36 @@ const ParserDefinition *getCurrentParserDefinition(void)
 }
 
 
+// Very ugly macro
+#define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) \
+	new Parser(L_##lang, TEXT(#lang), TEXT(language_name), example, doc_start, doc_line, doc_end, command_prefix, \
+	Initialize_##parser, CleanUp_##parser, Parse_##parser)
 
+std::vector<Parser *> parsers;
 void InitializeParsers(void)
 {
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-		if((*parsers[i].initializer)() == false)
+	parsers.push_back(REGISTER_PARSER(C,      C,      "C",          "/**",  " *  ", " */",  "\\", "int function(const char *ptr, int index)"));
+	parsers.push_back(REGISTER_PARSER(CPP,    C,      "C++",        "/**",  " *  ", " */",  "\\", "std::string function(const char *ptr, int &index)"));
+	parsers.push_back(REGISTER_PARSER(JAVA,   C,      "Java",       "/**",  " *  ", " */",  "@",  "public boolean action(Event event, Object arg)"));
+	parsers.push_back(REGISTER_PARSER(PYTHON, Python, "Python",     "## ",  "#  ",  "#  ",  "@",  "def foo(bar, string=None)"));
+	parsers.push_back(REGISTER_PARSER(PHP,    C,      "PHP",        "/**",  " *  ", " */",  "@",  "function myFunction($abc, $defg)"));
+	parsers.push_back(REGISTER_PARSER(JS,     C,      "JavaScript", "/**",  " *  ", " */",  "@",  "function myFunction(abc, defg)"));
+	parsers.push_back(REGISTER_PARSER(CS,     C,      "C#",         "/// ", "/// ", "/// ", "\\", "public int Method(ref int abc, int defg)"));
+	
+	for(unsigned int i = 0; i < parsers.size(); ++i)
+		if(parsers[i]->initializer() == false)
 			MessageBox(NULL, TEXT("DoxyIt initialization failed"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 }
 
 void CleanUpParsers(void)
 {
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-		(*parsers[i].cleanup)();
+	for(unsigned int i = 0; i < parsers.size(); ++i)
+	{
+		parsers[i]->cleanup();
+		delete parsers[i];
+	}
+
+	parsers.clear();
 }
 
 void alignLines(std::vector<std::string> &lines)

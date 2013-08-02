@@ -48,11 +48,9 @@ void SettingsDialog::doDialog()
 
 void SettingsDialog::initParserDefinitions()
 {
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-
 	parserDefinitions.clear();
-	for(int i = 0; i < len; ++i)
-		parserDefinitions[parsers[i].language_name] = parsers[i].pd;
+	for(unsigned int i = 0; i < parsers.size(); ++i)
+		parserDefinitions[parsers[i]->language_name] = parsers[i]->pd;
 }
 
 void SettingsDialog::saveParserDefinition(int index)
@@ -124,11 +122,10 @@ bool SettingsDialog::validateText(std::string text, int idc)
 }
 bool SettingsDialog::validateSettings()
 {
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
+	for(unsigned int i = 0; i < parsers.size(); ++i)
 	{
 		bool ret = true;
-		const ParserDefinition *pd = &parserDefinitions[parsers[i].language_name];
+		const ParserDefinition *pd = &parserDefinitions[parsers[i]->language_name];
 
 		if(!validateText(pd->doc_start, IDC_EDIT_START)) ret = false;
 		if(!validateText(pd->doc_line, IDC_EDIT_LINE)) ret = false;
@@ -137,7 +134,7 @@ bool SettingsDialog::validateSettings()
 
 		if(!ret)
 		{
-			ComboBox_SelectString(GetDlgItem(_hSelf, IDC_CMB_LANG), -1, parsers[i].language_name.c_str());
+			ComboBox_SelectString(GetDlgItem(_hSelf, IDC_CMB_LANG), -1, parsers[i]->language_name.c_str());
 			loadParserDefinition();
 			return false;
 		}
@@ -148,9 +145,8 @@ bool SettingsDialog::validateSettings()
 
 void SettingsDialog::saveSettings()
 {
-	int len = sizeof(parsers) / sizeof(parsers[0]);
-	for(int i = 0; i < len; ++i)
-		parsers[i].pd = parserDefinitions[parsers[i].language_name];
+	for(unsigned int i = 0; i < parsers.size(); ++i)
+		parsers[i]->pd = parserDefinitions[parsers[i]->language_name];
 }
 
 void SettingsDialog::updatePreview()
@@ -221,10 +217,9 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 		{
 			HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 			long lfHeight = -MulDiv(10, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72);
-			int len = sizeof(parsers) / sizeof(parsers[0]);
 
-			for(int i = 0; i < len; ++i)
-				ComboBox_AddString(cmb, parsers[i].language_name.c_str());
+			for(unsigned int i = 0; i < parsers.size(); ++i)
+				ComboBox_AddString(cmb, parsers[i]->language_name.c_str());
 			ComboBox_SetCurSel(cmb, m_previousSelection);
 			
 			// I have no idea what these values do, but these work

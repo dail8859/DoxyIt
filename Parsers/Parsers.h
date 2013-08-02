@@ -25,6 +25,9 @@
 #include <map>
 #include <vector>
 
+extern const char *default_function_format;
+extern const char *default_file_format;
+
 typedef std::map<std::string, std::vector<std::string>> Keywords;
 
 // These are the settable fields in the parser
@@ -43,20 +46,44 @@ typedef struct ParserDefinition
 typedef struct Parser
 {
 	int lang_type;
-	std::wstring lang;						// Short language name. Postfix of enum from lang_type
-	std::wstring language_name;				// User readable name
-	const std::string example;				// Example function/method to parse for Settings Dialog
+	std::wstring lang;					// Short language name. Postfix of enum from lang_type
+	std::wstring language_name;			// User readable name
+	std::string example;				// Example function/method to parse for Settings Dialog
+	bool external;						// whether this is an internal or external(UDL||external lexer)
 
 	ParserDefinition pd;
-	const ParserDefinition pd_default;		// Stores default values
+	ParserDefinition pd_default;		// Stores default values
 
 	// Registered functions
 	bool (*initializer)(void);
 	void (*cleanup)(void);
 	Keywords (*parse)(const ParserDefinition *pd, const char *text);
+
+	// Constructor...with 11 parameters
+	// Don't judge me
+	Parser(int lt, std::wstring l, std::wstring ln, std::string e, std::string ds, std::string dl, std::string de,
+		std::string cp, bool (*i)(void), void (*c)(void), Keywords (*p)(const ParserDefinition *, const char *))
+	{
+		lang_type = lt;
+		lang = l;
+		language_name = ln;
+		example = e;
+		external = false;
+		pd.doc_start = ds;
+		pd.doc_line = dl;
+		pd.doc_end = de;
+		pd.command_prefix = cp;
+		pd.function_format = default_function_format;
+		pd.file_format = default_file_format;
+		pd.align = false;
+		pd_default.align = false;
+		initializer = i;
+		cleanup = c;
+		parse = p;
+	}
 } Parser;
 
-extern Parser parsers[7];
+extern std::vector<Parser *> parsers;
 
 
 // Macro to help define the functions of each parser
