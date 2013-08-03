@@ -50,19 +50,17 @@ void SettingsDialog::initParserDefinitions()
 {
 	parserDefinitions.clear();
 	for(unsigned int i = 0; i < parsers.size(); ++i)
-		parserDefinitions[parsers[i]->language_name] = parsers[i]->pd;
+		parserDefinitions.push_back(parsers[i]->pd);
 }
 
 void SettingsDialog::saveParserDefinition(int index)
 {
-	TCHAR prev_name[32];
 	TCHAR text[256]; // Edit_LimitText is used to limit to 255 chars
 	TCHAR *dtext;
 	int len;
 
 	// Save the text from the edit controls for the previous selection
-	ComboBox_GetLBText(GetDlgItem(_hSelf, IDC_CMB_LANG), index, prev_name);
-	ParserDefinition *prev_pd = &parserDefinitions[prev_name];
+	ParserDefinition *prev_pd = &parserDefinitions[index];
 
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_START), text, 256);
 	prev_pd->doc_start = toString(text);
@@ -93,11 +91,8 @@ void SettingsDialog::saveParserDefinition(int index)
 // temporarily ignore notifications.
 void SettingsDialog::loadParserDefinition()
 {
-	TCHAR name[32];
-
 	// Load the edit controls with the new parsers settings
-	ComboBox_GetText(GetDlgItem(_hSelf, IDC_CMB_LANG), name, 32);
-	current = &parserDefinitions[name];
+	current = &parserDefinitions[ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG))];
 
 	m_updating = true;
 	Button_SetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN), current->align); // Cannot be last!  Doesn't update preview
@@ -125,7 +120,7 @@ bool SettingsDialog::validateSettings()
 	for(unsigned int i = 0; i < parsers.size(); ++i)
 	{
 		bool ret = true;
-		const ParserDefinition *pd = &parserDefinitions[parsers[i]->language_name];
+		const ParserDefinition *pd = &parserDefinitions[i];
 
 		if(!validateText(pd->doc_start, IDC_EDIT_START)) ret = false;
 		if(!validateText(pd->doc_line, IDC_EDIT_LINE)) ret = false;
@@ -146,7 +141,7 @@ bool SettingsDialog::validateSettings()
 void SettingsDialog::saveSettings()
 {
 	for(unsigned int i = 0; i < parsers.size(); ++i)
-		parsers[i]->pd = parserDefinitions[parsers[i]->language_name];
+		parsers[i]->pd = parserDefinitions[i];
 }
 
 void SettingsDialog::updatePreview()

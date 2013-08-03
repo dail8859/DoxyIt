@@ -29,7 +29,7 @@
 class SettingsDialog : public StaticDialog
 {
 private:
-	std::map<std::wstring, ParserDefinition> parserDefinitions;
+	std::vector<ParserDefinition> parserDefinitions;
 	HFONT m_monoFont;
 	NppData m_nppData;
 	HWND m_HSource;
