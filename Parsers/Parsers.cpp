@@ -64,10 +64,9 @@ const Parser *getCurrentParser(bool update)
 			name = (TCHAR *) malloc(sizeof(TCHAR) * len);
 			SendNpp(NPPM_GETLANGUAGENAME, lang_type, (LPARAM) name);
 
-			MessageBox(NULL, &name[6], NPP_PLUGIN_NAME, MB_OK);
-
 			for(unsigned int i = 0; i < parsers.size(); ++i)
 			{
+				// Use [6] because the name returned is "udl - mylangname"
 				if(parsers[i]->language_name == &name[6])
 				{
 					current = parsers[i];
