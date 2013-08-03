@@ -106,7 +106,7 @@ void configSave()
 	for(unsigned int i = 0; i < parsers.size(); ++i)
 	{
 		const Parser *p = parsers[i];
-		const ParserDefinition *pd = &p->pd;
+		const ParserDefinition *pd = &(p->pd);
 
 		// Wrap everything in quotes to preserve whitespace
 		ws = TEXT("\"") + toWideString(pd->doc_start) + TEXT("\"");
@@ -121,24 +121,29 @@ void configSave()
 		ws = TEXT("\"") + toWideString(pd->command_prefix) + TEXT("\"");
 		WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
 
-		// Encode \r\n as literal "\r\n" in the ini file
-		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->function_format), "\r\n", "\\r\\n")) + TEXT("\"");
-		WritePrivateProfileString(p->lang.c_str(), TEXT("function_format"), ws.c_str(), iniPath);
+		// Write out interal parser attributes
+		if(!p->external)
+		{
+			// Encode \r\n as literal "\r\n" in the ini file
+			ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->function_format), "\r\n", "\\r\\n")) + TEXT("\"");
+			WritePrivateProfileString(p->lang.c_str(), TEXT("function_format"), ws.c_str(), iniPath);
 
-		// Encode \r\n as literal "\r\n" in the ini file
-		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->file_format), "\r\n", "\\r\\n")) + TEXT("\"");
-		WritePrivateProfileString(p->lang.c_str(), TEXT("file_format"), ws.c_str(), iniPath);
+			// Encode \r\n as literal "\r\n" in the ini file
+			ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->file_format), "\r\n", "\\r\\n")) + TEXT("\"");
+			WritePrivateProfileString(p->lang.c_str(), TEXT("file_format"), ws.c_str(), iniPath);
 
-		WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align), iniPath);
+			WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align), iniPath);
+		}
 	}
-
-
 }
 
 void configLoad()
 {
 	TCHAR iniPath[MAX_PATH];
 	TCHAR tbuffer[512]; // "relatively" large
+	TCHAR tbuffer2[512];
+	ParserDefinition pd;
+	TCHAR *current;
 
 	getIniFilePath(iniPath, MAX_PATH);
 
@@ -184,16 +189,34 @@ void configLoad()
 		p->pd.align = (lstrcmp(tbuffer, TEXT("true")) == 0);
 	}
 
+
 	GetPrivateProfileSection(TEXT("External"), tbuffer, 512, iniPath);
-	TCHAR *current = tbuffer;
+	current = tbuffer;
 	while(current[0] != NULL)
 	{
-		//MessageBox(NULL, current, NPP_PLUGIN_NAME, MB_OK);
+		TCHAR *equals = _tcschr(current, TEXT('='));
+
+		// Temporarily remove the '=' that was found
+		*equals = NULL;
+
+		GetPrivateProfileString(current, TEXT("doc_start"), TEXT("!!!"), tbuffer2, 512, iniPath);
+		pd.doc_start = (lstrcmp(tbuffer2, TEXT("!!!")) == 0 ? "/**" : toString(tbuffer2));
+
+		GetPrivateProfileString(current, TEXT("doc_line_"), TEXT("!!!"), tbuffer2, 512, iniPath);
+		pd.doc_line = (lstrcmp(tbuffer2, TEXT("!!!")) == 0 ? " *  " : toString(tbuffer2));
+		
+		GetPrivateProfileString(current, TEXT("doc_end__"), TEXT("!!!"), tbuffer2, 512, iniPath);
+		pd.doc_end = (lstrcmp(tbuffer2, TEXT("!!!")) == 0 ? " */" : toString(tbuffer2));
+		
+		GetPrivateProfileString(current, TEXT("command_prefix"), TEXT("\\"), tbuffer2, 512, iniPath);
+		pd.command_prefix = toString(tbuffer2);
+
+		addNewParser(toString(current), &pd);
+
+		// add back in the equals so we can correctly calculate the length
+		*equals = TEXT('=');
 		current = &current[lstrlen(current) + 1];
 	}
-
-	// Write out the file if it doesn't exist yet
-	//if(!PathFileExists(iniPath)) configSave();
 }
 
 void pluginInit(HANDLE hModule)
@@ -382,8 +405,8 @@ void handleNotification(SCNotification *notifyCode)
 		if((ch == '\r' || ch == '\n') && do_active_commenting) do_newline = true;
 		break;
 	case NPPN_READY:
-		configLoad();
 		InitializeParsers();
+		configLoad();
 		break;
 	case NPPN_SHUTDOWN:
 		configSave();

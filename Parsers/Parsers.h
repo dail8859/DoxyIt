@@ -81,6 +81,8 @@ typedef struct Parser
 		cleanup = c;
 		parse = p;
 	}
+
+	Parser() {}
 } Parser;
 
 extern std::vector<Parser *> parsers;
@@ -101,6 +103,7 @@ DEFINE_PARSER(Null);
 const Parser *getParserByName(std::wstring name);
 const Parser *getCurrentParser(bool update=false);
 const ParserDefinition *getCurrentParserDefinition();
+void addNewParser(std::string name, ParserDefinition *pd);
 
 void InitializeParsers();
 void CleanUpParsers();

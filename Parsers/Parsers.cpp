@@ -55,7 +55,7 @@ const Parser *getCurrentParser(bool update)
 		int lang_type;
 		SendNpp(NPPM_GETCURRENTLANGTYPE, SCI_UNUSED, (LPARAM) &lang_type);
 
-		if(lang_type == L_USER)
+		if(lang_type == L_USER /* || lang_type == L_EXTERNAL */)
 		{
 			TCHAR *name = NULL;
 			int len = 0;
@@ -64,8 +64,17 @@ const Parser *getCurrentParser(bool update)
 			name = (TCHAR *) malloc(sizeof(TCHAR) * len);
 			SendNpp(NPPM_GETLANGUAGENAME, lang_type, (LPARAM) name);
 
-			MessageBox(NULL, name, NPP_PLUGIN_NAME, MB_OK);
 			MessageBox(NULL, &name[6], NPP_PLUGIN_NAME, MB_OK);
+
+			for(unsigned int i = 0; i < parsers.size(); ++i)
+			{
+				if(parsers[i]->language_name == &name[6])
+				{
+					current = parsers[i];
+					free(name);
+					return current;
+				}
+			}
 
 			free(name);
 		}
@@ -95,6 +104,21 @@ const ParserDefinition *getCurrentParserDefinition(void)
 	return (p ? &p->pd : NULL);
 }
 
+void addNewParser(std::string name, ParserDefinition *pd)
+{
+	Parser *p = new Parser();
+
+	p->lang_type = L_USER;
+	p->lang = toWideString(name);
+	p->language_name = toWideString(name);
+	p->external = true;
+	p->pd = *pd;
+	p->initializer = NULL;
+	p->cleanup = NULL;
+	p->parse = NULL;
+
+	parsers.push_back(p);
+}
 
 // Very ugly macro
 #define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) \
@@ -121,7 +145,8 @@ void CleanUpParsers(void)
 {
 	for(unsigned int i = 0; i < parsers.size(); ++i)
 	{
-		parsers[i]->cleanup();
+		if(!parsers[i]->external)
+			parsers[i]->cleanup();
 		delete parsers[i];
 	}
 
@@ -253,6 +278,12 @@ std::string Parse(void)
 	if(!(p = getCurrentParser()))
 	{
 		MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		return std::string("");
+	}
+
+	if(p->external)
+	{
+		MessageBox(NULL, TEXT("Error: Cannot parse User Defined Langauge."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return std::string("");
 	}
 
