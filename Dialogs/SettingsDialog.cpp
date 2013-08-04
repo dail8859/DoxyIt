@@ -39,18 +39,19 @@ INT_PTR CALLBACK inputDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	{
 	case WM_INITDIALOG:
 		buff = (TCHAR *) lParam;
-		Edit_LimitText(GetDlgItem(hwndDlg, IDC_EDIT_LANG), 31);
+		Edit_LimitText(GetDlgItem(hwndDlg, IDC_EDIT_LANG), 30);
 		return true;
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
 		case IDOK:
-			Edit_GetText(GetDlgItem(hwndDlg, IDC_EDIT_LANG), buff, 31);
+			Edit_GetText(GetDlgItem(hwndDlg, IDC_EDIT_LANG), buff, 30);
 			EndDialog(hwndDlg, wParam);
 			return true;
 		default:
 			return false;
 		}
+	case WM_CLOSE:
 	case WM_DESTROY:
 		EndDialog(hwndDlg, wParam);
 		return true;
@@ -82,11 +83,9 @@ void SettingsDialog::initParserDefinitions()
 		parserDefinitions.push_back(parsers[i]->pd);
 }
 
-void SettingsDialog::saveParserDefinition(int index)
+void SettingsDialog::storeParserDefinition(int index)
 {
 	TCHAR text[256]; // Edit_LimitText is used to limit to 255 chars
-
-	// Save the text from the edit controls for the previous selection
 	ParserDefinition *prev_pd = &parserDefinitions[index];
 
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_START), text, 256);
@@ -117,7 +116,7 @@ void SettingsDialog::saveParserDefinition(int index)
 
 		free(dtext);
 
-		prev_pd->align = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED ? true : false);
+		prev_pd->align = (Button_GetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN)) == BST_CHECKED);
 	}
 }
 
@@ -187,6 +186,55 @@ void SettingsDialog::removeParserDefinition()
 	updatePreview();
 }
 
+void SettingsDialog::addParserDefinition()
+{
+	TCHAR buff[32] = {0};
+	ParserDefinition pd;
+	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
+				
+	buff[0] = 1; // set the first char to 1, if the dialog was canceled, it will still be 1
+	DialogBoxParam((HINSTANCE) _hInst, MAKEINTRESOURCE(IDD_NEWLANG), _hSelf, inputDlgProc, (LPARAM) buff);
+				
+	if(buff[0] == 1) return; // user canceled the dialog
+
+	// make sure len > 0 && no white space
+	if(buff[0] == NULL || _tcschr(buff, TEXT(' ')))
+	{
+		MessageBox(NULL, TEXT("Error: New language name cannot be blank or contain whitespace."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		return;
+	}
+
+	// make sure not already in list (case insensitive!)
+	for(unsigned int i = 0; i < parsers.size(); ++i)
+	{
+		if(_wcsicmp(parsers[i]->lang.c_str(), buff) == 0)
+		{
+			MessageBox(NULL, TEXT("Error: Naming conflict with another language."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+			return;
+		}
+	}
+
+	// Add some default values
+	pd.doc_start = "/**";
+	pd.doc_line  = " *  ";
+	pd.doc_end   = " */";
+	pd.command_prefix = "\\";
+
+	addNewParser(toString(buff), &pd);
+	parserDefinitions.push_back(parsers.back()->pd);
+
+	// Append the '*' to it; dailog ensured that 2 characters are available at the end of the string
+	buff[_tcslen(buff) + 1] = NULL;
+	buff[_tcslen(buff)] = TEXT('*');
+	ComboBox_SetCurSel(cmb, ComboBox_AddString(cmb, buff));
+
+	// Update the window
+	storeParserDefinition(m_previousSelection);
+	loadParserDefinition();
+	updatePreview();
+	m_previousSelection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+}
+
 bool SettingsDialog::validateText(std::string text, int idc)
 {
 	if(text.length() != 0 && !isWhiteSpace(text))
@@ -210,8 +258,9 @@ bool SettingsDialog::validateSettings()
 
 		if(!ret)
 		{
-			ComboBox_SelectString(GetDlgItem(_hSelf, IDC_CMB_LANG), -1, parsers[i]->language_name.c_str());
+			ComboBox_SetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG), i);
 			loadParserDefinition();
+			updatePreview();
 			return false;
 		}
 	}
@@ -269,7 +318,7 @@ void SettingsDialog::swapFormat()
 
 	// Get the text length, dynamically allocate it
 	len = Edit_GetTextLength(GetDlgItem(_hSelf, IDC_EDIT_FORMAT)) + 1;
-	text = new TCHAR[len];
+	text = (TCHAR *) malloc(sizeof(TCHAR) * len);
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), text, len);
 
 	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED && last_rad == IDC_RAD_FILE)
@@ -285,7 +334,7 @@ void SettingsDialog::swapFormat()
 		last_rad = IDC_RAD_FILE;
 	}
 
-	delete[] text;
+	free(text);
 }
 
 BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
@@ -303,7 +352,7 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			{
 				if(parsers[i]->external)
 				{
-					std::basic_string<TCHAR> name = parsers[i]->language_name + TEXT("*");
+					std::wstring name = parsers[i]->language_name + TEXT("*");
 					ComboBox_AddString(cmb, name.c_str());
 				}
 				else
@@ -341,7 +390,7 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 		switch(HIWORD(wParam))
 		{
 		case CBN_SELCHANGE:
-			saveParserDefinition(m_previousSelection);
+			storeParserDefinition(m_previousSelection);
 			loadParserDefinition();
 			updatePreview();
 			m_previousSelection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
@@ -351,7 +400,7 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			{
 			case IDOK:
 				m_previousSelection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
-				saveParserDefinition(m_previousSelection);
+				storeParserDefinition(m_previousSelection);
 				if(validateSettings())
 				{
 					saveSettings();
@@ -367,45 +416,18 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 				display(false);
 				return true;
 			case IDC_BTN_ADD:
-			{
-				TCHAR buff[32];
-				ParserDefinition pd;
-				HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
-				int index;
-
-				DialogBoxParam((HINSTANCE) _hInst, MAKEINTRESOURCE(IDD_NEWLANG), _hSelf, inputDlgProc, (LPARAM) buff);
-				MessageBox(NULL, buff, NPP_PLUGIN_NAME, MB_OK);
-
-				// do data validation
-				pd.doc_start = "/**";
-				pd.doc_line  = " *  ";
-				pd.doc_end   = " */";
-				pd.command_prefix = "\\";
-
-				addNewParser(toString(buff), &pd);
-				parserDefinitions.push_back(parsers.back()->pd);
-
-				std::basic_string<TCHAR> name = parsers.back()->language_name + TEXT("*");
-				index = ComboBox_AddString(cmb, name.c_str());
-				ComboBox_SetCurSel(cmb, index);
-
-				saveParserDefinition(m_previousSelection);
-				loadParserDefinition();
-				updatePreview();
-				m_previousSelection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
-
+				addParserDefinition();
 				return true;
-			}
 			case IDC_BTN_REMOVE:
 			{
 				int index = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
-				std::basic_string<TCHAR> message = TEXT("Do you want to remove ") + parsers[index]->language_name + TEXT("?");
+				std::wstring message = TEXT("Do you want to remove ") + parsers[index]->language_name + TEXT("?");
 				if(MessageBox(_hSelf, message.c_str(), NPP_PLUGIN_NAME, MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
 					removeParserDefinition();
 				return true;
 			}
 			case IDC_CHB_ALIGN:
-				saveParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
+				storeParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
 				updatePreview();
 				return true;
 			case IDC_RAD_FUNCTION:
@@ -418,7 +440,8 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 				return true;
 			}
 		case EN_CHANGE:
-			saveParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
+			//storeParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
+			storeParserDefinition(m_previousSelection);
 			updatePreview();
 			return true;
 		case EN_MAXTEXT:
