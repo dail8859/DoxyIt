@@ -175,24 +175,24 @@ void configLoad()
 		// and if we find that the value wasn't found and we have "!!!" then use the default value in the
 		// parser, else, use what we pulled from the file.
 		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, 512, iniPath);
-		p->pd.doc_start = (lstrcmp(tbuffer, TEXT("!!!")) == 0 ? p->pd_default.doc_start : toString(tbuffer));
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.doc_start = toString(tbuffer);
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), TEXT("!!!"), tbuffer, 512, iniPath);
-		p->pd.doc_line = (lstrcmp(tbuffer, TEXT("!!!")) == 0 ? p->pd_default.doc_line : toString(tbuffer));
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.doc_line = toString(tbuffer);
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), TEXT("!!!"), tbuffer, 512, iniPath);
-		p->pd.doc_end = (lstrcmp(tbuffer, TEXT("!!!")) == 0 ? p->pd_default.doc_end : toString(tbuffer));
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.doc_end = toString(tbuffer);
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), TEXT("!!!"), tbuffer, 512, iniPath);
-		p->pd.command_prefix = (lstrcmp(tbuffer, TEXT("!!!")) == 0 ? p->pd_default.command_prefix : toString(tbuffer));
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.command_prefix = toString(tbuffer);
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("function_format"), TEXT("!!!"), tbuffer, 512, iniPath);
-		p->pd.function_format = (lstrcmp(tbuffer, TEXT("!!!")) == 0 ? p->pd_default.function_format : stringReplace(toString(tbuffer), "\\r\\n", "\r\n"));
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.function_format = stringReplace(toString(tbuffer), "\\r\\n", "\r\n");
 
 		GetPrivateProfileString(p->lang.c_str(), TEXT("file_format"), TEXT("!!!"), tbuffer, 512, iniPath);
-		p->pd.file_format = (lstrcmp(tbuffer, TEXT("!!!")) == 0 ? p->pd_default.file_format : stringReplace(toString(tbuffer), "\\r\\n", "\r\n"));
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.file_format = stringReplace(toString(tbuffer), "\\r\\n", "\r\n");
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd_default.align), tbuffer, 512, iniPath);
+		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd.align), tbuffer, 512, iniPath);
 		p->pd.align = (lstrcmp(tbuffer, TEXT("true")) == 0);
 	}
 

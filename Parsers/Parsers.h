@@ -52,7 +52,6 @@ typedef struct Parser
 	bool external;						// whether this is an internal or external(UDL||external lexer)
 
 	ParserDefinition pd;
-	ParserDefinition pd_default;		// Stores default values
 
 	// Registered functions
 	bool (*initializer)(void);
@@ -69,13 +68,13 @@ typedef struct Parser
 		language_name = ln;
 		example = e;
 		external = false;
-		pd_default.doc_start = ds;
-		pd_default.doc_line = dl;
-		pd_default.doc_end = de;
-		pd_default.command_prefix = cp;
-		pd_default.function_format = default_function_format;
-		pd_default.file_format = default_file_format;
-		pd_default.align = false;
+		pd.doc_start = ds;
+		pd.doc_line = dl;
+		pd.doc_end = de;
+		pd.command_prefix = cp;
+		pd.function_format = default_function_format;
+		pd.file_format = default_file_format;
+		pd.align = false;
 		initializer = i;
 		cleanup = c;
 		parse = p;

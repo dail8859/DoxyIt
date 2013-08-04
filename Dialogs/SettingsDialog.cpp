@@ -34,6 +34,7 @@ $| - Marks the alignment position. This is only valid for lines containing $PARA
 INT_PTR CALLBACK inputDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static TCHAR *buff;
+
 	switch(uMsg)
 	{
 	case WM_INITDIALOG:
@@ -194,6 +195,7 @@ bool SettingsDialog::validateText(std::string text, int idc)
 	SetFocus(GetDlgItem(_hSelf, idc));
 	return false;
 }
+
 bool SettingsDialog::validateSettings()
 {
 	for(unsigned int i = 0; i < parsers.size(); ++i)
