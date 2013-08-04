@@ -98,6 +98,9 @@ void configSave()
 
 	getIniFilePath(iniPath, MAX_PATH);
 
+	// Completely delete the file
+	DeleteFile(iniPath);
+
 	// [DoxyIt]
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("active_commenting"), BOOLTOSTR(do_active_commenting), iniPath);
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version"), VERSION_LINEAR_TEXT, iniPath);
@@ -133,6 +136,10 @@ void configSave()
 			WritePrivateProfileString(p->lang.c_str(), TEXT("file_format"), ws.c_str(), iniPath);
 
 			WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align), iniPath);
+		}
+		else // add it to the list of external settings
+		{
+			WritePrivateProfileString(TEXT("External"), p->language_name.c_str(), TEXT(""), iniPath);
 		}
 	}
 }

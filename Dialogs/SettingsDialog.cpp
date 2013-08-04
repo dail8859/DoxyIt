@@ -30,6 +30,34 @@ $PARAM - Expands to a single function/method parameter. Any line containing this
 $@ - Expands to the prefix character for Doxygen commands.\r\n\
 $| - Marks the alignment position. This is only valid for lines containing $PARAM.\r\n");
 
+
+INT_PTR CALLBACK inputDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	static TCHAR *buff;
+	switch(uMsg)
+	{
+	case WM_INITDIALOG:
+		buff = (TCHAR *) lParam;
+		Edit_LimitText(GetDlgItem(hwndDlg, IDC_EDIT_LANG), 31);
+		return true;
+	case WM_COMMAND:
+		switch(LOWORD(wParam))
+		{
+		case IDOK:
+			Edit_GetText(GetDlgItem(hwndDlg, IDC_EDIT_LANG), buff, 31);
+			EndDialog(hwndDlg, wParam);
+			return true;
+		default:
+			return false;
+		}
+	case WM_DESTROY:
+		EndDialog(hwndDlg, wParam);
+		return true;
+	}
+
+	return false;
+}
+
 void SettingsDialog::init(HINSTANCE hInst, NppData nppData)
 {
 	m_nppData = nppData;
@@ -116,6 +144,7 @@ void SettingsDialog::loadParserDefinition()
 		EnableWindow(GetDlgItem(_hSelf, IDC_RAD_FUNCTION), TRUE);
 		EnableWindow(GetDlgItem(_hSelf, IDC_RAD_FILE), TRUE);
 		EnableWindow(GetDlgItem(_hSelf, IDC_CHB_ALIGN), TRUE);
+		EnableWindow(GetDlgItem(_hSelf, IDC_BTN_REMOVE), FALSE);
 		m_updating = true;
 
 		Button_SetCheck(GetDlgItem(_hSelf, IDC_CHB_ALIGN), current->align); // Cannot be last!  Doesn't update preview
@@ -135,10 +164,26 @@ void SettingsDialog::loadParserDefinition()
 		EnableWindow(GetDlgItem(_hSelf, IDC_RAD_FUNCTION), FALSE);
 		EnableWindow(GetDlgItem(_hSelf, IDC_RAD_FILE), FALSE);
 		EnableWindow(GetDlgItem(_hSelf, IDC_CHB_ALIGN), FALSE);
+		EnableWindow(GetDlgItem(_hSelf, IDC_BTN_REMOVE), TRUE);
 		m_updating = true; // just to be safe incase we add anything later
 	}
 
 	m_updating = false;
+}
+
+void SettingsDialog::removeParserDefinition()
+{
+	int index = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+
+	parserDefinitions.erase(parserDefinitions.begin() + index);
+	parsers.erase(parsers.begin() + index);
+
+	ComboBox_DeleteString(GetDlgItem(_hSelf, IDC_CMB_LANG), index);
+	ComboBox_SetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG), index - 1);
+	m_previousSelection = index - 1;
+
+	loadParserDefinition();
+	updatePreview();
 }
 
 bool SettingsDialog::validateText(std::string text, int idc)
@@ -274,6 +319,9 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREFIX), m_monoFont, false);
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), m_monoFont, false);
 			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), m_monoFont, false);
+			SetWindowFont(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), m_monoFont, false);
+			SetWindowFont(GetDlgItem(_hSelf, IDC_BTN_ADD), m_monoFont, false);
+			SetWindowFont(GetDlgItem(_hSelf, IDC_BTN_REMOVE), m_monoFont, false);
 
 			// Limit the input boxes
 			Edit_LimitText(GetDlgItem(_hSelf, IDC_EDIT_START), 255);
@@ -316,6 +364,44 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			case IDCANCEL:
 				display(false);
 				return true;
+			case IDC_BTN_ADD:
+			{
+				TCHAR buff[32];
+				ParserDefinition pd;
+				HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
+				int index;
+
+				DialogBoxParam((HINSTANCE) _hInst, MAKEINTRESOURCE(IDD_NEWLANG), _hSelf, inputDlgProc, (LPARAM) buff);
+				MessageBox(NULL, buff, NPP_PLUGIN_NAME, MB_OK);
+
+				// do data validation
+				pd.doc_start = "/**";
+				pd.doc_line  = " *  ";
+				pd.doc_end   = " */";
+				pd.command_prefix = "\\";
+
+				addNewParser(toString(buff), &pd);
+				parserDefinitions.push_back(parsers.back()->pd);
+
+				std::basic_string<TCHAR> name = parsers.back()->language_name + TEXT("*");
+				index = ComboBox_AddString(cmb, name.c_str());
+				ComboBox_SetCurSel(cmb, index);
+
+				saveParserDefinition(m_previousSelection);
+				loadParserDefinition();
+				updatePreview();
+				m_previousSelection = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+
+				return true;
+			}
+			case IDC_BTN_REMOVE:
+			{
+				int index = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
+				std::basic_string<TCHAR> message = TEXT("Do you want to remove ") + parsers[index]->language_name + TEXT("?");
+				if(MessageBox(_hSelf, message.c_str(), NPP_PLUGIN_NAME, MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
+					removeParserDefinition();
+				return true;
+			}
 			case IDC_CHB_ALIGN:
 				saveParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
 				updatePreview();

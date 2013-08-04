@@ -49,6 +49,7 @@ private:
 	void initParserDefinitions();
 	void saveParserDefinition(int index);
 	void loadParserDefinition();
+	void removeParserDefinition();
 	bool validateText(std::string text, int idc);
 	bool validateSettings();
 	void saveSettings();
