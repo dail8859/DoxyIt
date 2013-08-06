@@ -286,7 +286,7 @@ void doxyItFile()
 	pd = getCurrentParserDefinition();
 	if(!pd)
 	{
-		::MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return;
 	}
 
@@ -414,6 +414,7 @@ void handleNotification(SCNotification *notifyCode)
 	case NPPN_READY:
 		InitializeParsers();
 		configLoad();
+		getCurrentParser(true);
 		break;
 	case NPPN_SHUTDOWN:
 		configSave();

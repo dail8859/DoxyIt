@@ -33,27 +33,31 @@ $| - Marks the alignment position. This is only valid for lines containing $PARA
 
 INT_PTR CALLBACK inputDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	static TCHAR *buff;
-
 	switch(uMsg)
 	{
 	case WM_INITDIALOG:
-		buff = (TCHAR *) lParam;
+		SetFocus(GetDlgItem(hwndDlg, IDC_EDIT_LANG));
 		Edit_LimitText(GetDlgItem(hwndDlg, IDC_EDIT_LANG), 30);
 		return true;
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
-		case IDOK:
-			Edit_GetText(GetDlgItem(hwndDlg, IDC_EDIT_LANG), buff, 30);
-			EndDialog(hwndDlg, wParam);
-			return true;
-		default:
-			return false;
+			case IDOK:
+			{
+				TCHAR *text;
+				int len = Edit_GetTextLength(GetDlgItem(hwndDlg, IDC_EDIT_LANG));
+
+				text = new TCHAR[len + 1];
+				Edit_GetText(GetDlgItem(hwndDlg, IDC_EDIT_LANG), text, len + 1);
+				EndDialog(hwndDlg, (INT_PTR) text);
+				return true;
+			}
+			default:
+				return false;
 		}
 	case WM_CLOSE:
 	case WM_DESTROY:
-		EndDialog(hwndDlg, wParam);
+		EndDialog(hwndDlg, NULL);
 		return true;
 	}
 
@@ -188,17 +192,18 @@ void SettingsDialog::removeParserDefinition()
 
 void SettingsDialog::addParserDefinition()
 {
-	TCHAR buff[32] = {0};
+	TCHAR *text;
 	ParserDefinition pd;
 	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 				
-	buff[0] = 1; // set the first char to 1, if the dialog was canceled, it will still be 1
-	DialogBoxParam((HINSTANCE) _hInst, MAKEINTRESOURCE(IDD_NEWLANG), _hSelf, inputDlgProc, (LPARAM) buff);
-				
-	if(buff[0] == 1) return; // user canceled the dialog
+	text = (TCHAR *) DialogBox((HINSTANCE) _hInst, MAKEINTRESOURCE(IDD_NEWLANG), _hSelf, inputDlgProc);
+	if(text == NULL) return; // user canceled the dialog
+
+	std::wstring name(text);
+	delete[] text;
 
 	// make sure len > 0 && no white space
-	if(buff[0] == NULL || _tcschr(buff, TEXT(' ')))
+	if(name.length() == 0 || name.find(TEXT(' ')) != std::string::npos)
 	{
 		MessageBox(NULL, TEXT("Error: New language name cannot be blank or contain whitespace."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return;
@@ -207,7 +212,7 @@ void SettingsDialog::addParserDefinition()
 	// make sure not already in list (case insensitive!)
 	for(unsigned int i = 0; i < parsers.size(); ++i)
 	{
-		if(_wcsicmp(parsers[i]->lang.c_str(), buff) == 0)
+		if(_wcsicmp(parsers[i]->lang.c_str(), name.c_str()) == 0)
 		{
 			MessageBox(NULL, TEXT("Error: Naming conflict with another language."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 			return;
@@ -220,13 +225,11 @@ void SettingsDialog::addParserDefinition()
 	pd.doc_end   = " */";
 	pd.command_prefix = "\\";
 
-	addNewParser(toString(buff), &pd);
+	addNewParser(toString(name.c_str()), &pd);
 	parserDefinitions.push_back(parsers.back()->pd);
 
-	// Append the '*' to it; dailog ensured that 2 characters are available at the end of the string
-	buff[_tcslen(buff) + 1] = NULL;
-	buff[_tcslen(buff)] = TEXT('*');
-	ComboBox_SetCurSel(cmb, ComboBox_AddString(cmb, buff));
+	name += TEXT('*');
+	ComboBox_SetCurSel(cmb, ComboBox_AddString(cmb, name.c_str()));
 
 	// Update the window
 	storeParserDefinition(m_previousSelection);
@@ -440,7 +443,6 @@ BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 				return true;
 			}
 		case EN_CHANGE:
-			//storeParserDefinition(ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG)));
 			storeParserDefinition(m_previousSelection);
 			updatePreview();
 			return true;

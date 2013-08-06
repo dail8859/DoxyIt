@@ -36,7 +36,7 @@ INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		switch(LOWORD(wParam))
 		{
 		case IDOK:
-			EndDialog(hwndDlg, wParam);
+			DestroyWindow(hwndDlg);
 			return true;
 		case IDC_GITHUB:
 			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt"), NULL, NULL, SW_SHOWNORMAL);
@@ -46,7 +46,7 @@ INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			return true;
 		}
 	case WM_DESTROY:
-		EndDialog(hwndDlg, wParam);
+		DestroyWindow(hwndDlg);
 		return true;
 	}
 	return false;
