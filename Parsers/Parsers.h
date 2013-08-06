@@ -26,6 +26,7 @@
 #include <vector>
 
 extern const char *default_function_format;
+extern const char *default_internal_function_format;
 extern const char *default_file_format;
 
 typedef std::map<std::string, std::vector<std::string>> Keywords;
@@ -101,13 +102,13 @@ DEFINE_PARSER(Null);
 const Parser *getParserByName(std::wstring name);
 const Parser *getCurrentParser(bool update=false);
 const ParserDefinition *getCurrentParserDefinition();
-void addNewParser(std::string name, ParserDefinition *pd);
+void addNewParser(std::string name, ParserDefinition *pd=NULL);
 
 void InitializeParsers();
 void CleanUpParsers();
-std::string Parse();
 
 std::string FormatFunctionBlock(const Parser *p,const ParserDefinition *pd, const char *text);
 std::string FormatFileBlock(const ParserDefinition *pd);
+std::string Parse();
 
 #endif

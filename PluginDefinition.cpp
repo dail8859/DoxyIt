@@ -54,12 +54,12 @@ FuncItem funcItem[nbFunc] = {
 };
 
 
-LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
+inline LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	return pSciMsg(pSciWndData, Msg, wParam, lParam);
 }
 
-LRESULT SendNpp(UINT Msg, WPARAM wParam, LPARAM lParam)
+inline LRESULT SendNpp(UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	return SendMessage(nppData._nppHandle, Msg, wParam, lParam);
 }
@@ -124,17 +124,17 @@ void configSave()
 		ws = TEXT("\"") + toWideString(pd->command_prefix) + TEXT("\"");
 		WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
 
+		// Encode \r\n as literal "\r\n" in the ini file
+		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->file_format), "\r\n", "\\r\\n")) + TEXT("\"");
+		WritePrivateProfileString(p->lang.c_str(), TEXT("file_format"), ws.c_str(), iniPath);
+
+		// Encode \r\n as literal "\r\n" in the ini file
+		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->function_format), "\r\n", "\\r\\n")) + TEXT("\"");
+		WritePrivateProfileString(p->lang.c_str(), TEXT("function_format"), ws.c_str(), iniPath);
+
 		// Write out interal parser attributes
 		if(!p->external)
 		{
-			// Encode \r\n as literal "\r\n" in the ini file
-			ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->function_format), "\r\n", "\\r\\n")) + TEXT("\"");
-			WritePrivateProfileString(p->lang.c_str(), TEXT("function_format"), ws.c_str(), iniPath);
-
-			// Encode \r\n as literal "\r\n" in the ini file
-			ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->file_format), "\r\n", "\\r\\n")) + TEXT("\"");
-			WritePrivateProfileString(p->lang.c_str(), TEXT("file_format"), ws.c_str(), iniPath);
-
 			WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align), iniPath);
 		}
 		else // add it to the list of external settings
@@ -206,22 +206,31 @@ void configLoad()
 		// Temporarily remove the '=' that was found
 		*equals = NULL;
 
-		GetPrivateProfileString(current, TEXT("doc_start"), TEXT("!!!"), tbuffer2, 512, iniPath);
-		pd.doc_start = (lstrcmp(tbuffer2, TEXT("!!!")) == 0 ? "/**" : toString(tbuffer2));
+		GetPrivateProfileString(current, TEXT("doc_start"), TEXT("/**"), tbuffer2, 512, iniPath);
+		pd.doc_start = toString(tbuffer2);
 
-		GetPrivateProfileString(current, TEXT("doc_line_"), TEXT("!!!"), tbuffer2, 512, iniPath);
-		pd.doc_line = (lstrcmp(tbuffer2, TEXT("!!!")) == 0 ? " *  " : toString(tbuffer2));
-		
-		GetPrivateProfileString(current, TEXT("doc_end__"), TEXT("!!!"), tbuffer2, 512, iniPath);
-		pd.doc_end = (lstrcmp(tbuffer2, TEXT("!!!")) == 0 ? " */" : toString(tbuffer2));
-		
+		GetPrivateProfileString(current, TEXT("doc_line_"), TEXT(" *  "), tbuffer2, 512, iniPath);
+		pd.doc_line = toString(tbuffer2);
+
+		GetPrivateProfileString(current, TEXT("doc_end__"), TEXT(" */"), tbuffer2, 512, iniPath);
+		pd.doc_end = toString(tbuffer2);
+
 		GetPrivateProfileString(current, TEXT("command_prefix"), TEXT("\\"), tbuffer2, 512, iniPath);
 		pd.command_prefix = toString(tbuffer2);
+
+		GetPrivateProfileString(current, TEXT("function_format"), TEXT("!!!"), tbuffer2, 512, iniPath);
+		if(lstrcmp(tbuffer2, TEXT("!!!")) != 0) pd.function_format = stringReplace(toString(tbuffer2), "\\r\\n", "\r\n");
+		else pd.function_format = default_internal_function_format;
+
+		GetPrivateProfileString(current, TEXT("file_format"), TEXT("!!!"), tbuffer2, 512, iniPath);
+		if(lstrcmp(tbuffer2, TEXT("!!!")) != 0) pd.file_format = stringReplace(toString(tbuffer2), "\\r\\n", "\r\n");
+		else pd.file_format = default_file_format;
 
 		addNewParser(toString(current), &pd);
 
 		// add back in the equals so we can correctly calculate the length
 		*equals = TEXT('=');
+
 		current = &current[lstrlen(current) + 1];
 	}
 }
@@ -266,7 +275,7 @@ void doxyItFunction()
 	// Get the whitespace of the next line so we can insert it in front of 
 	// all the lines of the document block that is going to be inserted
 	indent = getLineIndentStr(startLine + 1);
-	
+
 	SendScintilla(SCI_BEGINUNDOACTION);
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
 	endLine = SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS)); // get the end of the document block

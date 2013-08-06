@@ -20,20 +20,32 @@
 #include <vector>
 
 const char *default_function_format = 
-"\r\n"
-"$@brief Brief\r\n"
-"\r\n"
-"$@param [in] $PARAM $|Parameter_Description\r\n"
-"$@return Return_Description\r\n"
-"\r\n"
-"$@details Details\r\n"
-;
+	"\r\n"
+	"$@brief Brief\r\n"
+	"\r\n"
+	"$@param [in] $PARAM $|Parameter_Description\r\n"
+	"$@return Return_Description\r\n"
+	"\r\n"
+	"$@details Details\r\n"
+	;
+
+const char *default_internal_function_format = 
+	"\r\n"
+	"$@brief Brief\r\n"
+	"\r\n"
+	"$@param [in] theParam Parameter_Description\r\n"
+	"$@return Return_Description\r\n"
+	"\r\n"
+	"$@details Details\r\n"
+	;
 
 const char *default_file_format = 
-"\r\n"
-"$@file $FILENAME\r\n"
-"$@brief Brief\r\n"
-;
+	"\r\n"
+	"$@file $FILENAME\r\n"
+	"$@brief Brief\r\n"
+	;
+
+
 
 const Parser *getParserByName(std::wstring name)
 {
@@ -111,10 +123,25 @@ void addNewParser(std::string name, ParserDefinition *pd)
 	p->lang = toWideString(name);
 	p->language_name = toWideString(name);
 	p->external = true;
-	p->pd = *pd;
 	p->initializer = NULL;
 	p->cleanup = NULL;
 	p->parse = NULL;
+
+	if(pd == NULL)
+	{
+		// Fill in default values
+		p->pd.doc_start = "/**";
+		p->pd.doc_line  = " *  ";
+		p->pd.doc_end   = " */";
+		p->pd.command_prefix = "\\";
+		p->pd.file_format = default_file_format;
+		p->pd.function_format = default_internal_function_format;
+		p->pd.align = false; // not used
+	}
+	else
+	{
+		p->pd = *pd;
+	}
 
 	parsers.push_back(p);
 }
@@ -134,7 +161,7 @@ void InitializeParsers(void)
 	parsers.push_back(REGISTER_PARSER(PHP,    C,      "PHP",        "/**",  " *  ", " */",  "@",  "function myFunction($abc, $defg)"));
 	parsers.push_back(REGISTER_PARSER(JS,     C,      "JavaScript", "/**",  " *  ", " */",  "@",  "function myFunction(abc, defg)"));
 	parsers.push_back(REGISTER_PARSER(CS,     C,      "C#",         "/// ", "/// ", "/// ", "\\", "public int Method(ref int abc, int defg)"));
-	
+
 	for(unsigned int i = 0; i < parsers.size(); ++i)
 		if(parsers[i]->initializer() == false)
 			MessageBox(NULL, TEXT("DoxyIt initialization failed"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
@@ -183,9 +210,12 @@ std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 	// Replace keywords
 	stringReplace(format_copy, "$@", pd->command_prefix);
 	stringReplace(format_copy, "$FILENAME", keywords["$FILENAME"][0]);
+	
 	// $FUNCTION may not exist
 	if(keywords.find("$FUNCTION") != keywords.end())
 		stringReplace(format_copy, "$FUNCTION", keywords["$FUNCTION"][0]);
+	else
+		stringReplace(format_copy, "$FUNCTION", "");
 
 	lines = splitLines(format_copy, "\r\n");
 
@@ -202,7 +232,7 @@ std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 				stringReplace(line, "$PARAM", params[j]);
 				formatted_lines.push_back(line);
 			}
-			
+
 			// If the align flag is set, align the lines, else remove all "$|" flags
 			if(pd->align)
 				alignLines(formatted_lines);
@@ -257,12 +287,16 @@ std::string FormatFileBlock(const ParserDefinition *pd)
 
 std::string FormatFunctionBlock(const Parser *p, const ParserDefinition *pd, const char *text)
 {
-	Keywords kw = p->parse(pd, text);
-	
-	if(kw.size() == 0) return std::string("");
-	
+	Keywords kw;
+
+	if(!p->external)
+	{
+		kw = p->parse(pd, text);
+		if(kw.size() == 0) return std::string("");
+	}
+
 	FillExtraKeywords(kw);
-	
+
 	return FormatBlock(pd, kw, pd->function_format);
 }
 
@@ -280,11 +314,9 @@ std::string Parse(void)
 		return std::string("");
 	}
 
+	// External parsers are simple enough since they don't need any text to parse
 	if(p->external)
-	{
-		MessageBox(NULL, TEXT("Error: Cannot parse User Defined Langauge."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return std::string("");
-	}
+		return FormatFunctionBlock(p, &p->pd, NULL); 
 
 	// Get the text until a closing parenthesis. Find '(' first
 	if((found = findNext("(")) == -1)
