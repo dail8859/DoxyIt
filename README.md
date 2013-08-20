@@ -11,7 +11,7 @@ Currently there is support for:
 - PHP
 - JavaScript
 - C#
-- User Defined Languages (active commenting only)
+- User Defined Languages
 
 **Note:** DoxyIt uses very simplistic parsing mechanisms and does not enforce valid language syntax, meaning it can easily be fooled. Thus, it is up to the user to ensure the function/method is syntactically valid when attempting to generate Doxygen function commenting as described below.
 
@@ -31,7 +31,7 @@ Placing the cursor on the line directly above the function definition and pressi
  */
 int function(const char *ptr, int index)
 ```
-**Note:** Function commenting is not currently supported for User Defined Languages.
+**Note:** Function commenting for User Defined Languages inserts a comment block and does not parse any text.
 
 ### Doxygen File Commenting
 Using the menu command *Plugins > DoxyIt > DoxyIt - File* will insert a Doxygen comment block for the file at the current cursor position. For example:
@@ -41,7 +41,6 @@ Using the menu command *Plugins > DoxyIt > DoxyIt - File* will insert a Doxygen 
  *  \brief Brief
  */
 ```
-**Note:** File commenting is not currently supported for User Defined Languages.
 
 ### Active Commenting
 Even if Doxygen commands aren't desired, you can still take advantage of the active commenting feature. This allows document blocks to be created and modified. For example, (where the '|' character represents the cursor) typing:
@@ -85,21 +84,18 @@ The format string is used to customize the Doxygen Function Commenting block gen
 - $@ - Expands to the prefix character for Doxygen commands.
 - $| - Marks the alignment position. This flag is only valid for lines containing $PARAM.
 
+Not all keywords are valid for User Defined Languages. 
+
 ### UDL Support
-Custom UDLs can be added by pressing the `+` button next to the list of supported languages. The name entered for the UDL must match the name of the desired UDL. Currently only active commenting is supported for UDLs. Pressing the `-` button will remove the selected UDL. 
+Custom UDLs can be added by pressing the `+` button next to the list of supported languages. The name entered for the UDL must match the name of the desired UDL. Pressing the `-` button will remove the selected UDL. Function commenting is partially supported for UDLs. It will insert a comment block at the current location but will not attempt to parse any text.
 
 ##Todo
 - Line wrapping inside comment blocks.
 - Autocomplete for Doxygen commands.
 - Support for other languages
     - ~~UDLs~~
-	- External Lexers
-	- Built in languages
-- Configuration of:
-    - ~~Comment block contents~~
-    - ~~Strings for comment start, line, and end~~
-    - ~~Per language settings~~
-    - ~~Doxygen command prefixes (i.e. '\' or '@')~~
+    - External Lexers
+    - Built in languages
 
 ## Development
 The code has been developed using MSVC 2010 Express. Building the "Unicode Release" will generate the DLL which can be used by Notepad++. For convenience, MSVC copies the built DLL into the Notepad++ plugin directory. 
