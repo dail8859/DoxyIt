@@ -69,11 +69,11 @@ const Parser *getCurrentParser(bool update)
 
 		if(lang_type == L_USER /* || lang_type == L_EXTERNAL */)
 		{
-			TCHAR *name = NULL;
+			wchar_t *name = NULL;
 			int len = 0;
 
 			len = SendNpp(NPPM_GETLANGUAGENAME, lang_type, NULL) + 1;
-			name = (TCHAR *) malloc(sizeof(TCHAR) * len);
+			name = (wchar_t *) malloc(sizeof(wchar_t) * len);
 			SendNpp(NPPM_GETLANGUAGENAME, lang_type, (LPARAM) name);
 
 			for(unsigned int i = 0; i < parsers.size(); ++i)
@@ -268,7 +268,7 @@ std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 void FillExtraKeywords(Keywords &kw)
 {
 	std::vector<std::string> filename;
-	TCHAR fileName[MAX_PATH];
+	wchar_t fileName[MAX_PATH];
 
 	// Insert the current file name into the map
 	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);

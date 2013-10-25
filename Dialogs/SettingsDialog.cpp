@@ -21,8 +21,8 @@
 #include "PluginDefinition.h"
 #include "Hyperlinks.h"
 
-const TCHAR *msg = TEXT("An option is blank (or all whitespace). If this is desired, it is recommended that you disable Active Commenting! Continue anyways?");
-const TCHAR *help = TEXT("\
+const wchar_t *msg = TEXT("An option is blank (or all whitespace). If this is desired, it is recommended that you disable Active Commenting! Continue anyways?");
+const wchar_t *help = TEXT("\
 Format Keywords:\r\n\
 $FILENAME - The current file name.\r\n\
 $FUNCTION - The name of the function/method.\r\n\
@@ -44,10 +44,10 @@ INT_PTR CALLBACK inputDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 			case IDOK:
 			{
-				TCHAR *text;
+				wchar_t *text;
 				int len = Edit_GetTextLength(GetDlgItem(hwndDlg, IDC_EDIT_LANG));
 
-				text = new TCHAR[len + 1];
+				text = new wchar_t[len + 1];
 				Edit_GetText(GetDlgItem(hwndDlg, IDC_EDIT_LANG), text, len + 1);
 				EndDialog(hwndDlg, (INT_PTR) text);
 				return true;
@@ -89,9 +89,9 @@ void SettingsDialog::initParserDefinitions()
 
 void SettingsDialog::storeParserDefinition(int index)
 {
-	TCHAR *dtext;
+	wchar_t *dtext;
+	wchar_t text[256]; // Edit_LimitText is used to limit to 255 chars
 	int len;
-	TCHAR text[256]; // Edit_LimitText is used to limit to 255 chars
 
 	ParserDefinition *prev_pd = &parserDefinitions[index];
 
@@ -108,7 +108,7 @@ void SettingsDialog::storeParserDefinition(int index)
 	prev_pd->command_prefix = toString(text);
 
 	len = Edit_GetTextLength(GetDlgItem(_hSelf, IDC_EDIT_FORMAT)) + 1;
-	dtext = (TCHAR *) malloc(sizeof(TCHAR) * len);
+	dtext = (wchar_t *) malloc(sizeof(wchar_t) * len);
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), dtext, len);
 
 	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED)
@@ -183,10 +183,10 @@ void SettingsDialog::removeParserDefinition()
 
 void SettingsDialog::addParserDefinition()
 {
-	TCHAR *text;
+	wchar_t *text;
 	HWND cmb = GetDlgItem(_hSelf, IDC_CMB_LANG);
 				
-	text = (TCHAR *) DialogBox((HINSTANCE) _hInst, MAKEINTRESOURCE(IDD_NEWLANG), _hSelf, inputDlgProc);
+	text = (wchar_t *) DialogBox((HINSTANCE) _hInst, MAKEINTRESOURCE(IDD_NEWLANG), _hSelf, inputDlgProc);
 	if(text == NULL) return; // user canceled the dialog
 
 	std::wstring name(text);
@@ -302,13 +302,13 @@ void SettingsDialog::updatePreview()
 
 void SettingsDialog::swapFormat()
 {
-	TCHAR *text;
+	wchar_t *text;
 	unsigned int len;
 	static int last_rad = IDC_RAD_FUNCTION; // In case the selected radio button is clicked again
 
 	// Get the text length, dynamically allocate it
 	len = Edit_GetTextLength(GetDlgItem(_hSelf, IDC_EDIT_FORMAT)) + 1;
-	text = (TCHAR *) malloc(sizeof(TCHAR) * len);
+	text = (wchar_t *) malloc(sizeof(wchar_t) * len);
 	Edit_GetText(GetDlgItem(_hSelf, IDC_EDIT_FORMAT), text, len);
 
 	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED && last_rad == IDC_RAD_FILE)

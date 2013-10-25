@@ -83,7 +83,7 @@ bool updateScintilla()
 
 // --- Configuration ---
 
-void getIniFilePath(TCHAR *iniPath, int size)
+void getIniFilePath(wchar_t *iniPath, int size)
 {
 	SendNpp(NPPM_GETPLUGINSCONFIGDIR, size, (LPARAM) iniPath);
 	_tcscat_s(iniPath, size, TEXT("\\"));
@@ -93,7 +93,7 @@ void getIniFilePath(TCHAR *iniPath, int size)
 
 void configSave()
 {
-	TCHAR iniPath[MAX_PATH];
+	wchar_t iniPath[MAX_PATH];
 	std::wstring ws;
 
 	getIniFilePath(iniPath, MAX_PATH);
@@ -146,11 +146,11 @@ void configSave()
 
 void configLoad()
 {
-	TCHAR iniPath[MAX_PATH];
-	TCHAR tbuffer[512]; // "relatively" large
-	TCHAR tbuffer2[512];
+	wchar_t iniPath[MAX_PATH];
+	wchar_t tbuffer[512]; // "relatively" large
+	wchar_t tbuffer2[512];
+	wchar_t *current;
 	ParserDefinition pd;
-	TCHAR *current;
 
 	getIniFilePath(iniPath, MAX_PATH);
 
@@ -201,7 +201,7 @@ void configLoad()
 	current = tbuffer;
 	while(current[0] != NULL)
 	{
-		TCHAR *equals = _tcschr(current, TEXT('='));
+		wchar_t *equals = _tcschr(current, TEXT('='));
 
 		// Temporarily remove the '=' that was found
 		*equals = NULL;

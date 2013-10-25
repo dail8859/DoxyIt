@@ -44,7 +44,7 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData)
 	setNppInfo(notepadPlusData);
 }
 
-extern "C" __declspec(dllexport) const TCHAR * getName()
+extern "C" __declspec(dllexport) const wchar_t * getName()
 {
 	return NPP_PLUGIN_NAME;
 }

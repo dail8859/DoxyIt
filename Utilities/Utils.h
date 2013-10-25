@@ -34,7 +34,7 @@ const char *getEolStr();
 
 // Generic string utilites
 std::wstring toWideString(std::string s);
-std::string toString(const TCHAR *w);
+std::string toString(const wchar_t *w);
 bool isWhiteSpace(const std::string& str);
 std::string& stringReplace(std::string& str, const std::string& oldStr, const std::string& newStr);
 std::vector<std::string> splitLines(const std::string &str, const std::string &split);

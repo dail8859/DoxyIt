@@ -25,7 +25,7 @@
 
 #define SCI_UNUSED 0
 
-const TCHAR NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
+const wchar_t NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
 const int nbFunc = 7;
 
 // --- Helper functions ---
