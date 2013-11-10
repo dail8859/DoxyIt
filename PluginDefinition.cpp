@@ -86,9 +86,9 @@ bool updateScintilla()
 void getIniFilePath(wchar_t *iniPath, int size)
 {
 	SendNpp(NPPM_GETPLUGINSCONFIGDIR, size, (LPARAM) iniPath);
-	_tcscat_s(iniPath, size, TEXT("\\"));
-	_tcscat_s(iniPath, size, NPP_PLUGIN_NAME);
-	_tcscat_s(iniPath, size, TEXT(".ini"));
+	wcscat_s(iniPath, size, TEXT("\\"));
+	wcscat_s(iniPath, size, NPP_PLUGIN_NAME);
+	wcscat_s(iniPath, size, TEXT(".ini"));
 }
 
 void configSave()
@@ -201,7 +201,7 @@ void configLoad()
 	current = tbuffer;
 	while(current[0] != NULL)
 	{
-		wchar_t *equals = _tcschr(current, TEXT('='));
+		wchar_t *equals = wcschr(current, TEXT('='));
 
 		// Temporarily remove the '=' that was found
 		*equals = NULL;

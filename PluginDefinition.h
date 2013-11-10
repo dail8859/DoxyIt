@@ -20,7 +20,6 @@
 #define PLUGINDEFINITION_H
 
 #include <sstream>
-#include <tchar.h>
 #include "PluginInterface.h"
 
 #define SCI_UNUSED 0
