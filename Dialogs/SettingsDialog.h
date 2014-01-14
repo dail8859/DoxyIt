@@ -29,21 +29,21 @@
 class SettingsDialog : public StaticDialog
 {
 private:
-	std::vector<ParserDefinition> parserDefinitions;
-	HFONT m_monoFont;
-	NppData m_nppData;
-	HWND m_HSource;
-	int m_previousSelection;
-	bool m_updating;
-	ParserDefinition *current;
+	std::vector<ParserDefinition> _parserDefinitions;
+	HFONT _monoFont;
+	NppData _nppData;
+	HWND _HSource;
+	int _previousSelection;
+	bool _updating;
+	ParserDefinition *_current;
 
 public:
-	SettingsDialog() : StaticDialog(), m_previousSelection(0), m_updating(false), current(NULL), m_monoFont(NULL) {};
+	SettingsDialog() : StaticDialog(), _previousSelection(0), _updating(false), _current(NULL), _monoFont(NULL) {};
 	~SettingsDialog() { destroy(); }
 
 	void init(HINSTANCE hInst, NppData nppData);
 	void doDialog();
-	void destroy() { if(m_monoFont) DeleteObject(m_monoFont); }
+	void destroy() { if(_monoFont) DeleteObject(_monoFont); }
 
 private:
 	void initParserDefinitions();
