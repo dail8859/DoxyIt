@@ -74,7 +74,7 @@ and then `Enter` will turn into:
 
 ## Settings
 Each language can be configured to have any string to indicate the start, line, and end of a document block. The settings dialog also provides a live preview of what a documentation block would look like:
-![Settings Dialog](http://db.tt/h8wuSRRW)
+![Settings Dialog](https://dl.dropboxusercontent.com/u/13788271/DoxyIt/SettingsWithAddRemove.png)
 
 ### Doxygen Commenting Format
 The format string is used to customize the Doxygen Function Commenting block generated. There are currently a few keywords that are used.
