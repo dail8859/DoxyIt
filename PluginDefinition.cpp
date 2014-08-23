@@ -270,7 +270,7 @@ void doxyItFunction()
 		return;
 
 	// Keep track of where we started
-	startLine = SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS));
+	startLine = SendNpp(NPPM_GETCURRENTLINE);
 
 	// Get the whitespace of the next line so we can insert it in front of 
 	// all the lines of the document block that is going to be inserted
@@ -278,7 +278,7 @@ void doxyItFunction()
 
 	SendScintilla(SCI_BEGINUNDOACTION);
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
-	endLine = SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS)); // get the end of the document block
+	endLine = SendNpp(NPPM_GETCURRENTLINE); // get the end of the document block
 	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
 	SendScintilla(SCI_ENDUNDOACTION);
 
@@ -339,7 +339,7 @@ void doxyItNewLine()
 
 	eol = getEolStr();
 
-	curLine = (int) SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS));
+	curLine = SendNpp(NPPM_GETCURRENTLINE);
 
 	previousLine = getLine(curLine - 1);
 

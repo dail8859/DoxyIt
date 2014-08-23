@@ -326,7 +326,7 @@ std::string Parse(void)
 	}
 
 	// Do some sanity checking. Make sure curline <= found <= curline+2
-	curLine = SendScintilla(SCI_LINEFROMPOSITION, SendScintilla(SCI_GETCURRENTPOS));
+	curLine = SendNpp(NPPM_GETCURRENTLINE);
 	foundLine = SendScintilla(SCI_LINEFROMPOSITION, found);
 	if(foundLine < curLine || foundLine > curLine + 2)
 	{
