@@ -1,7 +1,7 @@
 # DoxyIt
 Notepad++ plugin for [Doxygen](http://www.doxygen.org) commenting. This also provides helpful features to support creating and editing comment blocks, even if Doxygen isn't desired.
 
-The release versions of DoxyIt can be downloaded [here](http://sourceforge.net/projects/doxyit/files/).
+The release versions of DoxyIt can be downloaded [here](https://github.com/dail8859/DoxyIt/releases).
 
 Currently there is support for:
 - C
