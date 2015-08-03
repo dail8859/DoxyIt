@@ -52,8 +52,21 @@ Keywords Parse_C(const ParserDefinition *pd, const char *text)
 	std::vector<std::string> params;
 	std::vector<std::string> function;
 	const TRexChar *begin,*end;
+	char *dup, *p;
+	int chevron = 0;
 
-	if(trex_search(tr_function, text, &begin, &end))
+	// HACK: Duplicate the string so it can be modified and any commas within <...> needs removed to support templates e.g. std::pair<int, double>
+	dup = strdup(text);
+	p = dup;
+	while (*p)
+	{
+		if (*p == '<') chevron++;
+		else if (*p == '>') chevron--;
+		else if (*p == ',' && chevron > 0) *p = ' ';
+		p++;
+	}
+	
+	if (trex_search(tr_function, dup, &begin, &end))
 	{
 		TRexMatch params_match, func_match;
 		const TRexChar *cur_params;
@@ -81,6 +94,6 @@ Keywords Parse_C(const ParserDefinition *pd, const char *text)
 		keywords["$PARAM"] = params;
 		keywords["$FUNCTION"] = function;
 	}
-
+	free(dup);
 	return keywords;
 }

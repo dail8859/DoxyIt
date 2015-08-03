@@ -15,6 +15,8 @@ void Class::Method(int x, float pi = 3.14)
 
 void Class::Method(std::mystring = std::string())	// This doesn't work, but should
 
+void function(std::pair<int, std::pair<float, double>> p, int x)
+
 Constructor(int x) // bug if space is before parenthesis
 
 ~Destructor()
