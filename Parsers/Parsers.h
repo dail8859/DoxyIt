@@ -33,7 +33,7 @@ typedef std::map<std::string, std::vector<std::string>> Keywords;
 
 // These are the settable fields in the parser
 // This makes it easier when changing settings in the dialog box
-typedef struct ParserDefinition
+typedef struct ParserSettings final
 {
 	std::string doc_start;
 	std::string doc_line;
@@ -42,73 +42,73 @@ typedef struct ParserDefinition
 	std::string function_format;
 	std::string file_format;
 	bool align;
-} ParserDefinition;
+} ParserSettings;
 
-typedef struct Parser
+typedef Keywords(*ParserStrategy)(const ParserSettings *ps, const char *text);
+
+class Parser final
 {
+public:
 	int lang_type;
-	std::wstring lang;					// Short language name. Postfix of enum from lang_type
-	std::wstring language_name;			// User readable name
-	std::string example;				// Example function/method to parse for Settings Dialog
-	bool external;						// whether this is an internal or external(UDL||external lexer)
+	std::wstring lang;           // Short language name. Postfix of enum from lang_type
+	std::wstring language_name;  // User readable name
+	std::string example;         // Example function/method to parse for Settings Dialog
+	bool external;               // whether this is an internal or external(UDL||external lexer)
 
-	ParserDefinition pd;
+	ParserSettings ps;
+	ParserStrategy strategy;
 
-	// Registered functions
-	bool (*initializer)(void);
-	void (*cleanup)(void);
-	Keywords (*parse)(const ParserDefinition *pd, const char *text);
-
-	// Constructor...with 11 parameters
 	// Don't judge me
-	Parser(int lt, std::wstring l, std::wstring ln, std::string e, std::string ds, std::string dl, std::string de,
-		std::string cp, bool (*i)(void), void (*c)(void), Keywords (*p)(const ParserDefinition *, const char *))
+	Parser(ParserStrategy st, int lt, std::wstring l, std::wstring ln, std::string e, std::string ds, std::string dl, std::string de, std::string cp)
 	{
+		strategy = st; 
 		lang_type = lt;
 		lang = l;
 		language_name = ln;
 		example = e;
 		external = false;
-		pd.doc_start = ds;
-		pd.doc_line = dl;
-		pd.doc_end = de;
-		pd.command_prefix = cp;
-		pd.function_format = default_function_format;
-		pd.file_format = default_file_format;
-		pd.align = false;
-		initializer = i;
-		cleanup = c;
-		parse = p;
+		ps.doc_start = ds;
+		ps.doc_line = dl;
+		ps.doc_end = de;
+		ps.command_prefix = cp;
+		ps.function_format = default_function_format;
+		ps.file_format = default_file_format;
+		ps.align = false;
 	}
 
 	Parser() {}
-} Parser;
+};
 
-extern std::vector<Parser *> parsers;
-
-
-// Macro to help define the functions of each parser
-#define DEFINE_PARSER(lang) \
-	bool Initialize_##lang(void); \
-	void CleanUp_##lang(void); \
-	Keywords Parse_##lang(const ParserDefinition *pd, const char *text);
-
-DEFINE_PARSER(C);
-DEFINE_PARSER(Python);
-DEFINE_PARSER(Null);
-
-
+extern std::vector<Parser> parsers;
 
 const Parser *getParserByName(std::wstring name);
 const Parser *getCurrentParser(bool update=false);
-const ParserDefinition *getCurrentParserDefinition();
-void addNewParser(std::string name, ParserDefinition *pd=NULL);
+const ParserSettings *getCurrentParserSettings();
+void addNewParser(std::string name, ParserSettings *ps = NULL);
 
 void InitializeParsers();
 void CleanUpParsers();
 
-std::string FormatFunctionBlock(const Parser *p,const ParserDefinition *pd, const char *text);
-std::string FormatFileBlock(const ParserDefinition *pd);
+std::string FormatFunctionBlock(const Parser *p, const ParserSettings *ps, const char *text);
+std::string FormatFileBlock(const ParserSettings *ps);
 std::string Parse();
 
+// Simple class to make sure the regexs get cleaned up
+class TrRegex final {
+public:
+	TRex *regex = nullptr;
+
+	explicit TrRegex(const char *pattern) {
+		const TRexChar *error = NULL;
+		regex = trex_compile(pattern, &error);
+	}
+
+	~TrRegex() {
+		trex_free(regex);
+	}
+};
+
+Keywords parse_c(const ParserSettings *ps, const char *text);
+Keywords parse_python(const ParserSettings *ps, const char *text);
+Keywords parse_null(const ParserSettings *ps, const char *text);
 #endif

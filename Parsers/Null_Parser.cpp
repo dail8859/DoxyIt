@@ -18,17 +18,7 @@
 
 #include "Parsers.h"
 
-bool Initialize_Null(void)
+Keywords parse_null(const ParserSettings *ps, const char *text)
 {
-	return true;
-}
-
-void CleanUp_Null(void)
-{
-}
-
-Keywords Parse_Null(const ParserDefinition *pd, const char *text)
-{
-	Keywords keywords;
-	return keywords;
+	 return Keywords();
 }

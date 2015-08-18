@@ -106,40 +106,39 @@ void configSave()
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version"), VERSION_LINEAR_TEXT, iniPath);
 	WritePrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), VERSION_STAGE, iniPath);
 
-	for(unsigned int i = 0; i < parsers.size(); ++i)
+	for(auto const &p : parsers)
 	{
-		const Parser *p = parsers[i];
-		const ParserDefinition *pd = &(p->pd);
+		const ParserSettings *ps = &(p.ps);
 
 		// Wrap everything in quotes to preserve whitespace
-		ws = TEXT("\"") + toWideString(pd->doc_start) + TEXT("\"");
-		WritePrivateProfileString(p->lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
+		ws = TEXT("\"") + toWideString(ps->doc_start) + TEXT("\"");
+		WritePrivateProfileString(p.lang.c_str(), TEXT("doc_start"), ws.c_str(), iniPath);
 
-		ws = TEXT("\"") + toWideString(pd->doc_line) + TEXT("\"");
-		WritePrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), ws.c_str(), iniPath);
+		ws = TEXT("\"") + toWideString(ps->doc_line) + TEXT("\"");
+		WritePrivateProfileString(p.lang.c_str(), TEXT("doc_line_"), ws.c_str(), iniPath);
 
-		ws = TEXT("\"") + toWideString(pd->doc_end) + TEXT("\"");
-		WritePrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), ws.c_str(), iniPath);
+		ws = TEXT("\"") + toWideString(ps->doc_end) + TEXT("\"");
+		WritePrivateProfileString(p.lang.c_str(), TEXT("doc_end__"), ws.c_str(), iniPath);
 
-		ws = TEXT("\"") + toWideString(pd->command_prefix) + TEXT("\"");
-		WritePrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
-
-		// Encode \r\n as literal "\r\n" in the ini file
-		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->file_format), "\r\n", "\\r\\n")) + TEXT("\"");
-		WritePrivateProfileString(p->lang.c_str(), TEXT("file_format"), ws.c_str(), iniPath);
+		ws = TEXT("\"") + toWideString(ps->command_prefix) + TEXT("\"");
+		WritePrivateProfileString(p.lang.c_str(), TEXT("command_prefix"), ws.c_str(), iniPath);
 
 		// Encode \r\n as literal "\r\n" in the ini file
-		ws = TEXT("\"") + toWideString(stringReplace(std::string(pd->function_format), "\r\n", "\\r\\n")) + TEXT("\"");
-		WritePrivateProfileString(p->lang.c_str(), TEXT("function_format"), ws.c_str(), iniPath);
+		ws = TEXT("\"") + toWideString(stringReplace(std::string(ps->file_format), "\r\n", "\\r\\n")) + TEXT("\"");
+		WritePrivateProfileString(p.lang.c_str(), TEXT("file_format"), ws.c_str(), iniPath);
+
+		// Encode \r\n as literal "\r\n" in the ini file
+		ws = TEXT("\"") + toWideString(stringReplace(std::string(ps->function_format), "\r\n", "\\r\\n")) + TEXT("\"");
+		WritePrivateProfileString(p.lang.c_str(), TEXT("function_format"), ws.c_str(), iniPath);
 
 		// Write out interal parser attributes
-		if(!p->external)
+		if(!p.external)
 		{
-			WritePrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(pd->align), iniPath);
+			WritePrivateProfileString(p.lang.c_str(), TEXT("align"), BOOLTOSTR(ps->align), iniPath);
 		}
 		else // add it to the list of external settings
 		{
-			WritePrivateProfileString(TEXT("External"), p->language_name.c_str(), TEXT(""), iniPath);
+			WritePrivateProfileString(TEXT("External"), p.language_name.c_str(), TEXT(""), iniPath);
 		}
 	}
 }
@@ -150,7 +149,7 @@ void configLoad()
 	wchar_t tbuffer[512]; // "relatively" large
 	wchar_t tbuffer2[512];
 	wchar_t *current;
-	ParserDefinition pd;
+	ParserSettings ps;
 
 	getIniFilePath(iniPath, MAX_PATH);
 
@@ -166,34 +165,33 @@ void configLoad()
 	//version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
 	//version_stage = GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), TEXT(""), tbuffer, MAX_PATH, iniPath);
 
-	for(unsigned int i = 0; i < parsers.size(); ++i)
+	//for(unsigned int i = 0; i < parsers.size(); ++i)
+	for(auto &p : parsers)
 	{
-		Parser *p = parsers[i];
-
 		// NOTE: We cant use the default value because GetPrivateProfileString strips the whitespace,
 		// also, wrapping it in quotes doesn't seem to work either. So...use "!!!" as the default text
 		// and if we find that the value wasn't found and we have "!!!" then use the default value in the
 		// parser, else, use what we pulled from the file.
-		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, 512, iniPath);
-		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.doc_start = toString(tbuffer);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, 512, iniPath);
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.doc_start = toString(tbuffer);
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_line_"), TEXT("!!!"), tbuffer, 512, iniPath);
-		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.doc_line = toString(tbuffer);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("doc_line_"), TEXT("!!!"), tbuffer, 512, iniPath);
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.doc_line = toString(tbuffer);
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("doc_end__"), TEXT("!!!"), tbuffer, 512, iniPath);
-		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.doc_end = toString(tbuffer);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("doc_end__"), TEXT("!!!"), tbuffer, 512, iniPath);
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.doc_end = toString(tbuffer);
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("command_prefix"), TEXT("!!!"), tbuffer, 512, iniPath);
-		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.command_prefix = toString(tbuffer);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("command_prefix"), TEXT("!!!"), tbuffer, 512, iniPath);
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.command_prefix = toString(tbuffer);
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("function_format"), TEXT("!!!"), tbuffer, 512, iniPath);
-		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.function_format = stringReplace(toString(tbuffer), "\\r\\n", "\r\n");
+		GetPrivateProfileString(p.lang.c_str(), TEXT("function_format"), TEXT("!!!"), tbuffer, 512, iniPath);
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.function_format = stringReplace(toString(tbuffer), "\\r\\n", "\r\n");
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("file_format"), TEXT("!!!"), tbuffer, 512, iniPath);
-		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p->pd.file_format = stringReplace(toString(tbuffer), "\\r\\n", "\r\n");
+		GetPrivateProfileString(p.lang.c_str(), TEXT("file_format"), TEXT("!!!"), tbuffer, 512, iniPath);
+		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.file_format = stringReplace(toString(tbuffer), "\\r\\n", "\r\n");
 
-		GetPrivateProfileString(p->lang.c_str(), TEXT("align"), BOOLTOSTR(p->pd.align), tbuffer, 512, iniPath);
-		p->pd.align = (lstrcmp(tbuffer, TEXT("true")) == 0);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("align"), BOOLTOSTR(p.ps.align), tbuffer, 512, iniPath);
+		p.ps.align = (lstrcmp(tbuffer, TEXT("true")) == 0);
 	}
 
 
@@ -207,26 +205,26 @@ void configLoad()
 		*equals = NULL;
 
 		GetPrivateProfileString(current, TEXT("doc_start"), TEXT("/**"), tbuffer2, 512, iniPath);
-		pd.doc_start = toString(tbuffer2);
+		ps.doc_start = toString(tbuffer2);
 
 		GetPrivateProfileString(current, TEXT("doc_line_"), TEXT(" *  "), tbuffer2, 512, iniPath);
-		pd.doc_line = toString(tbuffer2);
+		ps.doc_line = toString(tbuffer2);
 
 		GetPrivateProfileString(current, TEXT("doc_end__"), TEXT(" */"), tbuffer2, 512, iniPath);
-		pd.doc_end = toString(tbuffer2);
+		ps.doc_end = toString(tbuffer2);
 
 		GetPrivateProfileString(current, TEXT("command_prefix"), TEXT("\\"), tbuffer2, 512, iniPath);
-		pd.command_prefix = toString(tbuffer2);
+		ps.command_prefix = toString(tbuffer2);
 
 		GetPrivateProfileString(current, TEXT("function_format"), TEXT("!!!"), tbuffer2, 512, iniPath);
-		if(lstrcmp(tbuffer2, TEXT("!!!")) != 0) pd.function_format = stringReplace(toString(tbuffer2), "\\r\\n", "\r\n");
-		else pd.function_format = default_internal_function_format;
+		if(lstrcmp(tbuffer2, TEXT("!!!")) != 0) ps.function_format = stringReplace(toString(tbuffer2), "\\r\\n", "\r\n");
+		else ps.function_format = default_internal_function_format;
 
 		GetPrivateProfileString(current, TEXT("file_format"), TEXT("!!!"), tbuffer2, 512, iniPath);
-		if(lstrcmp(tbuffer2, TEXT("!!!")) != 0) pd.file_format = stringReplace(toString(tbuffer2), "\\r\\n", "\r\n");
-		else pd.file_format = default_file_format;
+		if(lstrcmp(tbuffer2, TEXT("!!!")) != 0) ps.file_format = stringReplace(toString(tbuffer2), "\\r\\n", "\r\n");
+		else ps.file_format = default_file_format;
 
-		addNewParser(toString(current), &pd);
+		addNewParser(toString(current), &ps);
 
 		// add back in the equals so we can correctly calculate the length
 		*equals = TEXT('=');
@@ -288,18 +286,18 @@ void doxyItFunction()
 void doxyItFile()
 {
 	std::string doc_block;
-	const ParserDefinition *pd;
+	const ParserSettings *ps;
 
 	if(!updateScintilla()) return;
 
-	pd = getCurrentParserDefinition();
-	if(!pd)
+	ps = getCurrentParserSettings();
+	if(!ps)
 	{
 		MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return;
 	}
 
-	doc_block = FormatFileBlock(pd);
+	doc_block = FormatFileBlock(ps);
 
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
 }
@@ -327,15 +325,15 @@ void showAbout()
 void doxyItNewLine()
 {
 	std::string indentation;
-	const ParserDefinition *pd;
+	const ParserSettings *ps;
 	const char *eol;
 	char *previousLine, *found = NULL;
 	int curLine;
 
 	if(!updateScintilla()) return;
 
-	pd = getCurrentParserDefinition();
-	if(!pd) return;
+	ps = getCurrentParserSettings();
+	if(!ps) return;
 
 	eol = getEolStr();
 
@@ -346,7 +344,7 @@ void doxyItNewLine()
 	// NOTE: we cannot use getLineIndentStr() because doc_start or doc_line may start with whitespace
 	// which we don't want counted towards the indentation string.
 
-	if(found = strstr(previousLine, pd->doc_line.c_str()))
+	if(found = strstr(previousLine, ps->doc_line.c_str()))
 	{
 		indentation.append(previousLine, found - previousLine);
 
@@ -356,7 +354,7 @@ void doxyItNewLine()
 			SendScintilla(SCI_BEGINUNDOACTION);
 			SendScintilla(SCI_DELLINELEFT);	// Clear any automatic indentation
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_line.c_str());
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) ps->doc_line.c_str());
 			SendScintilla(SCI_ENDUNDOACTION);
 			SendScintilla(SCI_CHOOSECARETX);
 		}
@@ -364,8 +362,8 @@ void doxyItNewLine()
 	}
 	// If doc_start is relatively long we do not want the user typing the entire line, just the first 3 should suffice.
 	// Also, if doc_end is found, this means a doc block was closed. This allows e.g. /** inline comments */
-	else if((found = strstr(previousLine, pd->doc_start.substr(0, 3).c_str())) &&
-		strstr(previousLine, pd->doc_end.c_str()) == 0)
+	else if((found = strstr(previousLine, ps->doc_start.substr(0, 3).c_str())) &&
+		strstr(previousLine, ps->doc_end.c_str()) == 0)
 	{
 		indentation.append(previousLine, found - previousLine);
 
@@ -375,20 +373,20 @@ void doxyItNewLine()
 			unsigned int i = 0;
 
 			// Count the characters in common so we can add the rest
-			while(i < pd->doc_start.length() && found[i] == pd->doc_start.at(i)) ++i;
+			while(i < ps->doc_start.length() && found[i] == ps->doc_start.at(i)) ++i;
 
 			SendScintilla(SCI_BEGINUNDOACTION);
 			SendScintilla(SCI_DELLINELEFT);			// Clear any automatic indentation
 			SendScintilla(SCI_DELETEBACK);			// Clear the newline
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) &pd->doc_start.c_str()[i]);	// Fill the rest of doc_start
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) &ps->doc_start.c_str()[i]);	// Fill the rest of doc_start
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_line.c_str());
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) ps->doc_line.c_str());
 			pos = SendScintilla(SCI_GETCURRENTPOS);	// Save this position so we can restore it
 			SendScintilla(SCI_LINEEND);				// Skip any text the user carried to next line
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) pd->doc_end.c_str());
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) ps->doc_end.c_str());
 			SendScintilla(SCI_ENDUNDOACTION);
 			SendScintilla(SCI_CHOOSECARETX);
 

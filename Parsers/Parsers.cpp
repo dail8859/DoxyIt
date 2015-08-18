@@ -50,8 +50,8 @@ const char *default_file_format =
 const Parser *getParserByName(std::wstring name)
 {
 	for(unsigned int i = 0; i < parsers.size(); ++i)
-		if(parsers[i]->language_name == name)
-			return parsers[i];
+		if(parsers[i].language_name == name)
+			return &parsers[i];
 
 	return NULL;
 }
@@ -76,12 +76,12 @@ const Parser *getCurrentParser(bool update)
 			name = (wchar_t *) malloc(sizeof(wchar_t) * len);
 			SendNpp(NPPM_GETLANGUAGENAME, lang_type, (LPARAM) name);
 
-			for(unsigned int i = 0; i < parsers.size(); ++i)
+			for(auto const &p : parsers)
 			{
 				// Use [6] because the name returned is "udl - mylangname"
-				if(parsers[i]->language_name == &name[6])
+				if(p.language_name == &name[6])
 				{
-					current = parsers[i];
+					current = &p;
 					free(name);
 					return current;
 				}
@@ -91,11 +91,11 @@ const Parser *getCurrentParser(bool update)
 		}
 		else
 		{
-			for(unsigned int i = 0; i < parsers.size(); ++i)
+			for(auto const &p : parsers)
 			{
-				if(parsers[i]->lang_type == lang_type)
+				if(p.lang_type == lang_type)
 				{
-					current = parsers[i];
+					current = &p;
 					return current;
 				}
 			}
@@ -108,75 +108,59 @@ const Parser *getCurrentParser(bool update)
 	return current;
 }
 
-const ParserDefinition *getCurrentParserDefinition(void)
+const ParserSettings *getCurrentParserSettings(void)
 {
 	const Parser *p = getCurrentParser();
-
-	return (p ? &p->pd : NULL);
+	return (p ? &p->ps : NULL);
 }
 
-void addNewParser(std::string name, ParserDefinition *pd)
+void addNewParser(std::string name, ParserSettings *ps)
 {
-	Parser *p = new Parser();
+	parsers.emplace_back();
+
+	Parser *p = &parsers[parsers.size() - 1];
 
 	p->lang_type = L_USER;
 	p->lang = toWideString(name);
 	p->language_name = toWideString(name);
 	p->external = true;
-	p->initializer = NULL;
-	p->cleanup = NULL;
-	p->parse = NULL;
 
-	if(pd == NULL)
+	if(ps == NULL)
 	{
 		// Fill in default values
-		p->pd.doc_start = "/**";
-		p->pd.doc_line  = " *  ";
-		p->pd.doc_end   = " */";
-		p->pd.command_prefix = "\\";
-		p->pd.file_format = default_file_format;
-		p->pd.function_format = default_internal_function_format;
-		p->pd.align = false; // not used
+		p->ps.doc_start = "/**";
+		p->ps.doc_line  = " *  ";
+		p->ps.doc_end   = " */";
+		p->ps.command_prefix = "\\";
+		p->ps.file_format = default_file_format;
+		p->ps.function_format = default_internal_function_format;
+		p->ps.align = false; // not used
 	}
 	else
 	{
-		p->pd = *pd;
+		p->ps = *ps;
 	}
-
-	parsers.push_back(p);
 }
 
 // Very ugly macro
-#define REGISTER_PARSER(lang, parser, language_name, doc_start, doc_line, doc_end, command_prefix, example) \
-	new Parser(L_##lang, TEXT(#lang), TEXT(language_name), example, doc_start, doc_line, doc_end, command_prefix, \
-	Initialize_##parser, CleanUp_##parser, Parse_##parser)
+#define REGISTER_PARSER(strategy, lang, language_name, doc_start, doc_line, doc_end, command_prefix, example) \
+	strategy, L_##lang, TEXT(#lang), TEXT(language_name), example, doc_start, doc_line, doc_end, command_prefix
 
-std::vector<Parser *> parsers;
+std::vector<Parser> parsers;
 void InitializeParsers(void)
 {
-	parsers.push_back(REGISTER_PARSER(C,      C,      "C",          "/**",  " *  ", " */",  "\\", "int function(const char *ptr, int index)"));
-	parsers.push_back(REGISTER_PARSER(CPP,    C,      "C++",        "/**",  " *  ", " */",  "\\", "std::string function(const char *ptr, int &index)"));
-	parsers.push_back(REGISTER_PARSER(JAVA,   C,      "Java",       "/**",  " *  ", " */",  "@",  "public boolean action(Event event, Object arg)"));
-	parsers.push_back(REGISTER_PARSER(PYTHON, Python, "Python",     "## ",  "#  ",  "#  ",  "@",  "def foo(bar, string=None)"));
-	parsers.push_back(REGISTER_PARSER(PHP,    C,      "PHP",        "/**",  " *  ", " */",  "@",  "function myFunction($abc, $defg)"));
-	parsers.push_back(REGISTER_PARSER(JS,     C,      "JavaScript", "/**",  " *  ", " */",  "@",  "function myFunction(abc, defg)"));
-	parsers.push_back(REGISTER_PARSER(CS,     C,      "C#",         "/// ", "/// ", "/// ", "\\", "public int Method(ref int abc, int defg)"));
-
-	for(unsigned int i = 0; i < parsers.size(); ++i)
-		if(parsers[i]->initializer() == false)
-			MessageBox(NULL, TEXT("DoxyIt initialization failed"), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
+	parsers.reserve(8);
+	parsers.emplace_back(REGISTER_PARSER(parse_c, C, "C", "/**", " *  ", " */", "\\", "int function(const char *ptr, int index)"));
+	parsers.emplace_back(REGISTER_PARSER(parse_c, CPP, "C++", "/**", " *  ", " */", "\\", "std::string function(const char *ptr, int &index)"));
+	parsers.emplace_back(REGISTER_PARSER(parse_c, JAVA, "Java", "/**", " *  ", " */", "@", "public boolean action(Event event, Object arg)"));
+	parsers.emplace_back(REGISTER_PARSER(parse_python, PYTHON, "Python", "## ", "#  ", "#  ", "@", "def foo(bar, string=None)"));
+	parsers.emplace_back(REGISTER_PARSER(parse_c, PHP, "PHP", "/**", " *  ", " */", "@", "function myFunction($abc, $defg)"));
+	parsers.emplace_back(REGISTER_PARSER(parse_c, JS, "JavaScript", "/**", " *  ", " */", "@", "function myFunction(abc, defg)"));
+	parsers.emplace_back(REGISTER_PARSER(parse_c, CS, "C#", "/// ", "/// ", "/// ", "\\", "public int Method(ref int abc, int defg)"));
 }
 
 void CleanUpParsers(void)
 {
-	for(unsigned int i = 0; i < parsers.size(); ++i)
-	{
-		if(!parsers[i]->external)
-			parsers[i]->cleanup();
-		delete parsers[i];
-	}
-
-	parsers.clear();
 }
 
 void alignLines(std::vector<std::string> &lines)
@@ -199,7 +183,7 @@ void alignLines(std::vector<std::string> &lines)
 	}
 }
 
-std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const std::string &format)
+std::string FormatBlock(const ParserSettings *ps, Keywords& keywords, const std::string &format)
 {
 	std::stringstream ss;
 	std::vector<std::string> lines;
@@ -208,7 +192,7 @@ std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 	const char *eol = getEolStr();
 
 	// Replace keywords
-	stringReplace(format_copy, "$@", pd->command_prefix);
+	stringReplace(format_copy, "$@", ps->command_prefix);
 	stringReplace(format_copy, "$FILENAME", keywords["$FILENAME"][0]);
 	
 	// $FUNCTION may not exist
@@ -234,7 +218,7 @@ std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 			}
 
 			// If the align flag is set, align the lines, else remove all "$|" flags
-			if(pd->align)
+			if(ps->align)
 				alignLines(formatted_lines);
 			else
 				for(unsigned int j = 0; j < formatted_lines.size(); ++j)
@@ -244,21 +228,21 @@ std::string FormatBlock(const ParserDefinition *pd, Keywords& keywords, const st
 			for(unsigned int j = 0; j < formatted_lines.size(); ++j)
 			{
 				if(i == 0 && j == 0)
-					ss << pd->doc_start << formatted_lines[j] << eol;
+					ss << ps->doc_start << formatted_lines[j] << eol;
 				else if(i == lines.size() - 1 && j == formatted_lines.size() - 1)
-					ss << pd->doc_end << formatted_lines[j] << eol;
+					ss << ps->doc_end << formatted_lines[j] << eol;
 				else
-					ss << pd->doc_line << formatted_lines[j] << eol;
+					ss << ps->doc_line << formatted_lines[j] << eol;
 			}
 		}
 		else
 		{
 			if(i == 0)
-				ss << pd->doc_start << lines[i] << eol;
+				ss << ps->doc_start << lines[i] << eol;
 			else if(i == lines.size() -1)
-				ss << pd->doc_end << lines[i];
+				ss << ps->doc_end << lines[i];
 			else
-				ss << pd->doc_line << lines[i] << eol;
+				ss << ps->doc_line << lines[i] << eol;
 		}
 	}
 
@@ -276,28 +260,28 @@ void FillExtraKeywords(Keywords &kw)
 	kw["$FILENAME"] = filename;
 }
 
-std::string FormatFileBlock(const ParserDefinition *pd)
+std::string FormatFileBlock(const ParserSettings *ps)
 {
 	Keywords kw;
 
 	FillExtraKeywords(kw);
 
-	return FormatBlock(pd, kw, pd->file_format);
+	return FormatBlock(ps, kw, ps->file_format);
 }
 
-std::string FormatFunctionBlock(const Parser *p, const ParserDefinition *pd, const char *text)
+std::string FormatFunctionBlock(const Parser *p, const ParserSettings *ps, const char *text)
 {
 	Keywords kw;
 
 	if(!p->external)
 	{
-		kw = p->parse(pd, text);
+		kw = p->strategy(ps, text);
 		if(kw.size() == 0) return std::string("");
 	}
 
 	FillExtraKeywords(kw);
 
-	return FormatBlock(pd, kw, pd->function_format);
+	return FormatBlock(ps, kw, ps->function_format);
 }
 
 // Get the current parser and text to parse
@@ -316,7 +300,7 @@ std::string Parse(void)
 
 	// External parsers are simple enough since they don't need any text to parse
 	if(p->external)
-		return FormatFunctionBlock(p, &p->pd, NULL); 
+		return FormatFunctionBlock(p, &p->ps, NULL); 
 
 	// Get the text until a closing parenthesis. Find '(' first
 	if((found = findNext("(")) == -1)
@@ -342,7 +326,7 @@ std::string Parse(void)
 	}
 
 	buffer = getRange(SendScintilla(SCI_GETCURRENTPOS), found + 1);
-	doc_block = FormatFunctionBlock(p, &p->pd, buffer);
+	doc_block = FormatFunctionBlock(p, &p->ps, buffer);
 	delete[] buffer;
 
 	// I don't think there is currently a case where callback() will return a zero length string,
