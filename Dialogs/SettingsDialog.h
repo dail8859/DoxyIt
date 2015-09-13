@@ -26,7 +26,7 @@
 #include "resource.h"
 
 
-class SettingsDialog : public StaticDialog
+class SettingsDialog final : public StaticDialog
 {
 private:
 	std::vector<ParserSettings> _parserSettings;
@@ -38,7 +38,7 @@ private:
 	ParserSettings *_current;
 
 public:
-	SettingsDialog() : StaticDialog(), _previousSelection(0), _updating(false), _current(NULL), _monoFont(NULL) {};
+	SettingsDialog() : StaticDialog(), _previousSelection(0), _updating(false), _current(NULL), _monoFont(NULL) {}
 	~SettingsDialog() { destroy(); }
 
 	void init(HINSTANCE hInst, NppData nppData);

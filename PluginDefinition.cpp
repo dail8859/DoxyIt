@@ -165,7 +165,6 @@ void configLoad()
 	//version = GetPrivateProfileInt(NPP_PLUGIN_NAME, TEXT("version"), 0, iniPath);
 	//version_stage = GetPrivateProfileString(NPP_PLUGIN_NAME, TEXT("version_stage"), TEXT(""), tbuffer, MAX_PATH, iniPath);
 
-	//for(unsigned int i = 0; i < parsers.size(); ++i)
 	for(auto &p : parsers)
 	{
 		// NOTE: We cant use the default value because GetPrivateProfileString strips the whitespace,

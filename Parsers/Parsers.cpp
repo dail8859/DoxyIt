@@ -49,9 +49,9 @@ const char *default_file_format =
 
 const Parser *getParserByName(std::wstring name)
 {
-	for(unsigned int i = 0; i < parsers.size(); ++i)
-		if(parsers[i].language_name == name)
-			return &parsers[i];
+	for(auto const &p : parsers)
+		if(p.language_name == name)
+			return &p;
 
 	return NULL;
 }
@@ -102,7 +102,7 @@ const Parser *getCurrentParser(bool update)
 		}
 
 		// Parser wasn't found for current language
-		current = NULL;
+		current = nullptr;
 	}
 
 	return current;
@@ -111,7 +111,7 @@ const Parser *getCurrentParser(bool update)
 const ParserSettings *getCurrentParserSettings(void)
 {
 	const Parser *p = getCurrentParser();
-	return (p ? &p->ps : NULL);
+	return (p ? &p->ps : nullptr);
 }
 
 void addNewParser(std::string name, ParserSettings *ps)
@@ -125,7 +125,7 @@ void addNewParser(std::string name, ParserSettings *ps)
 	p->language_name = toWideString(name);
 	p->external = true;
 
-	if(ps == NULL)
+	if(ps == nullptr)
 	{
 		// Fill in default values
 		p->ps.doc_start = "/**";
@@ -300,7 +300,7 @@ std::string Parse(void)
 
 	// External parsers are simple enough since they don't need any text to parse
 	if(p->external)
-		return FormatFunctionBlock(p, &p->ps, NULL); 
+		return FormatFunctionBlock(p, &p->ps, nullptr); 
 
 	// Get the text until a closing parenthesis. Find '(' first
 	if((found = findNext("(")) == -1)

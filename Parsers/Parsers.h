@@ -25,6 +25,7 @@
 #include <map>
 #include <vector>
 
+// Default formats
 extern const char *default_function_format;
 extern const char *default_internal_function_format;
 extern const char *default_file_format;
@@ -84,7 +85,7 @@ extern std::vector<Parser> parsers;
 const Parser *getParserByName(std::wstring name);
 const Parser *getCurrentParser(bool update=false);
 const ParserSettings *getCurrentParserSettings();
-void addNewParser(std::string name, ParserSettings *ps = NULL);
+void addNewParser(std::string name, ParserSettings *ps = nullptr);
 
 void InitializeParsers();
 void CleanUpParsers();
