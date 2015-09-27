@@ -1,5 +1,5 @@
 # DoxyIt
-Notepad++ plugin for [Doxygen](http://www.doxygen.org) commenting. This also provides helpful features to support creating and editing comment blocks, even if Doxygen isn't desired.
+Notepad++ plugin for [Doxygen](http://www.doxygen.org) commenting. This also provides helpful features for creating and editing comment blocks, even if Doxygen isn't desired.
 
 The release versions of DoxyIt can be downloaded [here](https://github.com/dail8859/DoxyIt/releases).
 
@@ -78,11 +78,11 @@ Each language can be configured to have any string to indicate the start, line, 
 
 ### Doxygen Commenting Format
 The format string is used to customize the Doxygen Function Commenting block generated. There are currently a few keywords that are used.
-- $FILENAME - The current file name.
-- $FUNCTION - The name of the function/method.
-- $PARAM - Expands to a single function/method parameter. Any line containing this will get repeated for each parameter.
-- $@ - Expands to the prefix character for Doxygen commands.
-- $| - Marks the alignment position. This flag is only valid for lines containing $PARAM.
+- `$FILENAME` - The current file name.
+- `$FUNCTION` - The name of the function/method.
+- `$PARAM` - Expands to a single function/method parameter. Any line containing this will get repeated for each parameter.
+- `$@` - Expands to the prefix character for Doxygen commands.
+- `$|` - Marks the alignment position. This flag is only valid for lines containing $PARAM.
 
 Not all keywords are valid for User Defined Languages. 
 
