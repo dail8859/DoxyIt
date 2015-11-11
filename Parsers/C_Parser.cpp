@@ -23,25 +23,24 @@ Keywords parse_c(const ParserSettings *ps, const char *text)
 	static TrRegex tr_function("(?:([\\w:]+)[*&]*\\s+(?:[*&]*\\s+)?[*&]*)?([\\w:]+)\\s*(\\([^)]*\\))");
 	static TrRegex tr_parameters("(\\$?\\w+|\\.\\.\\.)(\\s*=\\s*[\\\"\\w\\.]+)?\\s*[,)]");
 	Keywords keywords;
-	std::vector<std::string> params;
-	std::vector<std::string> function;
+	
 	const TRexChar *begin, *end;
-	char *dup, *p;
 	int chevron = 0;
 
 	// HACK: Duplicate the string so it can be modified and any commas within <...> needs removed to support templates e.g. std::pair<int, double>
-	dup = strdup(text);
-	p = dup;
-	while (*p)
+	std::string dup(text);
+
+	for (char &c : dup)
 	{
-		if (*p == '<') chevron++;
-		else if (*p == '>') chevron--;
-		else if (*p == ',' && chevron > 0) *p = ' ';
-		p++;
+		if (c == '<') chevron++;
+		else if (c == '>') chevron--;
+		else if (c == ',' && chevron > 0) c = ' ';
 	}
 
-	if (trex_search(tr_function.regex, dup, &begin, &end))
+	if (trex_search(tr_function.regex, dup.c_str(), &begin, &end))
 	{
+		std::vector<std::string> params;
+		std::vector<std::string> function;
 		TRexMatch params_match, func_match;
 		const TRexChar *cur_params;
 		const TRexChar *p_begin, *p_end;
@@ -68,6 +67,6 @@ Keywords parse_c(const ParserSettings *ps, const char *text)
 		keywords["$PARAM"] = params;
 		keywords["$FUNCTION"] = function;
 	}
-	free(dup);
+
 	return keywords;
 }

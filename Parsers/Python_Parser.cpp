@@ -18,9 +18,6 @@
 
 #include "Parsers.h"
 
-
-
-
 Keywords parse_python(const ParserSettings *ps, const char *text)
 {
 	static TrRegex tr_function("def\\s+(\\w+)\\s*(\\([^)]*\\))");
