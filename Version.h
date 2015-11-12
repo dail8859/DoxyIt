@@ -16,8 +16,8 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#define VERSION_NUM				0,2,6,0
-#define VERSION_LINEAR			260
-#define VERSION_LINEAR_TEXT		TEXT("260")
-#define VERSION_TEXT			TEXT("0.2.6") // This must match the tag pushed on the server minus the "v"
+#define VERSION_NUM				0,2,7,0
+#define VERSION_LINEAR			270
+#define VERSION_LINEAR_TEXT		TEXT("270")
+#define VERSION_TEXT			TEXT("0.2.7") // This must match the tag pushed on the server minus the "v"
 #define VERSION_STAGE			TEXT("") // "alpha", "beta", ""
