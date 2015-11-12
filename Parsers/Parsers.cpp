@@ -67,6 +67,9 @@ const Parser *getCurrentParser(bool update)
 		int lang_type;
 		SendNpp(NPPM_GETCURRENTLANGTYPE, SCI_UNUSED, (LPARAM) &lang_type);
 
+		// HACK: Keep backwards compatibility since N++ screwed up the javascript langtype
+		if(lang_type == L_JAVASCRIPT) lang_type = L_JS;
+
 		if(lang_type == L_USER /* || lang_type == L_EXTERNAL */)
 		{
 			wchar_t *name = NULL;
