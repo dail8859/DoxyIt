@@ -21,7 +21,7 @@
 Keywords parse_c(const ParserSettings *ps, const char *text)
 {
 	static TrRegex tr_function("(?:([\\w:]+)[*&]*\\s+(?:[*&]*\\s+)?[*&]*)?([\\w:]+)\\s*(\\([^)]*\\))");
-	static TrRegex tr_parameters("(\\$?\\w+|\\.\\.\\.)(\\s*=\\s*[\\\"\\w\\.]+)?\\s*[,)]");
+	static TrRegex tr_parameters("(\\$?\\w+|\\.\\.\\.)(\\s*=\\s*[\\\"\\w\\.']+)?\\s*[,)]");
 	Keywords keywords;
 	
 	const TRexChar *begin, *end;

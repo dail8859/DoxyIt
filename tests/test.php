@@ -4,5 +4,7 @@
 
 function myFunction($abc, $def = "test")
 
+function get_user_name($uid='',$type='username',$key='sub')
+
 // Thats about it for now...
 ?>
