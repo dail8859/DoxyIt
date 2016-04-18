@@ -3,4 +3,4 @@
 
 function myFunction(abc, def, ghi)
 
-// Thats about it for now...
+a.b.c = function(jkl, mno)
