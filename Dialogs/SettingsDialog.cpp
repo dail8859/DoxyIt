@@ -27,6 +27,10 @@ Format Keywords:\r\n\
 $FILENAME - The current file name.\r\n\
 $FUNCTION - The name of the function/method.\r\n\
 $PARAM - Expands to a single function/method parameter. Any line containing this will get repeated for each parameter.\r\n\
+$COMPUTER - Current computer name.\r\n\
+$USER - User name of current user.\r\n\
+$DATE - Current date and time.\r\n\
+$YEAR - Part of date: year\r\n\
 $@ - Expands to the prefix character for Doxygen commands.\r\n\
 $| - Marks the alignment position. This is only valid for lines containing $PARAM.\r\n");
 

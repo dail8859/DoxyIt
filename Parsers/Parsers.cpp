@@ -18,6 +18,7 @@
 
 #include "Parsers.h"
 #include <vector>
+#include <ctime>
 
 const char *default_function_format = 
 	"\r\n"
@@ -186,6 +187,8 @@ void alignLines(std::vector<std::string> &lines)
 	}
 }
 
+#define INFO_BUFFER_SIZE 2048
+
 std::string FormatBlock(const ParserSettings *ps, Keywords& keywords, const std::string &format)
 {
 	std::stringstream ss;
@@ -193,11 +196,23 @@ std::string FormatBlock(const ParserSettings *ps, Keywords& keywords, const std:
 	std::vector<std::string> params = keywords["$PARAM"];
 	std::string format_copy(format);
 	const char *eol = getEolStr();
+	char infoBuf[INFO_BUFFER_SIZE];
 
 	// Replace keywords
 	stringReplace(format_copy, "$@", ps->command_prefix);
 	stringReplace(format_copy, "$FILENAME", keywords["$FILENAME"][0]);
-	
+	memset(infoBuf, 0, INFO_BUFFER_SIZE);
+	DWORD bufCharCount = INFO_BUFFER_SIZE;
+	if (GetComputerNameA(infoBuf, &bufCharCount)) stringReplace(format_copy, "$COMPUTER", infoBuf);
+	bufCharCount = INFO_BUFFER_SIZE;
+	if (GetUserNameA(infoBuf, &bufCharCount)) stringReplace(format_copy, "$USER", infoBuf);
+	time_t t = std::time(NULL);
+	struct tm *ts = std::localtime(&t);
+	std::strftime(infoBuf, INFO_BUFFER_SIZE - 1, "%Y", ts);
+	stringReplace(format_copy, "$YEAR", infoBuf);
+	std::strftime(infoBuf, INFO_BUFFER_SIZE - 1, "%c", ts);
+	stringReplace(format_copy, "$DATE", infoBuf);
+
 	// $FUNCTION may not exist
 	if(keywords.find("$FUNCTION") != keywords.end())
 		stringReplace(format_copy, "$FUNCTION", keywords["$FUNCTION"][0]);
