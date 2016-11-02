@@ -81,6 +81,31 @@ The format string is used to customize the Doxygen Function Commenting block gen
 - `$FILENAME` - The current file name.
 - `$FUNCTION` - The name of the function/method.
 - `$PARAM` - Expands to a single function/method parameter. Any line containing this will get repeated for each parameter.
+- `$COMPUTER` - Current computer name.
+- `$USER` - User account name of current user (for example, smith).
+- `$FULLUSER` - Full user name of current user (for example, Jeff Smith).
+- `$DATE` - Current date and time, format ISO 8601 (for example, 2009-06-30T18:30:00).
+- `$DATE_a` - Abbreviated weekday name
+- `$DATE_A` - Full weekday name
+- `$DATE_b` - Abbreviated month name
+- `$DATE_B` - Full month name
+- `$DATE_c` - Date and time representation appropriate for locale
+- `$DATE_d` - Day of month as decimal number (01 - 31)
+- `$DATE_H` - Hour in 24-hour format (00 - 23)
+- `$DATE_I` - Hour in 12-hour format (01 - 12)
+- `$DATE_j` - Day of year as decimal number (001 - 366)
+- `$DATE_m` - Month as decimal number (01 - 12)
+- `$DATE_M` - Minute as decimal number (00 - 59)
+- `$DATE_p` - Current locale's A.M./P.M. indicator for 12-hour clock
+- `$DATE_S` - Second as decimal number (00 - 59)
+- `$DATE_U` - Week of year as decimal number, with Sunday as first day of week (00 - 53)
+- `$DATE_w` - Weekday as decimal number (0 - 6; Sunday is 0)
+- `$DATE_W` - Week of year as decimal number, with Monday as first day of week (00 - 53)
+- `$DATE_x` - Date representation for current locale
+- `$DATE_X` - Time representation for current locale
+- `$DATE_y` - Year without century, as decimal number (00 - 99)
+- `$DATE_Y` - Year with century, as decimal number
+- `$DATE_z`, `$DATE_Z` - Either the time-zone name or time zone abbreviation, depending on registry settings; no characters if time zone is unknown
 - `$@` - Expands to the prefix character for Doxygen commands.
 - `$|` - Marks the alignment position. This flag is only valid for lines containing $PARAM.
 

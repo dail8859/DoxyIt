@@ -28,9 +28,30 @@ $FILENAME - The current file name.\r\n\
 $FUNCTION - The name of the function/method.\r\n\
 $PARAM - Expands to a single function/method parameter. Any line containing this will get repeated for each parameter.\r\n\
 $COMPUTER - Current computer name.\r\n\
-$USER - User name of current user.\r\n\
-$DATE - Current date and time.\r\n\
-$YEAR - Part of date: year\r\n\
+$USER - User account name of current user.\r\n\
+$FULLUSER - full user name of current user.\r\n\
+$DATE - Current date and time, format ISO 8601.\r\n\
+$DATE_a - Abbreviated weekday name\r\n\
+$DATE_A - Full weekday name\r\n\
+$DATE_b - Abbreviated month name\r\n\
+$DATE_B - Full month name\r\n\
+$DATE_c - Date and time representation appropriate for locale\r\n\
+$DATE_d - Day of month as decimal number (01 - 31)\r\n\
+$DATE_H - Hour in 24 - hour format (00 - 23)\r\n\
+$DATE_I - Hour in 12 - hour format (01 - 12)\r\n\
+$DATE_j - Day of year as decimal number (001 - 366)\r\n\
+$DATE_m - Month as decimal number (01 - 12)\r\n\
+$DATE_M - Minute as decimal number (00 - 59)\r\n\
+$DATE_p - Current locale's A.M./P.M. indicator for 12-hour clock\r\n\
+$DATE_S - Second as decimal number (00 - 59)\r\n\
+$DATE_U - Week of year as decimal number, with Sunday as first day of week (00 - 53)\r\n\
+$DATE_w - Weekday as decimal number (0 - 6; Sunday is 0)\r\n\
+$DATE_W - Week of year as decimal number, with Monday as first day of week (00 - 53)\r\n\
+$DATE_x - Date representation for current locale\r\n\
+$DATE_X - Time representation for current locale\r\n\
+$DATE_y - Year without century, as decimal number (00 - 99)\r\n\
+$DATE_Y - Year with century, as decimal number\r\n\
+$DATE_z, $DATE_Z - Either the time - zone name or time zone abbreviation, depending on registry settings; no characters if time zone is unknown\r\n\
 $@ - Expands to the prefix character for Doxygen commands.\r\n\
 $| - Marks the alignment position. This is only valid for lines containing $PARAM.\r\n");
 
