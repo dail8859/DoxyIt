@@ -19,6 +19,11 @@
 #include "Parsers.h"
 #include <vector>
 #include <ctime>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#define SECURITY_WIN32
+#include <Security.h>
+#pragma comment(lib, "Secur32.lib")
 
 const char *default_function_format = 
 	"\r\n"
@@ -206,11 +211,22 @@ std::string FormatBlock(const ParserSettings *ps, Keywords& keywords, const std:
 	if (GetComputerNameA(infoBuf, &bufCharCount)) stringReplace(format_copy, "$COMPUTER", infoBuf);
 	bufCharCount = INFO_BUFFER_SIZE;
 	if (GetUserNameA(infoBuf, &bufCharCount)) stringReplace(format_copy, "$USER", infoBuf);
+	bufCharCount = INFO_BUFFER_SIZE;
+	if (GetUserNameExA(NameDisplay, infoBuf, &bufCharCount))
+		stringReplace(format_copy, "$FULLUSER", infoBuf);
+	else
+		stringReplace(format_copy, "$FULLUSER", "");
 	time_t t = std::time(NULL);
 	struct tm *ts = std::localtime(&t);
-	std::strftime(infoBuf, INFO_BUFFER_SIZE - 1, "%Y", ts);
-	stringReplace(format_copy, "$YEAR", infoBuf);
-	std::strftime(infoBuf, INFO_BUFFER_SIZE - 1, "%c", ts);
+	const char* character = "aAbBcdHIjmMpSUwWxXyYzZ";
+	for (size_t uj = 0; uj < strlen(character); uj++)
+	{
+		char format[3] = { '%', character[uj], 0 };
+		std::strftime(infoBuf, INFO_BUFFER_SIZE - 1, format, ts);
+		char search[8] = { '$', 'D', 'A', 'T', 'E', '_', character[uj], 0 };
+		stringReplace(format_copy, search, infoBuf);
+	}
+	std::strftime(infoBuf, INFO_BUFFER_SIZE - 1, "%Y-%m-%dT%H:%M:%S", ts);
 	stringReplace(format_copy, "$DATE", infoBuf);
 
 	// $FUNCTION may not exist
