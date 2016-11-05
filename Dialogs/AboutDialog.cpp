@@ -18,28 +18,30 @@
 
 #include <WindowsX.h>
 #include "PluginDefinition.h"
-#include "AboutDialog.h"
 #include "resource.h"
 #include "Hyperlinks.h"
 #include "Version.h"
 
-INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch(uMsg)
-	{
+#ifdef _WIN64
+#define BITNESS TEXT("(64 bit)")
+#else
+#define BITNESS TEXT("(32 bit)")
+#endif
+
+INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	switch (uMsg) {
 	case WM_INITDIALOG:
 		ConvertStaticToHyperlink(hwndDlg, IDC_GITHUB);
 		ConvertStaticToHyperlink(hwndDlg, IDC_README);
-		Edit_SetText(GetDlgItem(hwndDlg, IDC_VERSION), VERSION_TEXT TEXT(" ") VERSION_STAGE);
+		Edit_SetText(GetDlgItem(hwndDlg, IDC_VERSION), TEXT("DoxyIt v") VERSION_TEXT TEXT(" ") VERSION_STAGE TEXT(" ") BITNESS);
 		return true;
 	case WM_COMMAND:
-		switch(LOWORD(wParam))
-		{
+		switch (LOWORD(wParam)) {
 		case IDOK:
 			DestroyWindow(hwndDlg);
 			return true;
 		case IDC_GITHUB:
-			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt"), NULL, NULL, SW_SHOWNORMAL);
+			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt/"), NULL, NULL, SW_SHOWNORMAL);
 			return true;
 		case IDC_README:
 			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/DoxyIt/blob/v") VERSION_TEXT TEXT("/README.md"), NULL, NULL, SW_SHOWNORMAL);
