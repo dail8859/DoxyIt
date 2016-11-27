@@ -165,6 +165,7 @@ void InitializeParsers(void)
 	parsers.emplace_back(REGISTER_PARSER(parse_python, PYTHON, "Python", "## ", "#  ", "#  ", "@", "def foo(bar, string=None)"));
 	parsers.emplace_back(REGISTER_PARSER(parse_c, PHP, "PHP", "/**", " *  ", " */", "@", "function myFunction($abc, $defg)"));
 	parsers.emplace_back(REGISTER_PARSER(parse_c, JS, "JavaScript", "/**", " *  ", " */", "@", "function myFunction(abc, defg)"));
+	parsers.emplace_back(REGISTER_PARSER(parse_c, JAVASCRIPT, "JavaScript", "/**", " *  ", " */", "@", "function myFunction(abc, defg)"));
 	parsers.emplace_back(REGISTER_PARSER(parse_c, CS, "C#", "/// ", "/// ", "/// ", "\\", "public int Method(ref int abc, int defg)"));
 }
 
