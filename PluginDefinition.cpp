@@ -131,7 +131,7 @@ void configSave()
 		ws = TEXT("\"") + toWideString(stringReplace(std::string(ps->function_format), "\r\n", "\\r\\n")) + TEXT("\"");
 		WritePrivateProfileString(p.lang.c_str(), TEXT("function_format"), ws.c_str(), iniPath);
 
-		// Write out interal parser attributes
+		// Write out internal parser attributes
 		if(!p.external)
 		{
 			WritePrivateProfileString(p.lang.c_str(), TEXT("align"), BOOLTOSTR(ps->align), iniPath);
@@ -254,7 +254,6 @@ void setNppInfo(NppData notepadPlusData)
 void doxyItFunction()
 {
 	std::string doc_block;
-	int startLine, endLine;
 	char *indent = NULL;
 
 	if(!updateScintilla()) return;
@@ -267,7 +266,7 @@ void doxyItFunction()
 		return;
 
 	// Keep track of where we started
-	startLine = SendNpp(NPPM_GETCURRENTLINE);
+	int startLine = static_cast<int>(SendNpp(NPPM_GETCURRENTLINE));
 
 	// Get the whitespace of the next line so we can insert it in front of 
 	// all the lines of the document block that is going to be inserted
@@ -275,7 +274,7 @@ void doxyItFunction()
 
 	SendScintilla(SCI_BEGINUNDOACTION);
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
-	endLine = SendNpp(NPPM_GETCURRENTLINE); // get the end of the document block
+	int endLine = static_cast<int>(SendNpp(NPPM_GETCURRENTLINE)); // get the end of the document block
 	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
 	SendScintilla(SCI_ENDUNDOACTION);
 
@@ -314,7 +313,7 @@ void showSettings()
 }
 
 static void showAbout() {
-	HWND hSelf = CreateDialogParam((HINSTANCE)_hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc, NULL);
+	HWND hSelf = CreateDialogParam((HINSTANCE)_hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, (DLGPROC)abtDlgProc, (LPARAM)NULL);
 
 	// Go to center
 	RECT rc;
@@ -352,7 +351,7 @@ void doxyItNewLine()
 
 	eol = getEolStr();
 
-	curLine = SendNpp(NPPM_GETCURRENTLINE);
+	curLine = static_cast<int>(SendNpp(NPPM_GETCURRENTLINE));
 
 	previousLine = getLine(curLine - 1);
 
@@ -391,14 +390,14 @@ void doxyItNewLine()
 			while(i < ps->doc_start.length() && found[i] == ps->doc_start.at(i)) ++i;
 
 			SendScintilla(SCI_BEGINUNDOACTION);
-			SendScintilla(SCI_DELLINELEFT);			// Clear any automatic indentation
-			SendScintilla(SCI_DELETEBACK);			// Clear the newline
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) &ps->doc_start.c_str()[i]);	// Fill the rest of doc_start
+			SendScintilla(SCI_DELLINELEFT); // Clear any automatic indentation
+			SendScintilla(SCI_DELETEBACK); // Clear the newline
+			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) &ps->doc_start.c_str()[i]); // Fill the rest of doc_start
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) ps->doc_line.c_str());
-			pos = SendScintilla(SCI_GETCURRENTPOS);	// Save this position so we can restore it
-			SendScintilla(SCI_LINEEND);				// Skip any text the user carried to next line
+			pos = static_cast<int>(SendScintilla(SCI_GETCURRENTPOS)); // Save this position so we can restore it
+			SendScintilla(SCI_LINEEND); // Skip any text the user carried to next line
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
 			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) ps->doc_end.c_str());

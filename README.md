@@ -73,7 +73,7 @@ and then `Enter` will turn into:
 ```
 
 ## Settings
-Each language can be configured to have any string to indicate the start, line, and end of a document block. The settings dialog also provides a live preview of what a documentation block would look like:
+Each language can be configured to have any string to indicate the start, middle, and end of a document block. The settings dialog also provides a live preview of what a documentation block would look like:
 ![Settings Dialog](https://dl.dropboxusercontent.com/u/13788271/DoxyIt/SettingsWithAddRemove.png)
 
 ### Doxygen Commenting Format
@@ -114,15 +114,8 @@ Not all keywords are valid for User Defined Languages.
 ### UDL Support
 Custom UDLs can be added by pressing the `+` button next to the list of supported languages. The name entered for the UDL must match the name of the desired UDL. Pressing the `-` button will remove the selected UDL. Function commenting is partially supported for UDLs. It will insert a comment block at the current location but will not attempt to parse any text.
 
-##Todo
-- Line wrapping inside comment blocks.
-- Autocomplete for Doxygen commands.
-- Support for other languages
-    - External Lexers
-    - Built in languages
-
 ## Development
-The code has been developed using MSVC 2013 Express. Building the "Unicode Release" will generate the DLL which can be used by Notepad++. For convenience, MSVC copies the built DLL into the Notepad++ plugin directory. 
+The code has been developed using MSVC 2013. Building the "Release" will generate the DLL which can be used by Notepad++. For convenience, MSVC copies the DLL into the Notepad++ plugin directory. 
 
 ## License
 This code is released under the [GNU General Public License version 2](http://www.gnu.org/licenses/gpl-2.0.txt).

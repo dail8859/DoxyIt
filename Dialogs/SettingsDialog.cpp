@@ -291,7 +291,7 @@ void SettingsDialog::saveSettings()
 void SettingsDialog::updatePreview()
 {
 	std::string block;
-	int prev_eol_mode;
+	LRESULT prev_eol_mode;
 	int index = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
 
 	// Set eol mode to "\r\n" so it will display correctly in the dialogbox
@@ -352,7 +352,7 @@ void SettingsDialog::swapFormat()
 	free(text);
 }
 
-BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if(_updating) return true;
 

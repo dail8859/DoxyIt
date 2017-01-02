@@ -22,8 +22,8 @@
 // Clears the line
 void clearLine(int line)
 {
-	int lineStart = SendScintilla(SCI_POSITIONFROMLINE, line);
-	int lineEnd = SendScintilla(SCI_GETLINEENDPOSITION, line);
+	auto lineStart = SendScintilla(SCI_POSITIONFROMLINE, line);
+	auto lineEnd = SendScintilla(SCI_GETLINEENDPOSITION, line);
 
 	SendScintilla(SCI_SETSEL, lineStart, lineEnd);
 	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) "");
@@ -32,8 +32,8 @@ void clearLine(int line)
 // Get the whitespace of the line, the returned value must be free'd
 char *getLineIndentStr(int line)
 {
-	int indentStart = SendScintilla(SCI_POSITIONFROMLINE, line);
-	int indentEnd = SendScintilla(SCI_GETLINEINDENTPOSITION, line);
+	int indentStart = static_cast<int>(SendScintilla(SCI_POSITIONFROMLINE, line));
+	int indentEnd = static_cast<int>(SendScintilla(SCI_GETLINEINDENTPOSITION, line));
 
 	if(indentStart != indentEnd) return getRange(indentStart, indentEnd);
 	else return NULL;
@@ -45,7 +45,7 @@ void insertBeforeLines(char *str, int start, int end, bool force)
 {
 	for(int i = start; i < end; ++i)
 	{
-		int line = SendScintilla(SCI_POSITIONFROMLINE, i);
+		int line = static_cast<int>(SendScintilla(SCI_POSITIONFROMLINE, i));
 
 		// force=true will always insert the text in front of the line
 		// force=false will only insert it if the line doesnt start with str
@@ -55,7 +55,7 @@ void insertBeforeLines(char *str, int start, int end, bool force)
 		}
 		else
 		{
-			char *buffer = getRange(line, line + strlen(str));
+			char *buffer = getRange(line, line + static_cast<int>(strlen(str)));
 			if(strncmp(buffer, str, strlen(str)) != 0) SendScintilla(SCI_INSERTTEXT, line, (LPARAM) str);
 			delete[] buffer;
 		}
@@ -65,7 +65,7 @@ void insertBeforeLines(char *str, int start, int end, bool force)
 // Find the next instance of text
 int findNext(char* text, int len, bool regExp)
 {
-	int curPos = SendScintilla(SCI_GETCURRENTPOS);
+	int curPos = static_cast<int>(SendScintilla(SCI_GETCURRENTPOS));
 	int flags = (regExp ? SCI_SETSEARCHFLAGS : 0);
 
 	TextToFind ttf;
@@ -73,7 +73,7 @@ int findNext(char* text, int len, bool regExp)
 	ttf.chrg.cpMax = curPos + len;
 	ttf.lpstrText = text;
 
-	return SendScintilla(SCI_FINDTEXT, flags, (LPARAM) &ttf);
+	return static_cast<int>(SendScintilla(SCI_FINDTEXT, flags, (LPARAM) &ttf));
 }
 
 // Get a range of text from start to end, returned string must be free'd
@@ -108,7 +108,7 @@ char *getLine(int lineNum)
 const char *getEolStr()
 {
 	static char *eol[] = {"\r\n", "\r", "\n"};
-	int eolmode = SendScintilla(SCI_GETEOLMODE);
+	auto eolmode = SendScintilla(SCI_GETEOLMODE);
 	return eol[eolmode];
 }
 
@@ -146,7 +146,7 @@ std::string& stringReplace(std::string& str, const std::string& oldStr, const st
 std::vector<std::string> splitLines(const std::string &str, const std::string &split)
 {
 	std::vector<std::string> lines;
-	unsigned int prev_pos = 0, pos = 0;
+	size_t prev_pos = 0, pos = 0;
 
 	while((pos = str.find(split, pos)) != std::string::npos)
 	{

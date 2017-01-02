@@ -79,7 +79,7 @@ const Parser *getCurrentParser(bool update)
 		if(lang_type == L_USER /* || lang_type == L_EXTERNAL */)
 		{
 			wchar_t *name = NULL;
-			int len = 0;
+			size_t len = 0;
 
 			len = SendNpp(NPPM_GETLANGUAGENAME, lang_type, NULL) + 1;
 			name = (wchar_t *) malloc(sizeof(wchar_t) * len);
@@ -180,14 +180,14 @@ void alignLines(std::vector<std::string> &lines)
 	// Find the max position the flag is found at
 	for(unsigned int i = 0; i < lines.size(); ++i)
 	{
-		unsigned int pos = lines[i].find(flag);
+		unsigned int pos = static_cast<unsigned int>(lines[i].find(flag));
 		if(pos != std::string::npos) align_max = max(pos, align_max);
 	}
 
 	// Replace the flag with an appropriate number of spaces
 	for(unsigned int i = 0; align_max != 0 && i < lines.size(); ++i)
 	{
-		unsigned int pos = lines[i].find(flag);
+		unsigned int pos = static_cast<unsigned int>(lines[i].find(flag));
 		lines[i].replace(pos, strlen(flag), align_max - pos, ' ');
 	}
 }
@@ -323,8 +323,8 @@ std::string Parse(void)
 {
 	std::string doc_block;
 	const Parser *p;
-	int found, curLine, foundLine;
 	char *buffer;
+	int found;
 
 	if(!(p = getCurrentParser()))
 	{
@@ -344,8 +344,8 @@ std::string Parse(void)
 	}
 
 	// Do some sanity checking. Make sure curline <= found <= curline+2
-	curLine = SendNpp(NPPM_GETCURRENTLINE);
-	foundLine = SendScintilla(SCI_LINEFROMPOSITION, found);
+	auto curLine = SendNpp(NPPM_GETCURRENTLINE);
+	auto foundLine = SendScintilla(SCI_LINEFROMPOSITION, found);
 	if(foundLine < curLine || foundLine > curLine + 2)
 	{
 		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
@@ -353,13 +353,13 @@ std::string Parse(void)
 	}
 
 	// Find the matching closing brace
-	if((found = SendScintilla(SCI_BRACEMATCH, found, 0)) == -1)
+	if((found = static_cast<int>(SendScintilla(SCI_BRACEMATCH, found, 0))) == -1)
 	{
 		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return std::string("");
 	}
 
-	buffer = getRange(SendScintilla(SCI_GETCURRENTPOS), found + 1);
+	buffer = getRange(static_cast<int>(SendScintilla(SCI_GETCURRENTPOS)), found + 1);
 	doc_block = FormatFunctionBlock(p, &p->ps, buffer);
 	delete[] buffer;
 

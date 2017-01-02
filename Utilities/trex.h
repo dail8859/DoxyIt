@@ -52,7 +52,7 @@ typedef struct TRex TRex;
 
 typedef struct {
 	const TRexChar *begin;
-	int len;
+	size_t len;
 } TRexMatch;
 
 TRex *trex_compile(const TRexChar *pattern,const TRexChar **error);
