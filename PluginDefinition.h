@@ -21,6 +21,7 @@
 
 #include <sstream>
 #include "PluginInterface.h"
+#include "ScintillaGateway.h"
 
 #define SCI_UNUSED 0
 
@@ -28,7 +29,9 @@ const wchar_t NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
 const int nbFunc = 7;
 
 // --- Helper functions ---
-LRESULT SendScintilla(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
+
+extern ScintillaGateway editor;
+
 LRESULT SendNpp(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
 
 // Calls from DoxyIt.cpp

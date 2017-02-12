@@ -108,8 +108,12 @@ The format string is used to customize the Doxygen Function Commenting block gen
 - `$DATE_z`, `$DATE_Z` - Either the time-zone name or time zone abbreviation, depending on registry settings; no characters if time zone is unknown
 - `$@` - Expands to the prefix character for Doxygen commands.
 - `$|` - Marks the alignment position. This flag is only valid for lines containing $PARAM.
+- `$(...)` - Defines a location to jump to when pressing the Tab key. Text within the parenthesis is used as a default value.
 
 Not all keywords are valid for User Defined Languages. 
+
+### Jump Locations
+The function and file formats can specify jump locations.  Using `$(...)` will use the text within the parenthesis as a default value. Jump locations with the same default text will be edited simultaneously. These are areas of text that can be jumped to by pressing the `Tab` key.  Pressing the `Esc` key will remove all jump locations.
 
 ### UDL Support
 Custom UDLs can be added by pressing the `+` button next to the list of supported languages. The name entered for the UDL must match the name of the desired UDL. Pressing the `-` button will remove the selected UDL. Function commenting is partially supported for UDLs. It will insert a comment block at the current location but will not attempt to parse any text.

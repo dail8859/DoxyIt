@@ -27,28 +27,28 @@
 
 const char *default_function_format = 
 	"\r\n"
-	"$@brief Brief\r\n"
+	"$@brief $(Brief description)\r\n"
 	"\r\n"
-	"$@param [in] $PARAM $|Parameter_Description\r\n"
-	"$@return Return_Description\r\n"
+	"$@param [in] $PARAM $|$(Description for $PARAM)\r\n"
+	"$@return $(Return description)\r\n"
 	"\r\n"
-	"$@details Details\r\n"
+	"$@details $(More details)\r\n"
 	;
 
 const char *default_internal_function_format = 
 	"\r\n"
-	"$@brief Brief\r\n"
+	"$@brief $(Brief description)\r\n"
 	"\r\n"
-	"$@param [in] theParam Parameter_Description\r\n"
-	"$@return Return_Description\r\n"
+	"$@param [in] theParam $(Description)\r\n"
+	"$@return $(Return description)\r\n"
 	"\r\n"
-	"$@details Details\r\n"
+	"$@details $(More details)\r\n"
 	;
 
 const char *default_file_format = 
 	"\r\n"
 	"$@file $FILENAME\r\n"
-	"$@brief Brief\r\n"
+	"$@brief $(Brief description)\r\n"
 	;
 
 
@@ -345,7 +345,7 @@ std::string Parse(void)
 
 	// Do some sanity checking. Make sure curline <= found <= curline+2
 	auto curLine = SendNpp(NPPM_GETCURRENTLINE);
-	auto foundLine = SendScintilla(SCI_LINEFROMPOSITION, found);
+	auto foundLine = editor.LineFromPosition(found);
 	if(foundLine < curLine || foundLine > curLine + 2)
 	{
 		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
@@ -353,13 +353,13 @@ std::string Parse(void)
 	}
 
 	// Find the matching closing brace
-	if((found = static_cast<int>(SendScintilla(SCI_BRACEMATCH, found, 0))) == -1)
+	if((found = static_cast<int>(editor.BraceMatch(found))) == -1)
 	{
 		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return std::string("");
 	}
 
-	buffer = getRange(static_cast<int>(SendScintilla(SCI_GETCURRENTPOS)), found + 1);
+	buffer = getRange(static_cast<int>(editor.GetCurrentPos()), found + 1);
 	doc_block = FormatFunctionBlock(p, &p->ps, buffer);
 	delete[] buffer;
 

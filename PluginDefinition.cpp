@@ -22,17 +22,17 @@
 #include "Version.h"
 #include "SettingsDialog.h"
 #include "AboutDialog.h"
+#include "JumpLocations.h"
 
 // --- Local variables ---
 static bool do_active_commenting;	// active commenting - create or extend a document block
 //static bool do_active_wrapping;	// active wrapping - wrap text inside of document blocks...todo
 
 static NppData nppData;
-static SciFnDirect pSciMsg;			// For direct scintilla call
-static sptr_t pSciWndData;			// For direct scintilla call
 static SettingsDialog sd;			// The settings dialog
 static HANDLE _hModule;				// For dialog initialization
-
+static HHOOK hook = NULL;
+static bool hasFocus = true;
 // --- Menu callbacks ---
 static void doxyItFunction();
 static void doxyItFile();
@@ -40,6 +40,8 @@ static void activeCommenting();
 //static void activeWrapping();
 static void showSettings();
 static void showAbout();
+
+ScintillaGateway editor;
 
 // --- Global variables ---
 ShortcutKey sk = {true, true, true, 'D'};
@@ -53,32 +55,16 @@ FuncItem funcItem[nbFunc] = {
 	{TEXT("About..."),          showAbout,        0, false, NULL}
 };
 
-
-inline LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
-{
-	return pSciMsg(pSciWndData, Msg, wParam, lParam);
-}
-
 inline LRESULT SendNpp(UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	return SendMessage(nppData._nppHandle, Msg, wParam, lParam);
 }
 
-bool updateScintilla()
+static HWND getCurrentScintilla()
 {
-	HWND curScintilla;
-
-	// Get the current scintilla
-	int which = -1;
+	int which = 0;
 	SendNpp(NPPM_GETCURRENTSCINTILLA, SCI_UNUSED, (LPARAM)&which);
-	if(which == -1) return false;
-	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
-
-	// Get the function and pointer to it for more efficient calls
-	pSciMsg = (SciFnDirect) SendMessage(curScintilla, SCI_GETDIRECTFUNCTION, 0, 0);
-	pSciWndData = (sptr_t) SendMessage(curScintilla, SCI_GETDIRECTPOINTER, 0, 0);
-
-	return true;
+	return (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 }
 
 // --- Configuration ---
@@ -146,8 +132,8 @@ void configSave()
 void configLoad()
 {
 	wchar_t iniPath[MAX_PATH];
-	wchar_t tbuffer[512]; // "relatively" large
-	wchar_t tbuffer2[512];
+	wchar_t tbuffer[2048]; // "relatively" large
+	wchar_t tbuffer2[2048];
 	wchar_t *current;
 	ParserSettings ps;
 
@@ -171,30 +157,30 @@ void configLoad()
 		// also, wrapping it in quotes doesn't seem to work either. So...use "!!!" as the default text
 		// and if we find that the value wasn't found and we have "!!!" then use the default value in the
 		// parser, else, use what we pulled from the file.
-		GetPrivateProfileString(p.lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, 512, iniPath);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("doc_start"), TEXT("!!!"), tbuffer, 2048, iniPath);
 		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.doc_start = toString(tbuffer);
 
-		GetPrivateProfileString(p.lang.c_str(), TEXT("doc_line_"), TEXT("!!!"), tbuffer, 512, iniPath);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("doc_line_"), TEXT("!!!"), tbuffer, 2048, iniPath);
 		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.doc_line = toString(tbuffer);
 
-		GetPrivateProfileString(p.lang.c_str(), TEXT("doc_end__"), TEXT("!!!"), tbuffer, 512, iniPath);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("doc_end__"), TEXT("!!!"), tbuffer, 2048, iniPath);
 		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.doc_end = toString(tbuffer);
 
-		GetPrivateProfileString(p.lang.c_str(), TEXT("command_prefix"), TEXT("!!!"), tbuffer, 512, iniPath);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("command_prefix"), TEXT("!!!"), tbuffer, 2048, iniPath);
 		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.command_prefix = toString(tbuffer);
 
-		GetPrivateProfileString(p.lang.c_str(), TEXT("function_format"), TEXT("!!!"), tbuffer, 512, iniPath);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("function_format"), TEXT("!!!"), tbuffer, 2048, iniPath);
 		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.function_format = stringReplace(toString(tbuffer), "\\r\\n", "\r\n");
 
-		GetPrivateProfileString(p.lang.c_str(), TEXT("file_format"), TEXT("!!!"), tbuffer, 512, iniPath);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("file_format"), TEXT("!!!"), tbuffer, 2048, iniPath);
 		if(lstrcmp(tbuffer, TEXT("!!!")) != 0) p.ps.file_format = stringReplace(toString(tbuffer), "\\r\\n", "\r\n");
 
-		GetPrivateProfileString(p.lang.c_str(), TEXT("align"), BOOLTOSTR(p.ps.align), tbuffer, 512, iniPath);
+		GetPrivateProfileString(p.lang.c_str(), TEXT("align"), BOOLTOSTR(p.ps.align), tbuffer, 2048, iniPath);
 		p.ps.align = (lstrcmp(tbuffer, TEXT("true")) == 0);
 	}
 
 
-	GetPrivateProfileSection(TEXT("External"), tbuffer, 512, iniPath);
+	GetPrivateProfileSection(TEXT("External"), tbuffer, 2048, iniPath);
 	current = tbuffer;
 	while(current[0] != NULL)
 	{
@@ -203,23 +189,23 @@ void configLoad()
 		// Temporarily remove the '=' that was found
 		*equals = NULL;
 
-		GetPrivateProfileString(current, TEXT("doc_start"), TEXT("/**"), tbuffer2, 512, iniPath);
+		GetPrivateProfileString(current, TEXT("doc_start"), TEXT("/**"), tbuffer2, 2048, iniPath);
 		ps.doc_start = toString(tbuffer2);
 
-		GetPrivateProfileString(current, TEXT("doc_line_"), TEXT(" *  "), tbuffer2, 512, iniPath);
+		GetPrivateProfileString(current, TEXT("doc_line_"), TEXT(" *  "), tbuffer2, 2048, iniPath);
 		ps.doc_line = toString(tbuffer2);
 
-		GetPrivateProfileString(current, TEXT("doc_end__"), TEXT(" */"), tbuffer2, 512, iniPath);
+		GetPrivateProfileString(current, TEXT("doc_end__"), TEXT(" */"), tbuffer2, 2048, iniPath);
 		ps.doc_end = toString(tbuffer2);
 
-		GetPrivateProfileString(current, TEXT("command_prefix"), TEXT("\\"), tbuffer2, 512, iniPath);
+		GetPrivateProfileString(current, TEXT("command_prefix"), TEXT("\\"), tbuffer2, 2048, iniPath);
 		ps.command_prefix = toString(tbuffer2);
 
-		GetPrivateProfileString(current, TEXT("function_format"), TEXT("!!!"), tbuffer2, 512, iniPath);
+		GetPrivateProfileString(current, TEXT("function_format"), TEXT("!!!"), tbuffer2, 2048, iniPath);
 		if(lstrcmp(tbuffer2, TEXT("!!!")) != 0) ps.function_format = stringReplace(toString(tbuffer2), "\\r\\n", "\r\n");
 		else ps.function_format = default_internal_function_format;
 
-		GetPrivateProfileString(current, TEXT("file_format"), TEXT("!!!"), tbuffer2, 512, iniPath);
+		GetPrivateProfileString(current, TEXT("file_format"), TEXT("!!!"), tbuffer2, 2048, iniPath);
 		if(lstrcmp(tbuffer2, TEXT("!!!")) != 0) ps.file_format = stringReplace(toString(tbuffer2), "\\r\\n", "\r\n");
 		else ps.file_format = default_file_format;
 
@@ -245,6 +231,9 @@ void setNppInfo(NppData notepadPlusData)
 {
 	nppData = notepadPlusData;
 
+	// Set this as early as possible so its in a valid state
+	editor.SetScintillaInstance(nppData._scintillaMainHandle);
+
 	sd.init((HINSTANCE) _hModule, nppData);
 }
 
@@ -255,8 +244,6 @@ void doxyItFunction()
 {
 	std::string doc_block;
 	char *indent = NULL;
-
-	if(!updateScintilla()) return;
 
 	doc_block = Parse();
 
@@ -272,21 +259,22 @@ void doxyItFunction()
 	// all the lines of the document block that is going to be inserted
 	indent = getLineIndentStr(startLine + 1);
 
-	SendScintilla(SCI_BEGINUNDOACTION);
-	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
+	editor.BeginUndoAction();
+	editor.ReplaceSel(doc_block.c_str());
 	int endLine = static_cast<int>(SendNpp(NPPM_GETCURRENTLINE)); // get the end of the document block
 	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
-	SendScintilla(SCI_ENDUNDOACTION);
 
 	if(indent) delete[] indent;
+
+	ProcessTextRangeForNewJumpLocations(editor.PositionFromLine(startLine), editor.GetLineEndPosition(endLine));
+
+	editor.EndUndoAction();
 }
 
 void doxyItFile()
 {
 	std::string doc_block;
 	const ParserSettings *ps;
-
-	if(!updateScintilla()) return;
 
 	ps = getCurrentParserSettings();
 	if(!ps)
@@ -297,7 +285,15 @@ void doxyItFile()
 
 	doc_block = FormatFileBlock(ps);
 
-	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) doc_block.c_str());
+	editor.BeginUndoAction();
+
+	int startPos = editor.GetSelectionStart();
+	editor.ReplaceSel(doc_block.c_str());
+	int endPos = editor.GetCurrentPos();
+
+	ProcessTextRangeForNewJumpLocations(startPos, endPos);
+
+	editor.EndUndoAction();
 }
 
 void activeCommenting()
@@ -308,7 +304,6 @@ void activeCommenting()
 
 void showSettings()
 {
-	if(!updateScintilla()) return;
 	sd.doDialog();
 }
 
@@ -344,8 +339,6 @@ void doxyItNewLine()
 	char *previousLine, *found = NULL;
 	int curLine;
 
-	if(!updateScintilla()) return;
-
 	ps = getCurrentParserSettings();
 	if(!ps) return;
 
@@ -365,12 +358,12 @@ void doxyItNewLine()
 		// doc_line should have only whitespace in front of it
 		if(isWhiteSpace(indentation))
 		{
-			SendScintilla(SCI_BEGINUNDOACTION);
-			SendScintilla(SCI_DELLINELEFT);	// Clear any automatic indentation
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) ps->doc_line.c_str());
-			SendScintilla(SCI_ENDUNDOACTION);
-			SendScintilla(SCI_CHOOSECARETX);
+			editor.BeginUndoAction();
+			editor.DelLineLeft();	// Clear any automatic indentation
+			editor.ReplaceSel(indentation.c_str());
+			editor.ReplaceSel(ps->doc_line.c_str());
+			editor.EndUndoAction();
+			editor.ChooseCaretX();
 		}
 
 	}
@@ -389,27 +382,53 @@ void doxyItNewLine()
 			// Count the characters in common so we can add the rest
 			while(i < ps->doc_start.length() && found[i] == ps->doc_start.at(i)) ++i;
 
-			SendScintilla(SCI_BEGINUNDOACTION);
-			SendScintilla(SCI_DELLINELEFT); // Clear any automatic indentation
-			SendScintilla(SCI_DELETEBACK); // Clear the newline
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) &ps->doc_start.c_str()[i]); // Fill the rest of doc_start
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) ps->doc_line.c_str());
-			pos = static_cast<int>(SendScintilla(SCI_GETCURRENTPOS)); // Save this position so we can restore it
-			SendScintilla(SCI_LINEEND); // Skip any text the user carried to next line
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) eol);
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) indentation.c_str());
-			SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) ps->doc_end.c_str());
-			SendScintilla(SCI_ENDUNDOACTION);
-			SendScintilla(SCI_CHOOSECARETX);
+			editor.BeginUndoAction();
+			editor.DelLineLeft(); // Clear any automatic indentation
+			editor.DeleteBack(); // Clear the newline
+			editor.ReplaceSel(&ps->doc_start.c_str()[i]); // Fill the rest of doc_start
+			editor.ReplaceSel(eol);
+			editor.ReplaceSel(indentation.c_str());
+			editor.ReplaceSel(ps->doc_line.c_str());
+			pos = static_cast<int>(editor.GetCurrentPos()); // Save this position so we can restore it
+			editor.LineEnd(); // Skip any text the user carried to next line
+			editor.ReplaceSel(eol);
+			editor.ReplaceSel(indentation.c_str());
+			editor.ReplaceSel(ps->doc_end.c_str());
+			editor.EndUndoAction();
+			editor.ChooseCaretX();
 
 			// Restore the position
-			SendScintilla(SCI_GOTOPOS, pos);
+			editor.GotoPos(pos);
 		}
 	}
 
 	delete[] previousLine;
+}
+
+LRESULT CALLBACK KeyboardProc(int ncode, WPARAM wparam, LPARAM lparam)
+{
+	if (ncode == HC_ACTION)
+	{
+		if ((HIWORD(lparam) & KF_UP) == 0)
+		{
+			if (hasFocus)
+			{
+				if (!(GetKeyState(VK_SHIFT) & KF_UP) && !(GetKeyState(VK_CONTROL) & KF_UP) && !(GetKeyState(VK_MENU) & KF_UP))
+				{
+					if (wparam == VK_TAB)
+					{
+						if (GoToNextJumpLocation(editor.GetCurrentPos()))
+							return TRUE; // This key has been "handled" and won't propogate
+					}
+					else if (wparam == VK_ESCAPE)
+					{
+						ClearJumpLocations();
+					}
+				}
+			}
+		}
+	}
+	return CallNextHookEx(hook, ncode, wparam, lparam); //pass control to next hook in the hook chain.
 }
 
 void handleNotification(SCNotification *notifyCode)
@@ -421,27 +440,46 @@ void handleNotification(SCNotification *notifyCode)
 	switch(nh.code)
 	{
 	case SCN_UPDATEUI: // Now is when we can check to see if we do the commenting
-		if(do_newline)
+		if (notifyCode->updated & SC_UPDATE_CONTENT)
 		{
-			do_newline = false;
-			if(!updateScintilla()) return;
-			doxyItNewLine();
+			if (do_newline)
+			{
+				do_newline = false;
+				doxyItNewLine();
+			}
 		}
+
 		break;
 	case SCN_CHARADDED:
 		// Set a flag so that all line endings can trigger the commenting
 		if((ch == '\r' || ch == '\n') && do_active_commenting) do_newline = true;
 		break;
+	case SCN_FOCUSIN:
+		hasFocus = true;
+		break;
+	case SCN_FOCUSOUT:
+		hasFocus = false;
+		break;
 	case NPPN_READY:
 		InitializeParsers();
 		configLoad();
 		getCurrentParser(true);
+		hook = SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, (HINSTANCE)_hModule, ::GetCurrentThreadId());
+		SendMessage(nppData._scintillaMainHandle, SCI_INDICSETSTYLE, JUMPLOCATION_INDICATOR, INDIC_DOTBOX);
+		SendMessage(nppData._scintillaSecondHandle, SCI_INDICSETSTYLE, JUMPLOCATION_INDICATOR, INDIC_DOTBOX);
+		SendMessage(nppData._scintillaMainHandle , SCI_INDICSETALPHA, JUMPLOCATION_INDICATOR, 30);
+		SendMessage(nppData._scintillaSecondHandle, SCI_INDICSETALPHA, JUMPLOCATION_INDICATOR, 30);
+		SendMessage(nppData._scintillaMainHandle  , SCI_INDICSETOUTLINEALPHA, JUMPLOCATION_INDICATOR, 180);
+		SendMessage(nppData._scintillaSecondHandle, SCI_INDICSETOUTLINEALPHA, JUMPLOCATION_INDICATOR, 180);
 		break;
 	case NPPN_SHUTDOWN:
 		configSave();
 		CleanUpParsers();
+		if (hook != NULL) UnhookWindowsHookEx(hook);
 		break;
 	case NPPN_BUFFERACTIVATED:
+		editor.SetScintillaInstance(getCurrentScintilla());
+		/* fall though */
 	case NPPN_LANGCHANGED:
 		// Don't actually need the parser here, but this forces it to updates the current reference
 		getCurrentParser(true);

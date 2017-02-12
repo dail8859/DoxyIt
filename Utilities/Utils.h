@@ -28,6 +28,7 @@ void clearLine(int line);
 char *getLineIndentStr(int line);
 void insertBeforeLines(char *str, int start, int end, bool force=false);
 int findNext(char* text, int len=200, bool regExp=false);
+std::pair<int, int> findInRange(const char *text, int start, int stop, bool regExp = false);
 char *getRange(int start, int end);
 char *getLine(int lineNum);
 const char *getEolStr();

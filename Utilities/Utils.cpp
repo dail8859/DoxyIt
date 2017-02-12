@@ -22,18 +22,18 @@
 // Clears the line
 void clearLine(int line)
 {
-	auto lineStart = SendScintilla(SCI_POSITIONFROMLINE, line);
-	auto lineEnd = SendScintilla(SCI_GETLINEENDPOSITION, line);
+	auto lineStart = editor.PositionFromLine(line);
+	auto lineEnd = editor.GetLineEndPosition(line);
 
-	SendScintilla(SCI_SETSEL, lineStart, lineEnd);
-	SendScintilla(SCI_REPLACESEL, SCI_UNUSED, (LPARAM) "");
+	editor.SetSel(lineStart, lineEnd);
+	editor.ReplaceSel("");
 }
 
 // Get the whitespace of the line, the returned value must be free'd
 char *getLineIndentStr(int line)
 {
-	int indentStart = static_cast<int>(SendScintilla(SCI_POSITIONFROMLINE, line));
-	int indentEnd = static_cast<int>(SendScintilla(SCI_GETLINEINDENTPOSITION, line));
+	int indentStart = editor.PositionFromLine(line);
+	int indentEnd = editor.GetLineIndentPosition(line);
 
 	if(indentStart != indentEnd) return getRange(indentStart, indentEnd);
 	else return NULL;
@@ -45,18 +45,18 @@ void insertBeforeLines(char *str, int start, int end, bool force)
 {
 	for(int i = start; i < end; ++i)
 	{
-		int line = static_cast<int>(SendScintilla(SCI_POSITIONFROMLINE, i));
+		int line = editor.PositionFromLine(i);
 
 		// force=true will always insert the text in front of the line
 		// force=false will only insert it if the line doesnt start with str
 		if(force)
 		{
-			SendScintilla(SCI_INSERTTEXT, line, (LPARAM) str);
+			editor.InsertText(line, str);
 		}
 		else
 		{
 			char *buffer = getRange(line, line + static_cast<int>(strlen(str)));
-			if(strncmp(buffer, str, strlen(str)) != 0) SendScintilla(SCI_INSERTTEXT, line, (LPARAM) str);
+			if(strncmp(buffer, str, strlen(str)) != 0) editor.InsertText(line, str);
 			delete[] buffer;
 		}
 	}
@@ -65,15 +65,30 @@ void insertBeforeLines(char *str, int start, int end, bool force)
 // Find the next instance of text
 int findNext(char* text, int len, bool regExp)
 {
-	int curPos = static_cast<int>(SendScintilla(SCI_GETCURRENTPOS));
-	int flags = (regExp ? SCI_SETSEARCHFLAGS : 0);
+	int curPos = editor.GetCurrentPos();
+	int flags = (regExp ? SCFIND_REGEXP : 0);
 
 	TextToFind ttf;
 	ttf.chrg.cpMin = curPos;
 	ttf.chrg.cpMax = curPos + len;
 	ttf.lpstrText = text;
 
-	return static_cast<int>(SendScintilla(SCI_FINDTEXT, flags, (LPARAM) &ttf));
+	return editor.FindText(flags, &ttf);
+}
+
+std::pair<int, int> findInRange(const char *text, int start, int stop, bool regExp)
+{
+	TextToFind ttf;
+	ttf.chrg.cpMin = start;
+	ttf.chrg.cpMax = stop;
+	ttf.lpstrText = text;
+
+	int flags = (regExp ? SCFIND_REGEXP : 0);
+
+	if (editor.FindText(flags, &ttf) != INVALID_POSITION)
+		return std::make_pair(ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+
+	return std::make_pair(INVALID_POSITION, INVALID_POSITION);
 }
 
 // Get a range of text from start to end, returned string must be free'd
@@ -86,7 +101,7 @@ char *getRange(int start, int end)
 		tr.chrg.cpMax = end;
 		tr.lpstrText  = new char[end - start + 1];
 
-		SendScintilla(SCI_GETTEXTRANGE, SCI_UNUSED, (LPARAM) &tr);
+		editor.GetTextRange(&tr);
 		return tr.lpstrText;
 	}
 	return NULL;
@@ -95,10 +110,10 @@ char *getRange(int start, int end)
 // Get a line
 char *getLine(int lineNum)
 {
-	int lineLen = (int) SendScintilla(SCI_LINELENGTH, lineNum);
+	int lineLen = editor.LineLength(lineNum);
 	char *buffer = new char[lineLen + 1];
-	
-	SendScintilla(SCI_GETLINE, lineNum, (LPARAM) buffer);
+
+	editor.GetLine(lineNum, buffer);
 	buffer[lineLen] = '\0';
 
 	return buffer;
@@ -108,7 +123,7 @@ char *getLine(int lineNum)
 const char *getEolStr()
 {
 	static char *eol[] = {"\r\n", "\r", "\n"};
-	auto eolmode = SendScintilla(SCI_GETEOLMODE);
+	auto eolmode = editor.GetEOLMode();
 	return eol[eolmode];
 }
 

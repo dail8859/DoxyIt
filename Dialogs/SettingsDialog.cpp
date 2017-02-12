@@ -53,7 +53,10 @@ $DATE_y - Year without century, as decimal number (00 - 99)\r\n\
 $DATE_Y - Year with century, as decimal number\r\n\
 $DATE_z, $DATE_Z - Either the time - zone name or time zone abbreviation, depending on registry settings; no characters if time zone is unknown\r\n\
 $@ - Expands to the prefix character for Doxygen commands.\r\n\
-$| - Marks the alignment position. This is only valid for lines containing $PARAM.\r\n");
+$| - Marks the alignment position. This is only valid for lines containing $PARAM.\r\n\
+\r\n\
+$(...) - Defines a location to jump to when pressing the Tab key. Text within the parenthesis is used as a default value.\r\n\
+\r\n");
 
 
 INT_PTR CALLBACK inputDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -291,12 +294,12 @@ void SettingsDialog::saveSettings()
 void SettingsDialog::updatePreview()
 {
 	std::string block;
-	LRESULT prev_eol_mode;
+	int prev_eol_mode;
 	int index = ComboBox_GetCurSel(GetDlgItem(_hSelf, IDC_CMB_LANG));
 
 	// Set eol mode to "\r\n" so it will display correctly in the dialogbox
-	prev_eol_mode = SendScintilla(SCI_GETEOLMODE);
-	SendScintilla(SCI_SETEOLMODE, SC_EOL_CRLF);
+	prev_eol_mode = editor.GetEOLMode();
+	editor.SetEOLMode(SC_EOL_CRLF);
 
 	if(Button_GetCheck(GetDlgItem(_hSelf, IDC_RAD_FUNCTION)) == BST_CHECKED)
 	{
@@ -319,7 +322,7 @@ void SettingsDialog::updatePreview()
 	}
 
 	// Restore the eol mode
-	SendScintilla(SCI_SETEOLMODE, prev_eol_mode);
+	editor.SetEOLMode(prev_eol_mode);
 
 	// Set the preview
 	Edit_SetText(GetDlgItem(_hSelf, IDC_EDIT_PREVIEW), toWideString(block).c_str());
