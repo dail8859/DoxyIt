@@ -353,13 +353,13 @@ std::string Parse(void)
 	}
 
 	// Find the matching closing brace
-	if((found = static_cast<int>(editor.BraceMatch(found))) == -1)
+	if((found = editor.BraceMatch(found)) == -1)
 	{
 		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
 		return std::string("");
 	}
 
-	buffer = getRange(static_cast<int>(editor.GetCurrentPos()), found + 1);
+	buffer = getRange(editor.GetCurrentPos(), found + 1);
 	doc_block = FormatFunctionBlock(p, &p->ps, buffer);
 	delete[] buffer;
 

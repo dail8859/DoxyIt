@@ -17,60 +17,21 @@ Currently there is support for:
 
 ## Usage
 ### Doxygen Function Commenting
-Placing the cursor on the line directly above the function definition and pressing `Ctrl+Alt+Shift+D` (or through the menu command *Plugins > DoxyIt > DoxyIt - Function*) will insert a comment block. For example:
+Placing the cursor on the line directly above the function definition and pressing `Ctrl+Alt+Shift+D` (or through the menu command *Plugins > DoxyIt > DoxyIt - Function*) will insert a comment block.
 
-```c
-/**
- *  \brief Brief
- *  
- *  \param [in] ptr Parameter_Description
- *  \param [in] index Parameter_Description
- *  \return Return_Description
- *  
- *  \details Details
- */
-int function(const char *ptr, int index)
-```
+![Demo](https://dl.dropboxusercontent.com/u/13788271/DoxyIt/Demo.gif)
+
 **Note:** Function commenting for User Defined Languages inserts a comment block and does not parse any text.
 
 ### Doxygen File Commenting
-Using the menu command *Plugins > DoxyIt > DoxyIt - File* will insert a Doxygen comment block for the file at the current cursor position. For example:
-```c
-/**
- *  \file DoxyIt.cpp
- *  \brief Brief
- */
-```
+Using the menu command *Plugins > DoxyIt > DoxyIt - File* will insert a Doxygen comment block for the file at the current cursor position.
 
 ### Active Commenting
-Even if Doxygen commands aren't desired, you can still take advantage of the active commenting feature. This allows document blocks to be created and modified. For example, (where the '|' character represents the cursor) typing:
-```
-/**|
-```
-then pressing `Enter`, will close the comment block:
-```
-/**
- *  |
- */
-```
-Pressing `Enter` inside a comment block will add a new line prepended with the desired string. Pressing `Enter` again in the above example will create:
-```
-/**
- *  
- *  |
- */
-```
+Even if Doxygen commands aren't desired, you can still take advantage of the active commenting feature. A new comment block can be started by typing the opening string and pressing `Enter`. Adding a new line within the block will extend it.
 
-**Note:** If DoxyIt is configured to use long strings to indicate the start of a comment block, only the first 3 characters need to be typed. For example:
-```
-/**|
-```
-and then `Enter` will turn into:
-```
-/********************************************//**
- *  |
- ***********************************************/
-```
+![Demo2](https://dl.dropboxusercontent.com/u/13788271/DoxyIt/Demo2.gif)
+
+**Note:** If DoxyIt is configured to use long strings to indicate the start of a comment block, only the first 3 characters need to be typed.
 
 ## Settings
 Each language can be configured to have any string to indicate the start, middle, and end of a document block. The settings dialog also provides a live preview of what a documentation block would look like:
@@ -113,7 +74,7 @@ The format string is used to customize the Doxygen Function Commenting block gen
 Not all keywords are valid for User Defined Languages. 
 
 ### Jump Locations
-The function and file formats can specify jump locations.  Using `$(...)` will use the text within the parenthesis as a default value. Jump locations with the same default text will be edited simultaneously. These are areas of text that can be jumped to by pressing the `Tab` key.  Pressing the `Esc` key will remove all jump locations.
+The function and file formats can specify jump locations. These are areas of text that can be jumped to by pressing the `Tab` key. Using `$(...)` will use the text within the parenthesis as a default value for the location. Jump locations with the same default text will be edited simultaneously. Pressing the `Esc` key will remove all marked jump locations.
 
 ### UDL Support
 Custom UDLs can be added by pressing the `+` button next to the list of supported languages. The name entered for the UDL must match the name of the desired UDL. Pressing the `-` button will remove the selected UDL. Function commenting is partially supported for UDLs. It will insert a comment block at the current location but will not attempt to parse any text.
