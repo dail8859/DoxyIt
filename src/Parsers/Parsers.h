@@ -30,7 +30,11 @@ extern const char *default_function_format;
 extern const char *default_internal_function_format;
 extern const char *default_file_format;
 
-typedef std::map<std::string, std::vector<std::string>> Keywords;
+typedef struct {
+	std::string function;
+	std::vector<std::string> parameters;
+	std::map<std::string, std::string> extras;
+} Keywords;
 
 // These are the settable fields in the parser
 // This makes it easier when changing settings in the dialog box

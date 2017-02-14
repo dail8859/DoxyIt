@@ -389,7 +389,7 @@ void doxyItNewLine()
 			editor.ReplaceSel(eol);
 			editor.ReplaceSel(indentation.c_str());
 			editor.ReplaceSel(ps->doc_line.c_str());
-			pos = static_cast<int>(editor.GetCurrentPos()); // Save this position so we can restore it
+			pos = editor.GetCurrentPos(); // Save this position so we can restore it
 			editor.LineEnd(); // Skip any text the user carried to next line
 			editor.ReplaceSel(eol);
 			editor.ReplaceSel(indentation.c_str());
@@ -440,15 +440,11 @@ void handleNotification(SCNotification *notifyCode)
 	switch(nh.code)
 	{
 	case SCN_UPDATEUI: // Now is when we can check to see if we do the commenting
-		if (notifyCode->updated & SC_UPDATE_CONTENT)
+		if (do_newline)
 		{
-			if (do_newline)
-			{
-				do_newline = false;
-				doxyItNewLine();
-			}
+			do_newline = false;
+			doxyItNewLine();
 		}
-
 		break;
 	case SCN_CHARADDED:
 		// Set a flag so that all line endings can trigger the commenting

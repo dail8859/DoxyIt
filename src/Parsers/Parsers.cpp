@@ -192,48 +192,23 @@ void alignLines(std::vector<std::string> &lines)
 	}
 }
 
-#define INFO_BUFFER_SIZE 2048
-
 std::string FormatBlock(const ParserSettings *ps, Keywords& keywords, const std::string &format)
 {
 	std::stringstream ss;
 	std::vector<std::string> lines;
-	std::vector<std::string> params = keywords["$PARAM"];
+	std::vector<std::string> &params = keywords.parameters;
 	std::string format_copy(format);
 	const char *eol = getEolStr();
-	char infoBuf[INFO_BUFFER_SIZE];
+
+	stringReplace(format_copy, "$@", ps->command_prefix);
 
 	// Replace keywords
-	stringReplace(format_copy, "$@", ps->command_prefix);
-	stringReplace(format_copy, "$FILENAME", keywords["$FILENAME"][0]);
-	memset(infoBuf, 0, INFO_BUFFER_SIZE);
-	DWORD bufCharCount = INFO_BUFFER_SIZE;
-	if (GetComputerNameA(infoBuf, &bufCharCount)) stringReplace(format_copy, "$COMPUTER", infoBuf);
-	bufCharCount = INFO_BUFFER_SIZE;
-	if (GetUserNameA(infoBuf, &bufCharCount)) stringReplace(format_copy, "$USER", infoBuf);
-	bufCharCount = INFO_BUFFER_SIZE;
-	if (GetUserNameExA(NameDisplay, infoBuf, &bufCharCount))
-		stringReplace(format_copy, "$FULLUSER", infoBuf);
-	else
-		stringReplace(format_copy, "$FULLUSER", "");
-	time_t t = std::time(NULL);
-	struct tm *ts = std::localtime(&t);
-	const char* character = "aAbBcdHIjmMpSUwWxXyYzZ";
-	for (size_t uj = 0; uj < strlen(character); uj++)
+	// Iterate the map backwards so that longer keywords are replaced first
+	// Such as $DATE_d before $DATE
+	for (auto iter = keywords.extras.crbegin(); iter != keywords.extras.crend(); ++iter)
 	{
-		char format[3] = { '%', character[uj], 0 };
-		std::strftime(infoBuf, INFO_BUFFER_SIZE - 1, format, ts);
-		char search[8] = { '$', 'D', 'A', 'T', 'E', '_', character[uj], 0 };
-		stringReplace(format_copy, search, infoBuf);
+		stringReplace(format_copy, iter->first, iter->second);
 	}
-	std::strftime(infoBuf, INFO_BUFFER_SIZE - 1, "%Y-%m-%dT%H:%M:%S", ts);
-	stringReplace(format_copy, "$DATE", infoBuf);
-
-	// $FUNCTION may not exist
-	if(keywords.find("$FUNCTION") != keywords.end())
-		stringReplace(format_copy, "$FUNCTION", keywords["$FUNCTION"][0]);
-	else
-		stringReplace(format_copy, "$FUNCTION", "");
 
 	lines = splitLines(format_copy, "\r\n");
 
@@ -283,15 +258,49 @@ std::string FormatBlock(const ParserSettings *ps, Keywords& keywords, const std:
 	return ss.str();
 }
 
+#define INFO_BUFFER_SIZE 2048
+
 void FillExtraKeywords(Keywords &kw)
 {
-	std::vector<std::string> filename;
 	wchar_t fileName[MAX_PATH];
+	char infoBuf[INFO_BUFFER_SIZE] = { 0 };
+	DWORD bufCharCount;
 
-	// Insert the current file name into the map
-	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM) fileName);
-	filename.push_back(toString(fileName));
-	kw["$FILENAME"] = filename;
+	bufCharCount = INFO_BUFFER_SIZE;
+	if (GetComputerNameA(infoBuf, &bufCharCount))
+		kw.extras["$COMPUTER"] = infoBuf;
+
+	bufCharCount = INFO_BUFFER_SIZE;
+	if (GetUserNameA(infoBuf, &bufCharCount))
+		kw.extras["$USER"] = infoBuf;
+
+	bufCharCount = INFO_BUFFER_SIZE;
+	if (GetUserNameExA(NameDisplay, infoBuf, &bufCharCount))
+		kw.extras["$FULLUSER"] = infoBuf;
+	else
+		kw.extras["$FULLUSER"] = "";
+
+	time_t t = std::time(NULL);
+	struct tm *ts = std::localtime(&t);
+	const char* character = "aAbBcdHIjmMpSUwWxXyYzZ";
+	for (size_t uj = 0; uj < strlen(character); uj++)
+	{
+		char format[3] = { '%', character[uj], 0 };
+		char search[8] = { '$', 'D', 'A', 'T', 'E', '_', character[uj], 0 };
+
+		std::strftime(infoBuf, INFO_BUFFER_SIZE - 1, format, ts);
+		kw.extras[search] = infoBuf;
+	}
+
+	std::strftime(infoBuf, INFO_BUFFER_SIZE - 1, "%Y-%m-%dT%H:%M:%S", ts);
+	kw.extras["$DATE"] = infoBuf;
+
+	// Make sure $FUNCTION exists even if it is just blank
+	if (kw.extras.count("$FUNCTION") == 0)
+		kw.extras["$FUNCTION"] = "";
+
+	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM)fileName);
+	kw.extras["$FILENAME"] = toString(fileName);
 }
 
 std::string FormatFileBlock(const ParserSettings *ps)
@@ -307,10 +316,10 @@ std::string FormatFunctionBlock(const Parser *p, const ParserSettings *ps, const
 {
 	Keywords kw;
 
-	if(!p->external)
+	if (!p->external)
 	{
 		kw = p->strategy(ps, text);
-		if(kw.size() == 0) return std::string("");
+		if (kw.function.empty()) return std::string("");
 	}
 
 	FillExtraKeywords(kw);

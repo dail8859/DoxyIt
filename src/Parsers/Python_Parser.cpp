@@ -23,8 +23,6 @@ Keywords parse_python(const ParserSettings *ps, const char *text)
 	static TrRegex tr_function("def\\s+(\\w+)\\s*(\\([^)]*\\))");
 	static TrRegex tr_parameters("(\\w+)(\\s*=\\s*\\w+)?\\s*[,)]");
 	Keywords keywords;
-	std::vector<std::string> params;
-	std::vector<std::string> function;
 	const TRexChar *begin, *end;
 
 	if (trex_search(tr_function.regex, text, &begin, &end))
@@ -37,7 +35,7 @@ Keywords parse_python(const ParserSettings *ps, const char *text)
 		trex_getsubexp(tr_function.regex, 1, &func_match);
 		trex_getsubexp(tr_function.regex, 2, &params_match);
 
-		function.push_back(std::string(func_match.begin, func_match.len));
+		keywords.function = std::string(func_match.begin, func_match.len);
 
 		// For each param
 		cur_params = params_match.begin;
@@ -46,12 +44,10 @@ Keywords parse_python(const ParserSettings *ps, const char *text)
 			TRexMatch param_match;
 			trex_getsubexp(tr_parameters.regex, 1, &param_match);
 
-			params.push_back(std::string(param_match.begin, param_match.len));
+			keywords.parameters.push_back(std::string(param_match.begin, param_match.len));
 
 			cur_params = p_end;
 		}
-		keywords["$PARAM"] = params;
-		keywords["$FUNCTION"] = function;
 	}
 
 	return keywords;
