@@ -96,7 +96,8 @@ void CleanUpParsers();
 
 std::string FormatFunctionBlock(const Parser *p, const ParserSettings *ps, const char *text);
 std::string FormatFileBlock(const ParserSettings *ps);
-std::string Parse();
+std::string GetFunctionToParse(void);
+std::pair<int, int> InsertDocumentationBlock(const std::string &block, const std::string &indentation);
 
 // Simple class to make sure the regexs get cleaned up
 class TrRegex final {

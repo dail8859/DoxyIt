@@ -242,31 +242,35 @@ void setNppInfo(NppData notepadPlusData)
 
 void doxyItFunction()
 {
-	std::string doc_block;
-	char *indent = NULL;
-
-	doc_block = Parse();
-
-	// Don't issue any warning messages, let Parse() handle that for us since it knows
-	// about the error. Just return if it is a zero length string
-	if(doc_block.length() == 0) 
+	const Parser *p;
+	if (!(p = getCurrentParser()))
+	{
+		MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK | MB_ICONERROR);
 		return;
+	}
 
-	// Keep track of where we started
-	int startLine = static_cast<int>(SendNpp(NPPM_GETCURRENTLINE));
+	std::string text = GetFunctionToParse();
 
-	// Get the whitespace of the next line so we can insert it in front of 
-	// all the lines of the document block that is going to be inserted
-	indent = getLineIndentStr(startLine + 1);
+	// External parsers have no text to parse
+	if (!p->external && text.empty())
+	{
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	std::string doc_block = FormatFunctionBlock(p, &p->ps, text.c_str());
+
+	if (doc_block.length() == 0)
+	{
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK | MB_ICONERROR);
+		return;
+	}
 
 	editor.BeginUndoAction();
-	editor.ReplaceSel(doc_block.c_str());
-	int endLine = static_cast<int>(SendNpp(NPPM_GETCURRENTLINE)); // get the end of the document block
-	if(indent) insertBeforeLines(indent, startLine, endLine + 1);
 
-	if(indent) delete[] indent;
-
-	ProcessTextRangeForNewJumpLocations(editor.PositionFromLine(startLine), editor.GetLineEndPosition(endLine));
+	auto indentation = GetLineIndentString(editor.LineFromPosition(editor.GetSelectionEnd()) + 1);
+	auto range = InsertDocumentationBlock(doc_block, indentation);
+	ProcessTextRangeForNewJumpLocations(range.first, range.second);
 
 	editor.EndUndoAction();
 }
@@ -287,11 +291,8 @@ void doxyItFile()
 
 	editor.BeginUndoAction();
 
-	int startPos = editor.GetSelectionStart();
-	editor.ReplaceSel(doc_block.c_str());
-	int endPos = editor.GetCurrentPos();
-
-	ProcessTextRangeForNewJumpLocations(startPos, endPos);
+	auto range = InsertDocumentationBlock(doc_block, std::string(""));
+	ProcessTextRangeForNewJumpLocations(range.first, range.second);
 
 	editor.EndUndoAction();
 }
@@ -346,7 +347,7 @@ void doxyItNewLine()
 
 	curLine = static_cast<int>(SendNpp(NPPM_GETCURRENTLINE));
 
-	previousLine = getLine(curLine - 1);
+	previousLine = GetLine(curLine - 1);
 
 	// NOTE: we cannot use getLineIndentStr() because doc_start or doc_line may start with whitespace
 	// which we don't want counted towards the indentation string.
@@ -359,7 +360,7 @@ void doxyItNewLine()
 		if(isWhiteSpace(indentation))
 		{
 			editor.BeginUndoAction();
-			editor.DelLineLeft();	// Clear any automatic indentation
+			editor.DelLineLeft(); // Clear any automatic indentation
 			editor.ReplaceSel(indentation.c_str());
 			editor.ReplaceSel(ps->doc_line.c_str());
 			editor.EndUndoAction();

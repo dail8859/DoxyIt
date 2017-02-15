@@ -319,7 +319,7 @@ std::string FormatFunctionBlock(const Parser *p, const ParserSettings *ps, const
 	if (!p->external)
 	{
 		kw = p->strategy(ps, text);
-		if (kw.function.empty()) return std::string("");
+		if (kw.function.empty()) return std::string();
 	}
 
 	FillExtraKeywords(kw);
@@ -327,58 +327,52 @@ std::string FormatFunctionBlock(const Parser *p, const ParserSettings *ps, const
 	return FormatBlock(ps, kw, ps->function_format);
 }
 
-// Get the current parser and text to parse
-std::string Parse(void)
+std::string GetFunctionToParse(void)
 {
-	std::string doc_block;
-	const Parser *p;
-	char *buffer;
 	int found;
-
-	if(!(p = getCurrentParser()))
-	{
-		MessageBox(NULL, TEXT("Unrecognized language type."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return std::string("");
-	}
+	auto p = getCurrentParser();
 
 	// External parsers are simple enough since they don't need any text to parse
-	if(p->external)
-		return FormatFunctionBlock(p, &p->ps, nullptr); 
+	if (p->external)
+		return std::string();
+		//return FormatFunctionBlock(p, &p->ps, nullptr);
 
 	// Get the text until a closing parenthesis. Find '(' first
-	if((found = findNext("(")) == -1)
+	if ((found = FindNext("(")) == INVALID_POSITION)
 	{
-		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return std::string("");
+		return std::string();
 	}
 
 	// Do some sanity checking. Make sure curline <= found <= curline+2
 	auto curLine = SendNpp(NPPM_GETCURRENTLINE);
 	auto foundLine = editor.LineFromPosition(found);
-	if(foundLine < curLine || foundLine > curLine + 2)
+	if (foundLine < curLine || foundLine > curLine + 2)
 	{
-		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return std::string("");
+		return std::string();
 	}
 
 	// Find the matching closing brace
-	if((found = editor.BraceMatch(found)) == -1)
+	if ((found = editor.BraceMatch(found)) == INVALID_POSITION)
 	{
-		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return std::string("");
+		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK | MB_ICONERROR);
+		return std::string();
 	}
 
-	buffer = getRange(editor.GetCurrentPos(), found + 1);
-	doc_block = FormatFunctionBlock(p, &p->ps, buffer);
-	delete[] buffer;
+	return GetTextRange(editor.GetCurrentPos(), found + 1);
+}
 
-	// I don't think there is currently a case where callback() will return a zero length string,
-	// but check it just in case we decide to for the future.
-	if(doc_block.length() == 0)
+std::pair<int, int> InsertDocumentationBlock(const std::string &block, const std::string &indentation)
+{
+	int startLine = editor.LineFromPosition(editor.GetSelectionEnd());
+
+	int startPos = editor.GetSelectionStart();
+	editor.ReplaceSel(block.c_str());
+	int endPos = editor.GetCurrentPos();
+
+	if (!indentation.empty())
 	{
-		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK|MB_ICONERROR);
-		return std::string("");
+		InsertStringBeforeLines(indentation, startLine, editor.LineFromPosition(endPos) + 1);
 	}
 
-	return doc_block;
+	return std::make_pair(startPos, endPos);
 }

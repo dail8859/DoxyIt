@@ -24,13 +24,13 @@
 #define BOOLTOSTR(b) ((b) ? TEXT("true") : TEXT("false"))
 
 // Scintilla Utilities
-void clearLine(int line);
-char *getLineIndentStr(int line);
-void insertBeforeLines(char *str, int start, int end, bool force=false);
-int findNext(char* text, int len=200, bool regExp=false);
-std::pair<int, int> findInRange(const char *text, int start, int stop, bool regExp = false);
-char *getRange(int start, int end);
-char *getLine(int lineNum);
+std::string GetTextRange(int start, int end);
+void ClearLine(int line);
+std::string GetLineIndentString(int line);
+void InsertStringBeforeLines(const std::string &str, int start, int end, bool force = false);
+int FindNext(char* text, int len=200, bool regExp=false);
+std::pair<int, int> FindInRange(const char *text, int start, int stop, bool regExp = false);
+char *GetLine(int lineNum);
 const char *getEolStr();
 
 // Generic string utilites

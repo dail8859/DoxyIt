@@ -23,8 +23,6 @@
 #include "PluginInterface.h"
 #include "ScintillaGateway.h"
 
-#define SCI_UNUSED 0
-
 const wchar_t NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
 const int nbFunc = 7;
 

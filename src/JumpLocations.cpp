@@ -44,10 +44,9 @@ static void PreProcessJumpLocation(Location& location)
 		else
 		{
 			// Remove the "$(" and ")" to just keep the text
-			char *text = getRange(location.first, location.second);
+			std::string text = GetTextRange(location.first, location.second);
 			editor.SetTargetRange(location.first, location.second);
-			editor.ReplaceTarget((int)strlen(text) - 3, &text[2]);
-			delete[] text;
+			editor.ReplaceTarget((int)text.length() - 3, &text[2]);
 		}
 
 		// Set the location to the new range
@@ -89,13 +88,12 @@ static void SelectMatchingJumpLocations(const Location& location)
 {
 	if (IsLocationValid(location))
 	{
-		char *jumpLocationText = getRange(location.first, location.second);
+		std::string jumpLocationText = GetTextRange(location.first, location.second);
 
 		// A location of "()" is interpreted as an empty jump
 		// location which should not match other emtpy locations
-		if (strcmp(jumpLocationText, "()") == 0)
+		if (jumpLocationText == "()")
 		{
-			delete[] jumpLocationText;
 			return;
 		}
 
@@ -108,14 +106,12 @@ static void SelectMatchingJumpLocations(const Location& location)
 			{
 				if (match.first != location.first)
 				{
-					char *nextLocationText = getRange(match.first, match.second);
+					std::string nextLocationText = GetTextRange(match.first, match.second);
 
-					if (strcmp(jumpLocationText, nextLocationText) == 0)
+					if (jumpLocationText == nextLocationText)
 					{
 						editor.AddSelection(match.second, match.first);
 					}
-
-					delete[] nextLocationText;
 				}
 			}
 			else
@@ -123,8 +119,6 @@ static void SelectMatchingJumpLocations(const Location& location)
 				break;
 			}
 		} while (startPos != INVALID_POSITION);
-
-		delete[] jumpLocationText;
 	}
 }
 
@@ -134,12 +128,12 @@ static void MarkJumpLocationsInRange(int start, int end)
 
 	// Find all the jump locations
 	int startPos = start;
-	auto match = findInRange(JUMPLOCATION_REGEX, startPos, end, true);
+	auto match = FindInRange(JUMPLOCATION_REGEX, startPos, end, true);
 	while (IsLocationValid(match))
 	{
 		jumpLocations.push_back(match);
 		startPos = match.second;
-		match = findInRange(JUMPLOCATION_REGEX, startPos, end, true);
+		match = FindInRange(JUMPLOCATION_REGEX, startPos, end, true);
 	}
 
 	// Iterate them backwards since the text could be modified by PreProcessJumpLocation

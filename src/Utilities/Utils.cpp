@@ -19,8 +19,22 @@
 #include "PluginDefinition.h"
 #include "Utils.h"
 
+std::string GetTextRange(int start, int end) {
+	if (end <= start) return std::string();
+
+	std::vector<char> buffer(end - start + 1);
+	TextRange tr;
+	tr.chrg.cpMin = start;
+	tr.chrg.cpMax = end;
+	tr.lpstrText = buffer.data();
+
+	editor.GetTextRange(&tr);
+
+	return std::string(buffer.begin(), buffer.end() - 1); // don't copy the null
+}
+
 // Clears the line
-void clearLine(int line)
+void ClearLine(int line)
 {
 	auto lineStart = editor.PositionFromLine(line);
 	auto lineEnd = editor.GetLineEndPosition(line);
@@ -30,40 +44,41 @@ void clearLine(int line)
 }
 
 // Get the whitespace of the line, the returned value must be free'd
-char *getLineIndentStr(int line)
+std::string GetLineIndentString(int line)
 {
 	int indentStart = editor.PositionFromLine(line);
 	int indentEnd = editor.GetLineIndentPosition(line);
 
-	if(indentStart != indentEnd) return getRange(indentStart, indentEnd);
-	else return NULL;
+	return GetTextRange(indentStart, indentEnd);
 }
 
 // Insert str in front of each line between start and end
 // If the line already starts with the string it is skipped unless force = true
-void insertBeforeLines(char *str, int start, int end, bool force)
+void InsertStringBeforeLines(const std::string &str, int start, int end, bool force)
 {
 	for(int i = start; i < end; ++i)
 	{
-		int line = editor.PositionFromLine(i);
+		int lineStart = editor.PositionFromLine(i);
 
 		// force=true will always insert the text in front of the line
 		// force=false will only insert it if the line doesnt start with str
 		if(force)
 		{
-			editor.InsertText(line, str);
+			editor.InsertText(lineStart, str.c_str());
 		}
 		else
 		{
-			char *buffer = getRange(line, line + static_cast<int>(strlen(str)));
-			if(strncmp(buffer, str, strlen(str)) != 0) editor.InsertText(line, str);
-			delete[] buffer;
+			std::string buffer = GetTextRange(lineStart, lineStart + static_cast<int>(str.length()));
+			if (buffer.compare(0, str.length(), str) != 0)
+			{
+				editor.InsertText(lineStart, str.c_str());
+			}
 		}
 	}
 }
 
 // Find the next instance of text
-int findNext(char* text, int len, bool regExp)
+int FindNext(char* text, int len, bool regExp)
 {
 	int curPos = editor.GetCurrentPos();
 	int flags = (regExp ? SCFIND_REGEXP : 0);
@@ -76,7 +91,7 @@ int findNext(char* text, int len, bool regExp)
 	return editor.FindText(flags, &ttf);
 }
 
-std::pair<int, int> findInRange(const char *text, int start, int stop, bool regExp)
+std::pair<int, int> FindInRange(const char *text, int start, int stop, bool regExp)
 {
 	TextToFind ttf;
 	ttf.chrg.cpMin = start;
@@ -91,24 +106,8 @@ std::pair<int, int> findInRange(const char *text, int start, int stop, bool regE
 	return std::make_pair(INVALID_POSITION, INVALID_POSITION);
 }
 
-// Get a range of text from start to end, returned string must be free'd
-char *getRange(int start, int end)
-{
-	if (end > start)
-	{
-		TextRange tr;
-		tr.chrg.cpMin = start;
-		tr.chrg.cpMax = end;
-		tr.lpstrText  = new char[end - start + 1];
-
-		editor.GetTextRange(&tr);
-		return tr.lpstrText;
-	}
-	return NULL;
-}
-
 // Get a line
-char *getLine(int lineNum)
+char *GetLine(int lineNum)
 {
 	int lineLen = editor.LineLength(lineNum);
 	char *buffer = new char[lineLen + 1];
