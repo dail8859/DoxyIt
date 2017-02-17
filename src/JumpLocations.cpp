@@ -157,6 +157,8 @@ static bool GoToJumpLocation(const Location& location)
 		editor.AutoCCancel();
 		editor.CallTipCancel();
 
+		editor.ChooseCaretX();
+
 		return true;
 	}
 

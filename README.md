@@ -17,11 +17,13 @@ Currently there is support for:
 
 ## Usage
 ### Doxygen Function Commenting
-Placing the cursor on the line directly above the function definition and pressing `Ctrl+Alt+Shift+D` (or through the menu command *Plugins > DoxyIt > DoxyIt - Function*) will insert a comment block.
+Just start by opening a function block above the function. 
 
 ![Demo](https://dl.dropboxusercontent.com/u/13788271/DoxyIt/Demo.gif)
 
-**Note:** Function commenting for User Defined Languages inserts a comment block and does not parse any text.
+You can also manually trigger the function documentation (sometimes this is required for certain settings. Place the cursor on the line directly above the function definition and press `Ctrl+Alt+Shift+D` (or through the menu command *Plugins > DoxyIt > DoxyIt - Function*).
+
+**Note:** Function commenting for User Defined Languages inserts a comment block but does not parse any text.
 
 ### Doxygen File Commenting
 Using the menu command *Plugins > DoxyIt > DoxyIt - File* will insert a Doxygen comment block for the file at the current cursor position.
