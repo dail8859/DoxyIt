@@ -377,29 +377,43 @@ void doxyItNewLine()
 
 		if(isWhiteSpace(indentation))
 		{
-			int pos;
-			unsigned int i = 0;
+			bool wasTriggeredAboveFunction = !GetFunctionToParse().empty();
 
-			// Count the characters in common so we can add the rest
-			while(i < ps->doc_start.length() && found[i] == ps->doc_start.at(i)) ++i;
+			if (wasTriggeredAboveFunction)
+			{
+				// The new block was triggered above a function, so do all that magic
+				editor.DelLineLeft(); // Clear any automatic indentation
+				editor.CharLeft(); // Back up over the new line
+				editor.LineDelete(); // Clear the entire line
+				doxyItFunction();
+			}
+			else
+			{
+				int pos;
+				unsigned int i = 0;
 
-			editor.BeginUndoAction();
-			editor.DelLineLeft(); // Clear any automatic indentation
-			editor.DeleteBack(); // Clear the newline
-			editor.ReplaceSel(&ps->doc_start.c_str()[i]); // Fill the rest of doc_start
-			editor.ReplaceSel(eol);
-			editor.ReplaceSel(indentation.c_str());
-			editor.ReplaceSel(ps->doc_line.c_str());
-			pos = editor.GetCurrentPos(); // Save this position so we can restore it
-			editor.LineEnd(); // Skip any text the user carried to next line
-			editor.ReplaceSel(eol);
-			editor.ReplaceSel(indentation.c_str());
-			editor.ReplaceSel(ps->doc_end.c_str());
-			editor.EndUndoAction();
-			editor.ChooseCaretX();
+				// Count the characters in common so we can add the rest
+				while (i < ps->doc_start.length() && found[i] == ps->doc_start.at(i)) ++i;
 
-			// Restore the position
-			editor.GotoPos(pos);
+				// Just open a blank block
+				editor.BeginUndoAction();
+				editor.DelLineLeft(); // Clear any automatic indentation
+				editor.DeleteBack(); // Clear the newline
+				editor.ReplaceSel(&ps->doc_start.c_str()[i]); // Fill the rest of doc_start
+				editor.ReplaceSel(eol);
+				editor.ReplaceSel(indentation.c_str());
+				editor.ReplaceSel(ps->doc_line.c_str());
+				pos = editor.GetCurrentPos(); // Save this position so we can restore it
+				editor.LineEnd(); // Skip any text the user carried to next line
+				editor.ReplaceSel(eol);
+				editor.ReplaceSel(indentation.c_str());
+				editor.ReplaceSel(ps->doc_end.c_str());
+				editor.EndUndoAction();
+				editor.ChooseCaretX();
+
+				// Restore the position
+				editor.GotoPos(pos);
+			}
 		}
 	}
 

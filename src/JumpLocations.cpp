@@ -184,6 +184,7 @@ bool GoToNextJumpLocation(int startPosition, bool wrap)
 {
 	auto selection = std::make_pair(editor.GetSelectionStart(), editor.GetSelectionEnd());
 	bool selectionWasOnJumpLocation = IsLocationOnJumpLocation(selection);
+
 	if (selectionWasOnJumpLocation)
 	{
 		editor.SetIndicatorCurrent(JUMPLOCATION_INDICATOR);
