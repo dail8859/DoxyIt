@@ -372,6 +372,7 @@ std::pair<int, int> InsertDocumentationBlock(const std::string &block, const std
 	if (!indentation.empty())
 	{
 		InsertStringBeforeLines(indentation, startLine, editor.LineFromPosition(endPos) + 1);
+		endPos = editor.GetCurrentPos();
 	}
 
 	return std::make_pair(startPos, endPos);
