@@ -19,7 +19,7 @@ Currently there is support for:
 ### Doxygen Function Commenting
 Just start by opening a function block above the function. 
 
-![Demo](https://dl.dropboxusercontent.com/u/13788271/DoxyIt/Demo.gif)
+![Demo](/img/Demo.gif)
 
 You can also manually trigger the function documentation (sometimes this is required for certain settings. Place the cursor on the line directly above the function definition and press `Ctrl+Alt+Shift+D` (or through the menu command *Plugins > DoxyIt > DoxyIt - Function*).
 
@@ -31,13 +31,14 @@ Using the menu command *Plugins > DoxyIt > DoxyIt - File* will insert a Doxygen 
 ### Active Commenting
 Even if Doxygen commands aren't desired, you can still take advantage of the active commenting feature. A new comment block can be started by typing the opening string and pressing `Enter`. Adding a new line within the block will extend it.
 
-![Demo2](https://dl.dropboxusercontent.com/u/13788271/DoxyIt/Demo2.gif)
+![Demo2](/img/Demo2.gif)
 
 **Note:** If DoxyIt is configured to use long strings to indicate the start of a comment block, only the first 3 characters need to be typed.
 
 ## Settings
 Each language can be configured to have any string to indicate the start, middle, and end of a document block. The settings dialog also provides a live preview of what a documentation block would look like:
-![Settings Dialog](https://dl.dropboxusercontent.com/u/13788271/DoxyIt/SettingsWithAddRemove.png)
+
+![Settings Dialog](/img/Settings.png)
 
 ### Doxygen Commenting Format
 The format string is used to customize the Doxygen Function Commenting block generated. There are currently a few keywords that are used.
