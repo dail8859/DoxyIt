@@ -296,8 +296,7 @@ void FillExtraKeywords(Keywords &kw)
 	kw.extras["$DATE"] = infoBuf;
 
 	// Make sure $FUNCTION exists even if it is just blank
-	if (kw.extras.count("$FUNCTION") == 0)
-		kw.extras["$FUNCTION"] = "";
+	kw.extras["$FUNCTION"] = kw.function;
 
 	SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM)fileName);
 	kw.extras["$FILENAME"] = toString(fileName);
