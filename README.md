@@ -21,7 +21,7 @@ Just start by opening a function block above the function.
 
 ![Demo](/img/Demo.gif)
 
-You can also manually trigger the function documentation (sometimes this is required for certain settings. Place the cursor on the line directly above the function definition and press `Ctrl+Alt+Shift+D` (or through the menu command *Plugins > DoxyIt > DoxyIt - Function*).
+You can also manually trigger the function documentation (this is sometimes required for specific settings). Place the cursor on the line directly above the function definition and press `Ctrl+Alt+Shift+D` (or through the menu command *Plugins > DoxyIt > DoxyIt - Function*).
 
 **Note:** Function commenting for User Defined Languages inserts a comment block but does not parse any text.
 
