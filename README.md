@@ -1,4 +1,7 @@
 # DoxyIt
+
+[![Build status](https://ci.appveyor.com/api/projects/status/github/dail8859/DoxyIt?branch=master&svg=true)](https://ci.appveyor.com/project/dail8859/DoxyIt/branch/master)
+
 Notepad++ plugin for [Doxygen](http://www.doxygen.org) commenting. This also provides helpful features for creating and editing comment blocks, even if Doxygen isn't desired.
 
 The release versions of DoxyIt can be downloaded [here](https://github.com/dail8859/DoxyIt/releases).
