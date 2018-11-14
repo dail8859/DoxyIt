@@ -26,13 +26,7 @@ after_build:
     - cd "%APPVEYOR_BUILD_FOLDER%"
     - ps: >-
 
-        if ($env:PLATFORM -eq "x64") {
-            Push-AppveyorArtifact "bin\$($env:CONFIGURATION)_$($env:PLATFORM)\DoxyIt_64.dll" -FileName DoxyIt_64.dll
-        }
-
-        if ($env:PLATFORM -eq "Win32" ) {
-            Push-AppveyorArtifact "bin\$($env:CONFIGURATION)_$($env:PLATFORM)\DoxyIt.dll" -FileName DoxyIt.dll
-        }
+        Push-AppveyorArtifact "bin\$($env:CONFIGURATION)_$($env:PLATFORM)\DoxyIt.dll" -FileName DoxyIt.dll
 
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
             if ($env:PLATFORM -eq "x64"){
