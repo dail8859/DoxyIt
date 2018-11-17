@@ -106,18 +106,6 @@ std::pair<int, int> FindInRange(const char *text, int start, int stop, bool regE
 	return std::make_pair(INVALID_POSITION, INVALID_POSITION);
 }
 
-// Get a line
-char *GetLine(int lineNum)
-{
-	int lineLen = editor.LineLength(lineNum);
-	char *buffer = new char[lineLen + 1];
-
-	editor.GetLine(lineNum, buffer);
-	buffer[lineLen] = '\0';
-
-	return buffer;
-}
-
 // Get the end of line string for the current eol mode
 const char *getEolStr()
 {

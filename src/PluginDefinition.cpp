@@ -337,7 +337,7 @@ void doxyItNewLine()
 	std::string indentation;
 	const ParserSettings *ps;
 	const char *eol;
-	char *previousLine, *found = NULL;
+	size_t found;
 	int curLine;
 
 	ps = getCurrentParserSettings();
@@ -347,14 +347,15 @@ void doxyItNewLine()
 
 	curLine = static_cast<int>(SendNpp(NPPM_GETCURRENTLINE));
 
-	previousLine = GetLine(curLine - 1);
+	std::string previousLine = editor.GetLine(curLine - 1);
+	std::string nextLine = editor.GetLine(curLine + 1);
 
 	// NOTE: we cannot use getLineIndentStr() because doc_start or doc_line may start with whitespace
 	// which we don't want counted towards the indentation string.
 
-	if(found = strstr(previousLine, ps->doc_line.c_str()))
+	if((found = previousLine.find(ps->doc_line)) != std::string::npos)
 	{
-		indentation.append(previousLine, found - previousLine);
+		indentation.append(previousLine.substr(0, found));
 
 		// doc_line should have only whitespace in front of it
 		if(isWhiteSpace(indentation))
@@ -370,10 +371,10 @@ void doxyItNewLine()
 	}
 	// If doc_start is relatively long we do not want the user typing the entire line, just the first 3 should suffice.
 	// Also, if doc_end is found, this means a doc block was closed. This allows e.g. /** inline comments */
-	else if((found = strstr(previousLine, ps->doc_start.substr(0, 3).c_str())) &&
-		strstr(previousLine, ps->doc_end.c_str()) == 0)
+	else if((found = previousLine.find(ps->doc_start.substr(0, 3))) != std::string::npos &&
+		previousLine.find(ps->doc_end.c_str()) == std::string::npos)
 	{
-		indentation.append(previousLine, found - previousLine);
+		indentation.append(previousLine.substr(0, found));
 
 		if(isWhiteSpace(indentation))
 		{
@@ -387,13 +388,23 @@ void doxyItNewLine()
 				editor.LineDelete(); // Clear the entire line
 				doxyItFunction();
 			}
+			else if (nextLine.find(ps->doc_line) != std::string::npos)
+			{
+				// Just extend the doc block
+				editor.BeginUndoAction();
+				editor.DelLineLeft(); // Clear any automatic indentation
+				editor.ReplaceSel(indentation.c_str());
+				editor.ReplaceSel(ps->doc_line.c_str());
+				editor.EndUndoAction();
+				editor.ChooseCaretX();
+			}
 			else
 			{
 				int pos;
 				unsigned int i = 0;
 
 				// Count the characters in common so we can add the rest
-				while (i < ps->doc_start.length() && found[i] == ps->doc_start.at(i)) ++i;
+				while (i < ps->doc_start.length() && previousLine.at(found + i) == ps->doc_start.at(i)) ++i;
 
 				// Just open a blank block
 				editor.BeginUndoAction();
@@ -401,13 +412,13 @@ void doxyItNewLine()
 				editor.DeleteBack(); // Clear the newline
 				editor.ReplaceSel(&ps->doc_start.c_str()[i]); // Fill the rest of doc_start
 				editor.ReplaceSel(eol);
-				editor.ReplaceSel(indentation.c_str());
-				editor.ReplaceSel(ps->doc_line.c_str());
+				editor.ReplaceSel(indentation);
+				editor.ReplaceSel(ps->doc_line);
 				pos = editor.GetCurrentPos(); // Save this position so we can restore it
 				editor.LineEnd(); // Skip any text the user carried to next line
 				editor.ReplaceSel(eol);
-				editor.ReplaceSel(indentation.c_str());
-				editor.ReplaceSel(ps->doc_end.c_str());
+				editor.ReplaceSel(indentation);
+				editor.ReplaceSel(ps->doc_end);
 				editor.EndUndoAction();
 				editor.ChooseCaretX();
 
@@ -416,8 +427,6 @@ void doxyItNewLine()
 			}
 		}
 	}
-
-	delete[] previousLine;
 }
 
 LRESULT CALLBACK KeyboardProc(int ncode, WPARAM wparam, LPARAM lparam)

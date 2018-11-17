@@ -30,7 +30,6 @@ std::string GetLineIndentString(int line);
 void InsertStringBeforeLines(const std::string &str, int start, int end, bool force = false);
 int FindNext(char* text, int len=200, bool regExp=false);
 std::pair<int, int> FindInRange(const char *text, int start, int stop, bool regExp = false);
-char *GetLine(int lineNum);
 const char *getEolStr();
 
 // Generic string utilites
