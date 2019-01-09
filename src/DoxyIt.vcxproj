@@ -115,7 +115,10 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>if EXIST "C:\Program Files (x86)\Notepad++\plugins" (copy "$(TargetPath)" "C:\Program Files (x86)\Notepad++\plugins")</Command>
+      <Command>if EXIST "%PROGRAMDATA%\Notepad++\plugins\" (
+  mkdir "%PROGRAMDATA%\Notepad++\plugins\$(TargetName)"
+  copy "$(TargetPath)" "%PROGRAMDATA%\Notepad++\plugins\$(TargetName)"
+)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -171,7 +174,10 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>if EXIST "C:\Program Files (x86)\Notepad++\plugins" (copy "$(TargetPath)" "C:\Program Files (x86)\Notepad++\plugins")</Command>
+      <Command>if EXIST "%PROGRAMDATA%\Notepad++\plugins\" (
+  mkdir "%PROGRAMDATA%\Notepad++\plugins\$(TargetName)"
+  copy "$(TargetPath)" "%PROGRAMDATA%\Notepad++\plugins\$(TargetName)"
+)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
