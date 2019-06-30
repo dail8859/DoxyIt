@@ -21,14 +21,14 @@
 
 #include <sstream>
 #include "PluginInterface.h"
-#include "ScintillaGateway.h"
+#include "ScintillaEditor.h"
 
 const wchar_t NPP_PLUGIN_NAME[] = TEXT("DoxyIt");
 const int nbFunc = 7;
 
 // --- Helper functions ---
 
-extern ScintillaGateway editor;
+extern ScintillaEditor editor;
 
 LRESULT SendNpp(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
 

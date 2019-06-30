@@ -104,10 +104,10 @@
     <ClInclude Include="Utilities\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ScintillaGateway.h">
+    <ClInclude Include="JumpLocations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JumpLocations.h">
+    <ClInclude Include="ScintillaEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

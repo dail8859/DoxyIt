@@ -16,6 +16,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#include <algorithm>
+#include <cctype>
+
 #include "PluginDefinition.h"
 #include "Utils.h"
 #include "Parsers.h"
@@ -41,13 +44,13 @@ static void activeCommenting();
 static void showSettings();
 static void showAbout();
 
-ScintillaGateway editor;
+ScintillaEditor editor;
 
 // --- Global variables ---
 ShortcutKey sk = {true, true, true, 'D'};
 FuncItem funcItem[nbFunc] = {
-	{TEXT("DoxyIt - Function"), doxyItFunction,   0, false, &sk},
-	{TEXT("DoxyIt - File"),     doxyItFile,       0, false, NULL},
+	{TEXT("Comment Function"), doxyItFunction,   0, false, &sk},
+	{TEXT("Comment File"),     doxyItFile,       0, false, NULL},
 	{TEXT(""),                  NULL,             0, false, NULL}, // separator
 	{TEXT("Active commenting"), activeCommenting, 0, false, NULL},
 	{TEXT(""),                  NULL,             0, false, NULL}, // separator
@@ -329,6 +332,44 @@ static void showAbout() {
 	::SetWindowPos(hSelf, HWND_TOP, x, y, (dlgRect.right - dlgRect.left), (dlgRect.bottom - dlgRect.top), SWP_SHOWWINDOW);
 }
 
+// trim from start (in place)
+static inline void ltrim(std::string &s) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+		return !std::isspace(ch);
+	}));
+}
+
+// trim from end (in place)
+static inline void rtrim(std::string &s) {
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+		return !std::isspace(ch);
+	}).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void trim(std::string &s) {
+	ltrim(s);
+	rtrim(s);
+}
+
+// trim from start (copying)
+static inline std::string ltrim_copy(std::string s) {
+	ltrim(s);
+	return s;
+}
+
+// trim from end (copying)
+static inline std::string rtrim_copy(std::string s) {
+	rtrim(s);
+	return s;
+}
+
+// trim from both ends (copying)
+static inline std::string trim_copy(std::string s) {
+	trim(s);
+	return s;
+}
+
 
 // --- Notification callbacks ---
 
@@ -458,7 +499,7 @@ LRESULT CALLBACK KeyboardProc(int ncode, WPARAM wparam, LPARAM lparam)
 void handleNotification(SCNotification *notifyCode)
 {
 	static bool do_newline = false;
-	NotifyHeader nh = notifyCode->nmhdr;
+	Sci_NotifyHeader nh = notifyCode->nmhdr;
 	int ch = notifyCode->ch;
 
 	switch(nh.code)

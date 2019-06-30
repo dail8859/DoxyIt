@@ -351,7 +351,7 @@ std::string GetFunctionToParse(void)
 	}
 
 	// Find the matching closing brace
-	if ((found = editor.BraceMatch(found)) == INVALID_POSITION)
+	if ((found = editor.BraceMatch(found, 0)) == INVALID_POSITION)
 	{
 		MessageBox(NULL, TEXT("Error: Cannot parse function definition. Make sure the cursor is on the line directly above the function or method definition."), NPP_PLUGIN_NAME, MB_OK | MB_ICONERROR);
 		return std::string();
