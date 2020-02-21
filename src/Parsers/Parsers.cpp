@@ -110,6 +110,26 @@ const Parser *getCurrentParser(bool update)
 			}
 		}
 
+		wchar_t *name = NULL;
+		size_t len = 0;
+
+		len = SendNpp(NPPM_GETLANGUAGENAME, lang_type, NULL) + 1;
+		name = (wchar_t *) malloc(sizeof(wchar_t) * len);
+		SendNpp(NPPM_GETLANGUAGENAME, lang_type, (LPARAM) name);
+
+		for(auto const &p : parsers)
+		{
+			// Use [0] to match any build-in language
+			if(p.language_name == &name[0])
+			{
+				current = &p;
+				free(name);
+				return current;
+			}
+		}
+
+		free(name);
+
 		// Parser wasn't found for current language
 		current = nullptr;
 	}
